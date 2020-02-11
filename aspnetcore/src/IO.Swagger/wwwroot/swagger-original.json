@@ -1,0 +1,2608 @@
+{
+  "openapi" : "3.0.2",
+  "info" : {
+    "title" : "UTM DSS/USS API",
+    "description" : "Interface to Discovery and Synchronization Service (DSS) and UAS Service Suppliers (USS) used by participating clients to discover and interoperate.\n\nUnless otherwise specified, fields specified in a message but not declared in the API shall be ignored.",
+    "version" : "1.0.0-oas3"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "security" : [ {
+    "Authority" : [ "utm.read.operations", "utm.write.operations", "utm.read.constraints", "utm.write.constraints", "utm.read.subscriptions", "utm.write.subscriptions" ]
+  } ],
+  "tags" : [ {
+    "name" : "DSS Operations",
+    "description" : "Endpoints exposed by the DSS for interaction with Operation entities."
+  }, {
+    "name" : "DSS Constraints",
+    "description" : "Endpoints exposed by the DSS for interaction with Constraint entities."
+  }, {
+    "name" : "DSS Subscriptions",
+    "description" : "Endpoints exposed by the DSS for interaction with Subscription entities."
+  }, {
+    "name" : "USS Peer-to-Peer",
+    "description" : "Endpoints exposed by each participating UTM-USS for peer-to-peer interaction."
+  } ],
+  "paths" : {
+    "/v1/dss/operations" : {
+      "summary" : "Query all Operations in the DSS that intersect with a specified 4D-Volume.",
+      "description" : "Interface to Operation references in the DSS.",
+      "get" : {
+        "tags" : [ "DSS Operations" ],
+        "summary" : "/dss/operations",
+        "description" : "Retrieve all Operations in the given area during the given time.  Note that references to some Operations lying entirely outside the requested area may be returned as well.",
+        "parameters" : [ {
+          "name" : "area",
+          "in" : "query",
+          "description" : "The area in which to search for Operation entities.  References for some Operations near this area but wholly outside it may also be returned.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Polygon"
+          }
+        }, {
+          "name" : "time_start",
+          "in" : "query",
+          "description" : "If specified, indicates non-interest in any Operations that end before this time.  RFC 3339 format, per OpenAPI specification.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        }, {
+          "name" : "time_end",
+          "in" : "query",
+          "description" : "If specified, indicates non-interest in any Operations that start after this time.  RFC 3339 format, per OpenAPI specification.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Operations were successfully retrieved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SearchOperationReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The requested area was too large.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.operations" ]
+        } ]
+      }
+    },
+    "/v1/dss/operations/{id}" : {
+      "summary" : "Create/Update/Query a specific Operation in the DSS.",
+      "get" : {
+        "tags" : [ "DSS Operations" ],
+        "summary" : "/dss/operations/{id}",
+        "description" : "Retrieve Operation information from the DSS.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Operation.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Operation was retrieved successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetOperationReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The requested Entity could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.operations" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "DSS Operations" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Operation.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateOperationReferenceParameters"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "An Operation was created successfully in the DSS.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChangeOperationReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "* One or more input parameters were missing or invalid.\n* The request attempted to mutate the Operation in a disallowed way.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "* The provided key did not prove knowledge of all current and relevant airspace Entities\n* An Operation with the specified ID already exists.\n* Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AirspaceConflictResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The area of the Operation is too large.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "DSS Operations" ],
+        "summary" : "/dss/operations/{id}",
+        "description" : "Delete an Operation.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Operation.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The specified Operation was successfully removed from the DSS.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChangeOperationReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "* One or more input parameters were missing or invalid.\n* The request attempted to mutate the Operation in a disallowed way.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.write.operations" ]
+        } ]
+      }
+    },
+    "/v1/dss/constraints" : {
+      "summary" : "Query all Constraints in the DSS that intersect with a specified 4D-Volume.",
+      "get" : {
+        "tags" : [ "DSS Constraints" ],
+        "summary" : "/dss/constraints",
+        "description" : "Retrieve all Constraints in the given area during the given time.  Note that references to some Constraints lying entirely outside the requested area may be returned as well.",
+        "parameters" : [ {
+          "name" : "area",
+          "in" : "query",
+          "description" : "The area in which to search for Constraints.  References to some Constraints near this area but wholly outside it may also be returned.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Polygon"
+          }
+        }, {
+          "name" : "time_start",
+          "in" : "query",
+          "description" : "If specified, indicates non-interest in any Constraints that end before this time.  RFC 3339 format, per OpenAPI specification.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        }, {
+          "name" : "time_end",
+          "in" : "query",
+          "description" : "If specified, indicates non-interest in any Constraints that start after this time.  RFC 3339 format, per OpenAPI specification.",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Constraints were successfully retrieved.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SearchConstraintReferencesResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The requested area was too large.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.constraints" ]
+        } ]
+      }
+    },
+    "/v1/dss/constraints/{id}" : {
+      "summary" : "Create/Update/Query a specific Constraint in the DSS.",
+      "get" : {
+        "tags" : [ "DSS Constraints" ],
+        "summary" : "/dss/constraints/{id}",
+        "description" : "Retrieve Constraint (reference) information from the DSS.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Constraint.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Constraint was retrieved successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetConstraintReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The requested Entity could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.constraints" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "DSS Constraints" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Constraint.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateConstraintReferenceParameters"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "A Constraint was created successfully in the DSS.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChangeConstraintReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "* One or more input parameters were missing or invalid.\n* The request attempted to mutate the Constraint in a disallowed way.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "* A Constraint with the specified ID already exists.\n* Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The area of the Operation is too large.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "DSS Constraints" ],
+        "summary" : "/dss/constraints/{id}",
+        "description" : "Delete a Constraint.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Constraint.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The Constraint was successfully removed from the DSS.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChangeConstraintReferenceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "* One or more input parameters were missing or invalid.\n* The request attempted to mutate the Constraint in a disallowed way.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "* A Constraint with the specified ID already exists.\n* Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.write.constraints" ]
+        } ]
+      }
+    },
+    "/v1/dss/subscriptions" : {
+      "summary" : "Subscriptions for airspace updates to a volume of interest.",
+      "get" : {
+        "tags" : [ "DSS Subscriptions" ],
+        "summary" : "/dss/subscriptions",
+        "description" : "Retrieve subscriptions intersecting an area of interest.  Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.\n\nOnly Subscriptions belonging to the caller are returned.  This endpoint would be used if a USS lost track of Subscriptions they had created and/or wanted to resolve an error indicating that they had too many existing Subscriptions in an area.",
+        "responses" : {
+          "200" : {
+            "description" : "Subscriptions were retrieved successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SearchSubscriptionsResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The requested area was too large.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "dss.read.subscriptions" ]
+        } ]
+      }
+    },
+    "/v1/dss/subscriptions/{id}" : {
+      "summary" : "Create/Update/Query a specific Subscription (reference) in the DSS.",
+      "get" : {
+        "tags" : [ "DSS Subscriptions" ],
+        "summary" : "/dss/subscriptions/{id}",
+        "description" : "Create a subscription.  This call will fail if a Subscription with the same ID already exists.\n\nSubscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "SubscriptionUUID of the subscription of interest.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/SubscriptionUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Subscription information was retrieved successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "A Subscription with the specified ID was not found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "dss.read.subscriptions", "dss.write.subscriptions" ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "DSS Subscriptions" ],
+        "description" : "Create a subscription.  This call will fail if a Subscription with the same ID already exists.\n\nSubscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "SubscriptionUUID of the subscription of interest.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/SubscriptionUUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateSubscriptionParameters"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "A new Subscription was created successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PutSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "* One or more input parameters were missing or invalid.\n* The request attempted to mutate the Subscription in a disallowed way.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "* The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.\n* An EntityType was specified in `types_filter` to which the scopes included in the access token do not provide access.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "* A Subscription with the specified ID already exists and is owned by a different client.\n* Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Client already has too many Subscriptions in the area where a new Subscription was requested.  To correct this problem, the client may query GET /subscriptions to see which Subscriptions are counting against their limit.  This problem should not generally be encountered because the Subscription limit should be above what any consumer that reasonably aggregates their Subscriptions should request.  But, a Subscription limit is necessary to bound performance requirements for DSS instances and would likely be hit by, e.g., a large remote ID display provider that created a Subscription for each of their display client users' views.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "dss.write.subscriptions" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "DSS Subscriptions" ],
+        "summary" : "/dss/subscriptions/{id}",
+        "description" : "Remove a particular subscription.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "SubscriptionUUID of the subscription of interest.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/SubscriptionUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Subscription was successfully removed from DSS.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeleteSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "A Subscription with the specified ID was not found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "dss.read.subscriptions", "dss.write.subscriptions" ]
+        } ]
+      }
+    },
+    "/v1/uss/operations/{id}" : {
+      "summary" : "Push/Query detailed information of an Operation.",
+      "get" : {
+        "tags" : [ "USS Peer-to-Peer" ],
+        "summary" : "/uss/operations/{id}",
+        "description" : "Retrieve full details of an Operation (directly from the entity owner).",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID for this Operation (matches Operation identifier).",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The full Operation information was retrieved successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetOperationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The requested Entity could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.operations" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "USS Peer-to-Peer" ],
+        "summary" : "/uss/operations/{id}",
+        "description" : "Push details of an Operation directly to a peer USS (usually because interaction with a DSS triggered this action).",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID for this Operation (matches Operation identifier).",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostOperationNotificationParameters"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "New or updated full Operation information received successfully."
+          },
+          "400" : {
+            "description" : "* One or more parameters were missing or invalid.\n* The Entity could not be parsed, or contains illegal data.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "* The access token was decoded successfully but did not include a scope appropriate to this endpoint.\n* The client identified in the access token is not the owner of this Entity according to the receiving client's records.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The Entity version specified in this message is lower than a previously-received notification, or identical to a previously-received notification and the Entity is different.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.write.operations" ]
+        } ]
+      }
+    },
+    "/v1/uss/constraints/{id}" : {
+      "summary" : "Push/Query detailed information of a Constraint.",
+      "get" : {
+        "tags" : [ "USS Peer-to-Peer" ],
+        "summary" : "/uss/constraints/{id}",
+        "description" : "Retrieve the full details of a Constraint (from the entity owner).",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Constraint.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The full Constraint information was retrieved successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetConstraintResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "One or more input parameters were missing or invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The requested Entity could not be found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.constraints" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "USS Peer-to-Peer" ],
+        "summary" : "/uss/constraints/{id}",
+        "description" : "Publish new information about a Constraint to the host of this endpoint (usually because of instructions from the DSS triggered by a subscription).",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "EntityUUID of the Constraint.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/EntityUUID"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostConstraintNotificationParameters"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "New or updated full Constraint information received successfully."
+          },
+          "400" : {
+            "description" : "* One or more parameters were missing or invalid.\n* The Entity could not be parsed, or contains illegal data.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "* The access token was decoded successfully but did not include a scope appropriate to this endpoint.\n* The client identified in the access token is not the owner of this Entity according to the receiving client's records.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The Entity version specified in this message is lower than a previously-received notification, or identical to a previously-received notification and the Entity is different.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.write.constraints" ]
+        } ]
+      }
+    },
+    "/v1/uss/feedback/{id}" : {
+      "summary" : "Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.",
+      "put" : {
+        "tags" : [ "USS Peer-to-Peer" ],
+        "summary" : "/uss/feedback/{id}",
+        "description" : "Notify USS of an error encountered that might otherwise go unnoticed.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the feedback.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/UUIDv4"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PutFeedbackParameters"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Feedback received successfully."
+          },
+          "400" : {
+            "description" : "* One or more parameters were missing or invalid.\n* The feedback could not be parsed, or contains illegal data.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FeedbackURL"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "* The access token was decoded successfully but did not include a scope appropriate to this endpoint.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The Entity version specified in this message is lower than a previously-received notification, or identical to a previously-received notification and the Entity is different.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "Authority" : [ "utm.read.operations", "utm.write.operations", "utm.read.constraints", "utm.write.constraints" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "DeconflictionKey" : {
+        "type" : "object",
+        "properties" : {
+          "ovns" : {
+            "description" : "For each of a subset of Entities declared by the DSS in the area of interest, the OVN of the current version of the full information of that Entity.  This EntityOVN is provided by the client who defined the Entity, accompanying the full Entity definition data when that data is received.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/OVNDictionary"
+            } ]
+          },
+          "subscription" : {
+            "description" : "If the client obtained the information in this DeconflictionKey via a subscription, this field is set to the ID of that subscription so the usage of subscriptions can be tracked and unused subscriptions can be removed.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/SubscriptionUUID"
+            } ]
+          }
+        },
+        "description" : "Proof that a client has obtained the latest airspace content, used to ensure that write operations to the DSS occur only when the latest content is known (i.e. has been read). The client is required to pass a current DeconflictionKey constructed from information obtained with previous read operations and subsequent requests for full information, and optionally, subscription updates for deconflicted write operations to the DSS.  The contents of this data structure are generated by the client.\n"
+      },
+      "Token" : {
+        "description" : "Universally-unique identifier associated with a specific set of data.",
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/UUIDv4"
+        } ]
+      },
+      "EntityOVN" : {
+        "title" : "EntityOVN",
+        "required" : [ "token", "version" ],
+        "type" : "object",
+        "properties" : {
+          "version" : {
+            "type" : "integer",
+            "description" : "This version increases each time an Entity is modified.  If a client ever receives a subscription update with an EntityOVN for a particular EntityUUID that is smaller than the cached EntityOVN for that EntityUUID, that subscription update should be ignored.",
+            "format" : "int32"
+          },
+          "token" : {
+            "description" : "Unique value associated with a specific version of a specific Entity.  Token value may not be reused for any other Entity versions; it must change each time the Entity changes.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Token"
+            } ]
+          }
+        },
+        "description" : "A token associated with a particular UTM Entity+version created by the DSS upon creation or modification of an Entity reference and provided to the client creating or modifying the Entity reference.  The EntityOVN is stored privately by the DSS and then compared against entries in a Key provided to mutate the airspace.  The EntityOVN is also provided by the client whenever that client transmits the full information of the Entity (either via GET, or via a subscription notification)."
+      },
+      "OVNEntry" : {
+        "required" : [ "id", "signature" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EntityUUID"
+            } ]
+          },
+          "signature" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EntityOVN"
+            } ]
+          }
+        },
+        "description" : "Mapping between an EntityUUID and an EntityOVN."
+      },
+      "OVNDictionary" : {
+        "type" : "array",
+        "description" : "Collection of mappings between EntityUUID and EntityOVN.",
+        "items" : {
+          "$ref" : "#/components/schemas/OVNEntry"
+        }
+      },
+      "Volume3D" : {
+        "required" : [ "footprint" ],
+        "type" : "object",
+        "properties" : {
+          "footprint" : {
+            "description" : "Projection of this volume onto the earth's surface.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Polygon"
+            } ]
+          },
+          "altitude_lower" : {
+            "description" : "Lower bounding altitude of this volume.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Altitude"
+            } ]
+          },
+          "altitude_upper" : {
+            "description" : "Upper bounding altitude of this volume.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Altitude"
+            } ]
+          }
+        },
+        "description" : "A three-dimensional geographic volume consisting of a vertically-extruded polygon."
+      },
+      "Volume4D" : {
+        "required" : [ "volume" ],
+        "type" : "object",
+        "properties" : {
+          "volume" : {
+            "description" : "Constant spatial extent of this volume.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Volume3D"
+            } ]
+          },
+          "time_start" : {
+            "description" : "Beginning time of this volume.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "time_end" : {
+            "description" : "End time of this volume.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          }
+        },
+        "description" : "Contiguous block of geographic spacetime.",
+        "example" : {
+          "volume" : "",
+          "time_start" : "",
+          "time_end" : ""
+        }
+      },
+      "GetSubscriptionResponse" : {
+        "required" : [ "subscription" ],
+        "type" : "object",
+        "properties" : {
+          "subscription" : {
+            "$ref" : "#/components/schemas/Subscription"
+          }
+        },
+        "description" : "Response to DSS request for the subscription with the given id.",
+        "example" : {
+          "subscription" : {
+            "owner" : "uss_owner",
+            "time_start" : "",
+            "callbacks" : {
+              "constraint_url" : "",
+              "operation_url" : ""
+            },
+            "notification_index" : 0,
+            "id" : "",
+            "time_end" : "",
+            "version" : "version"
+          }
+        }
+      },
+      "SearchSubscriptionsResponse" : {
+        "required" : [ "subscriptions" ],
+        "type" : "object",
+        "properties" : {
+          "subscriptions" : {
+            "type" : "array",
+            "description" : "Subscriptions that overlap the specified area.",
+            "items" : {
+              "$ref" : "#/components/schemas/Subscription"
+            }
+          }
+        },
+        "description" : "Response to DSS query for subscriptions in a particular area.",
+        "example" : {
+          "subscriptions" : [ {
+            "owner" : "uss_owner",
+            "time_start" : "",
+            "callbacks" : {
+              "constraint_url" : "",
+              "operation_url" : ""
+            },
+            "notification_index" : 0,
+            "id" : "",
+            "time_end" : "",
+            "version" : "version"
+          }, {
+            "owner" : "uss_owner",
+            "time_start" : "",
+            "callbacks" : {
+              "constraint_url" : "",
+              "operation_url" : ""
+            },
+            "notification_index" : 0,
+            "id" : "",
+            "time_end" : "",
+            "version" : "version"
+          } ]
+        }
+      },
+      "Time" : {
+        "type" : "string",
+        "format" : "date-time"
+      },
+      "URL" : {
+        "type" : "string",
+        "description" : "Valid http or https URL."
+      },
+      "SubscriptionNotificationIndex" : {
+        "type" : "integer",
+        "description" : "Tracks the notifications sent for a subscription so the subscriber can detect missed notifications more easily.",
+        "format" : "int32"
+      },
+      "SubscriptionState" : {
+        "required" : [ "subscription" ],
+        "type" : "object",
+        "properties" : {
+          "subscription_id" : {
+            "$ref" : "#/components/schemas/SubscriptionUUID"
+          },
+          "notification_index" : {
+            "$ref" : "#/components/schemas/SubscriptionNotificationIndex"
+          }
+        },
+        "description" : "State of Subscription which is causing a notification to be sent.",
+        "example" : {
+          "subscription_id" : "",
+          "notification_index" : 0
+        }
+      },
+      "UUIDv4" : {
+        "maxLength" : 36,
+        "minLength" : 36,
+        "type" : "string",
+        "description" : "UUID v4.",
+        "format" : "uuid",
+        "example" : "03e5572a-f733-49af-bc14-8a18bd53ee39"
+      },
+      "Version" : {
+        "type" : "string",
+        "description" : "A version string used to reference an object at a particular point in time. Any updates to an object must contain the corresponding version to maintain idempotent updates."
+      },
+      "EntityUUID" : {
+        "description" : "Universally-unique identifier for an Entity communicated through the DSS.  Formatted as UUIDv4.",
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/UUIDv4"
+        } ]
+      },
+      "SubscriptionUUID" : {
+        "description" : "Universally-unique identifier for a Subscription communicated through the DSS.  Formatted as UUIDv4.",
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/UUIDv4"
+        } ]
+      },
+      "ErrorResponse" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "Human-readable message indicating what error occurred and/or why."
+          }
+        },
+        "description" : "Data provided when an off-nominal condition was encountered."
+      },
+      "DeleteSubscriptionResponse" : {
+        "required" : [ "subscription" ],
+        "type" : "object",
+        "properties" : {
+          "subscription" : {
+            "description" : "The Subscription which was deleted.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Subscription"
+            } ]
+          }
+        },
+        "description" : "Response for a successful request to delete an Subscription.",
+        "example" : {
+          "subscription" : ""
+        }
+      },
+      "Latitude" : {
+        "maximum" : 90.0,
+        "exclusiveMaximum" : false,
+        "minimum" : -90.0,
+        "exclusiveMinimum" : false,
+        "type" : "number",
+        "description" : "Degrees of latitude north of the equator, with reference to the WGS84 ellipsoid.",
+        "format" : "double",
+        "example" : 34.123
+      },
+      "Longitude" : {
+        "maximum" : -180.0,
+        "exclusiveMaximum" : false,
+        "minimum" : 180.0,
+        "exclusiveMinimum" : false,
+        "type" : "number",
+        "description" : "Degrees of longitude east of the Prime Meridian, with reference to the WGS84 ellipsoid.",
+        "format" : "double",
+        "example" : -118.456
+      },
+      "LatLngPoint" : {
+        "required" : [ "lat", "lng" ],
+        "type" : "object",
+        "properties" : {
+          "lng" : {
+            "$ref" : "#/components/schemas/Longitude"
+          },
+          "lat" : {
+            "$ref" : "#/components/schemas/Latitude"
+          }
+        },
+        "description" : "Point on the earth's surface."
+      },
+      "Altitude" : {
+        "type" : "number",
+        "description" : "An altitude, in meters, above the WGS84 ellipsoid.",
+        "format" : "float",
+        "example" : 19.5
+      },
+      "Polygon" : {
+        "required" : [ "vertices" ],
+        "type" : "object",
+        "properties" : {
+          "vertices" : {
+            "minItems" : 3,
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LatLngPoint"
+            }
+          }
+        },
+        "description" : "An enclosed area on the earth.\nThe bounding edges of this polygon shall be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude.\nThe winding order shall be interpreted as the order which produces the smaller area.\nThe path between two vertices shall be the shortest possible path between those vertices.\nEdges may not cross.\nVertices may not be duplicated.  In particular, the final polygon vertex shall not be identical to the first vertex."
+      },
+      "SubscriberToNotify" : {
+        "required" : [ "subscriptions", "url" ],
+        "type" : "object",
+        "properties" : {
+          "subscriptions" : {
+            "type" : "array",
+            "description" : "Subscription(s) prompting this notification.",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionState"
+            }
+          },
+          "url" : {
+            "description" : "The endpoint that the client mutating the airspace should provide the update to.  API depends on the DSS action taken that triggered this notification request.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/URL"
+            } ]
+          }
+        },
+        "description" : "Subscriber to notify of a creation/change/deletion of a change in the airspace.  This is provided by the DSS to a client changing the airspace, and it is the responsibility of the client changing the airspace (they will receive a set of these notification requests) to send a notification to each specified `url`.",
+        "example" : {
+          "subscriptions" : [ {
+            "subscription_id" : "",
+            "notification_index" : 0
+          }, {
+            "subscription_id" : "",
+            "notification_index" : 0
+          } ],
+          "url" : ""
+        }
+      },
+      "PutSubscriptionResponse" : {
+        "required" : [ "subscription" ],
+        "type" : "object",
+        "properties" : {
+          "operations" : {
+            "type" : "array",
+            "description" : "Operations in or near the subscription area at the time of creation/update, if `operation_url` callback was specified.",
+            "items" : {
+              "$ref" : "#/components/schemas/Operation"
+            }
+          },
+          "constraints" : {
+            "type" : "array",
+            "description" : "Constraints in or near the subscription area at the time of creation/update, if `constraint_url` callback was specified.",
+            "items" : {
+              "$ref" : "#/components/schemas/Constraint"
+            }
+          },
+          "subscription" : {
+            "description" : "Result of the operation on the subscription.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Subscription"
+            } ]
+          }
+        },
+        "description" : "Response for a request to create or update a subscription.",
+        "example" : {
+          "operations" : [ {
+            "reference" : {
+              "owner" : "uss_owner",
+              "feedback_url" : "https://my_utm_uss.com/feedback",
+              "time_start" : "",
+              "ovn" : "",
+              "uss_may_be_down" : true,
+              "disabled" : true,
+              "id" : "",
+              "time_end" : "",
+              "details_url" : "https://my_utm_uss.com/operations",
+              "priority" : 0
+            },
+            "details" : {
+              "volumes" : [ {
+                "volume" : "",
+                "time_start" : "",
+                "time_end" : ""
+              }, {
+                "volume" : "",
+                "time_start" : "",
+                "time_end" : ""
+              } ],
+              "state" : "Proposed"
+            }
+          }, {
+            "reference" : {
+              "owner" : "uss_owner",
+              "feedback_url" : "https://my_utm_uss.com/feedback",
+              "time_start" : "",
+              "ovn" : "",
+              "uss_may_be_down" : true,
+              "disabled" : true,
+              "id" : "",
+              "time_end" : "",
+              "details_url" : "https://my_utm_uss.com/operations",
+              "priority" : 0
+            },
+            "details" : {
+              "volumes" : [ {
+                "volume" : "",
+                "time_start" : "",
+                "time_end" : ""
+              }, {
+                "volume" : "",
+                "time_start" : "",
+                "time_end" : ""
+              } ],
+              "state" : "Proposed"
+            }
+          } ],
+          "subscription" : "",
+          "constraints" : [ {
+            "reference" : {
+              "owner" : "uss_owner",
+              "feedback_url" : "https://my_utm_uss.com/feedback",
+              "time_start" : "",
+              "ovn" : "",
+              "id" : "",
+              "time_end" : "",
+              "details_url" : "https://my_utm_uss.com/constraints"
+            },
+            "details" : {
+              "volumes" : [ null, null ],
+              "exempt_operations" : [ "", "" ]
+            }
+          }, {
+            "reference" : {
+              "owner" : "uss_owner",
+              "feedback_url" : "https://my_utm_uss.com/feedback",
+              "time_start" : "",
+              "ovn" : "",
+              "id" : "",
+              "time_end" : "",
+              "details_url" : "https://my_utm_uss.com/constraints"
+            },
+            "details" : {
+              "volumes" : [ null, null ],
+              "exempt_operations" : [ "", "" ]
+            }
+          } ]
+        }
+      },
+      "CreateSubscriptionParameters" : {
+        "required" : [ "callbacks", "extents" ],
+        "type" : "object",
+        "properties" : {
+          "extents" : {
+            "description" : "The spacetime extents of the volume to subscribe to.\n\nThis subscription will automatically be deleted after its end time if it has not been refreshed by then.  If end time is not specified, the value will be chosen automatically by the DSS.\n\nNote that some Entities triggering notifications may lie entirely outside the requested area.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Volume4D"
+            } ]
+          },
+          "callbacks" : {
+            "$ref" : "#/components/schemas/SubscriptionCallbacks"
+          }
+        },
+        "description" : "Parameters for a request to create a subscription in the DSS."
+      },
+      "Subscription" : {
+        "required" : [ "callbacks", "id", "notification_index", "owner", "url", "version" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "description" : "Unique identifier for this subscription.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/SubscriptionUUID"
+            } ]
+          },
+          "callbacks" : {
+            "$ref" : "#/components/schemas/SubscriptionCallbacks"
+          },
+          "owner" : {
+            "type" : "string",
+            "description" : "Created by the DSS and based on creating client’s ID (via access token).  Used for restricting mutation and deletion operations to owner.",
+            "example" : "uss_owner"
+          },
+          "notification_index" : {
+            "$ref" : "#/components/schemas/SubscriptionNotificationIndex"
+          },
+          "time_start" : {
+            "description" : "If set, this Subscription will not generate any notifications before this time.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "time_end" : {
+            "description" : "If set, this subscription will be automatically removed after this time.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "version" : {
+            "$ref" : "#/components/schemas/Version"
+          }
+        },
+        "description" : "Specification of a geographic area that a client is interested in on an ongoing basis (e.g., “planning area”).  Internal to the DSS.",
+        "example" : {
+          "owner" : "uss_owner",
+          "time_start" : "",
+          "callbacks" : {
+            "constraint_url" : "",
+            "operation_url" : ""
+          },
+          "notification_index" : 0,
+          "id" : "",
+          "time_end" : "",
+          "version" : "version"
+        }
+      },
+      "OperationReference" : {
+        "required" : [ "details_url", "id", "owner", "priority", "time_end", "time_start" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "description" : "Unique identifier for this OperationReference.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/EntityUUID"
+            } ]
+          },
+          "details_url" : {
+            "$ref" : "#/components/schemas/OperationDetailsURL"
+          },
+          "feedback_url" : {
+            "$ref" : "#/components/schemas/FeedbackURL"
+          },
+          "owner" : {
+            "type" : "string",
+            "description" : "Created by the DSS and based on creating client’s ID (via access token).  Used for restricting mutation and deletion operations to owner.",
+            "example" : "uss_owner"
+          },
+          "time_start" : {
+            "description" : "Beginning time of Operation.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "time_end" : {
+            "description" : "End time of Operation.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "ovn" : {
+            "description" : "Opaque version number of this OperationReference, used for updating or deleting the OperationReference.  Only populated by the DSS for OperationReferences owned by the requesting client.  Must be populated by a USS when notifying a subscriber of an altered Operation or providing full Operation information.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/EntityOVN"
+            } ]
+          },
+          "priority" : {
+            "$ref" : "#/components/schemas/OperationPriority"
+          },
+          "uss_may_be_down" : {
+            "type" : "boolean",
+            "description" : "If specified as true by the DSS, the details for this Operation may not be accessible.  The OVN for this OperationReference may be omitted when deconflicting an Operation, at which point this Operation will be disabled."
+          },
+          "disabled" : {
+            "type" : "boolean",
+            "description" : "If specified as true by the DSS, this Operation has been disabled and will not be permitted to transition to Activated.  This means aircraft for this Operation will not be permitted to fly pursuant to this Operation, so this Operation may be ignored when planning and its OVN does not need to be provided to prove relevant airspace knowledge."
+          }
+        },
+        "description" : "An OperationReference (area in which an Operation is being conducted, along with other high-level information, but no details).  The DSS reports only these references and clients must exchange details and additional information peer-to-peer.",
+        "example" : {
+          "owner" : "uss_owner",
+          "feedback_url" : "https://my_utm_uss.com/feedback",
+          "time_start" : "",
+          "ovn" : "",
+          "uss_may_be_down" : true,
+          "disabled" : true,
+          "id" : "",
+          "time_end" : "",
+          "details_url" : "https://my_utm_uss.com/operations",
+          "priority" : 0
+        }
+      },
+      "GetOperationReferenceResponse" : {
+        "required" : [ "operation_reference" ],
+        "type" : "object",
+        "properties" : {
+          "operation_reference" : {
+            "$ref" : "#/components/schemas/OperationReference"
+          }
+        },
+        "description" : "Response to DSS request for the OperationReference with the given ID.",
+        "example" : {
+          "operation_reference" : {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "uss_may_be_down" : true,
+            "disabled" : true,
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/operations",
+            "priority" : 0
+          }
+        }
+      },
+      "CreateOperationReferenceParameters" : {
+        "required" : [ "details_url", "extents", "key", "priority" ],
+        "type" : "object",
+        "properties" : {
+          "extents" : {
+            "description" : "The bounding spacetime extents of this OperationReference.  End time must be specified.  If start time is not specified, it will be set to the current time.  Start times in the past should be rejected by the DSS, except that it may adjust very recent start times to the current time.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Volume4D"
+            } ]
+          },
+          "details_url" : {
+            "$ref" : "#/components/schemas/OperationDetailsURL"
+          },
+          "feedback_url" : {
+            "$ref" : "#/components/schemas/FeedbackURL"
+          },
+          "priority" : {
+            "$ref" : "#/components/schemas/OperationPriority"
+          },
+          "key" : {
+            "description" : "Proof that the client is aware of all relevant Entities with the requirement that the client has deconflicted with all these Entities.  Relevant Entities for Operations consist of all Constraints, and Operations with equal or higher priority.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/DeconflictionKey"
+            } ]
+          }
+        },
+        "description" : "Parameters for a request to create an OperationReference in the DSS."
+      },
+      "Operation" : {
+        "required" : [ "details", "reference" ],
+        "type" : "object",
+        "properties" : {
+          "reference" : {
+            "$ref" : "#/components/schemas/OperationReference"
+          },
+          "details" : {
+            "$ref" : "#/components/schemas/OperationDetails"
+          }
+        },
+        "description" : "Full description of a UTM Operation.",
+        "example" : {
+          "reference" : {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "uss_may_be_down" : true,
+            "disabled" : true,
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/operations",
+            "priority" : 0
+          },
+          "details" : {
+            "volumes" : [ {
+              "volume" : "",
+              "time_start" : "",
+              "time_end" : ""
+            }, {
+              "volume" : "",
+              "time_start" : "",
+              "time_end" : ""
+            } ],
+            "state" : "Proposed"
+          }
+        }
+      },
+      "OperationDetails" : {
+        "required" : [ "volumes" ],
+        "type" : "object",
+        "properties" : {
+          "volumes" : {
+            "minItems" : 1,
+            "type" : "array",
+            "description" : "Volumes that wholly contain the Operation while being as small as practical.",
+            "items" : {
+              "$ref" : "#/components/schemas/Volume4D"
+            }
+          },
+          "state" : {
+            "$ref" : "#/components/schemas/OperationState"
+          }
+        },
+        "description" : "Details of a UTM Operation. Note that this data is not stored in the DSS; only with the clients.",
+        "example" : {
+          "volumes" : [ {
+            "volume" : "",
+            "time_start" : "",
+            "time_end" : ""
+          }, {
+            "volume" : "",
+            "time_start" : "",
+            "time_end" : ""
+          } ],
+          "state" : "Proposed"
+        }
+      },
+      "SearchOperationReferenceResponse" : {
+        "required" : [ "operation_references" ],
+        "type" : "object",
+        "properties" : {
+          "operation_references" : {
+            "type" : "array",
+            "description" : "OperationReferences in the area of interest.",
+            "items" : {
+              "$ref" : "#/components/schemas/OperationReference"
+            }
+          }
+        },
+        "description" : "Response to DSS query for OperationReferences in an area of interest.",
+        "example" : {
+          "operation_references" : [ {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "uss_may_be_down" : true,
+            "disabled" : true,
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/operations",
+            "priority" : 0
+          }, {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "uss_may_be_down" : true,
+            "disabled" : true,
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/operations",
+            "priority" : 0
+          } ]
+        }
+      },
+      "PostOperationNotificationParameters" : {
+        "required" : [ "subscriptions" ],
+        "type" : "object",
+        "properties" : {
+          "operation" : {
+            "description" : "Full information for Operation that the notifying client changed or created.\n\nIf this field is populated, the Operation was created or updated.  If this field is not populated, the Operation was deleted.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Operation"
+            } ]
+          },
+          "subscriptions" : {
+            "type" : "array",
+            "description" : "Subscription(s) prompting this notification.",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionState"
+            }
+          }
+        },
+        "description" : "Parameters of a message informing of new full information for an Operation.  Pushed (by a client, not the DSS) directly to clients with subscriptions when another client makes a change to airspace within a cell with a subscription."
+      },
+      "PutFeedbackParameters" : {
+        "required" : [ "endpoint_url", "problem", "response_code", "timestamp" ],
+        "type" : "object",
+        "properties" : {
+          "endpoint_url" : {
+            "type" : "string",
+            "description" : "URL for request that resulted in an error."
+          },
+          "headers" : {
+            "type" : "array",
+            "description" : "Set of headers included in request that resulted in an error.",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "body" : {
+            "type" : "string",
+            "description" : "Base64-encoded body content sent in request that resulted in an error."
+          },
+          "response_code" : {
+            "type" : "integer",
+            "description" : "HTTP response code encountered in error response.",
+            "format" : "int32"
+          },
+          "response_body" : {
+            "type" : "string",
+            "description" : "Base64-encoded body content received in response that was in error."
+          },
+          "problem" : {
+            "type" : "string",
+            "description" : "Human-readable description of the problem with the response."
+          },
+          "timestamp" : {
+            "description" : "When the error was observed.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          }
+        },
+        "description" : "Parameters of a message informing a USS of an error that the USS would otherwise not notice."
+      },
+      "CreateConstraintReferenceParameters" : {
+        "required" : [ "details_url", "extents" ],
+        "type" : "object",
+        "properties" : {
+          "extents" : {
+            "description" : "The bounding spacetime extents of this ConstraintReference.  End time must be specified.  If start time is not specified, it will be set to the current time.  Start times in the past should be rejected by the DSS, except that it may adjust very recent start times to the current time.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Volume4D"
+            } ]
+          },
+          "details_url" : {
+            "$ref" : "#/components/schemas/ConstraintDetailsURL"
+          },
+          "feedback_url" : {
+            "$ref" : "#/components/schemas/FeedbackURL"
+          }
+        },
+        "description" : "Parameters for a request to create a ConstraintReference in the DSS."
+      },
+      "GetConstraintReferenceResponse" : {
+        "required" : [ "constraint_reference" ],
+        "type" : "object",
+        "properties" : {
+          "constraint_reference" : {
+            "$ref" : "#/components/schemas/ConstraintReference"
+          }
+        },
+        "description" : "Response to DSS request for the ConstraintReference with the given ID.",
+        "example" : {
+          "constraint_reference" : {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/constraints"
+          }
+        }
+      },
+      "ConstraintReference" : {
+        "required" : [ "details_url", "id", "owner", "time_end", "time_start" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "description" : "Unique identifier for this ConstraintReference.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/EntityUUID"
+            } ]
+          },
+          "details_url" : {
+            "$ref" : "#/components/schemas/ConstraintDetailsURL"
+          },
+          "feedback_url" : {
+            "$ref" : "#/components/schemas/FeedbackURL"
+          },
+          "owner" : {
+            "type" : "string",
+            "description" : "Created by the DSS and based on creating client’s ID (via access token).  Used for restricting mutation and deletion operations to owner.",
+            "example" : "uss_owner"
+          },
+          "time_start" : {
+            "description" : "Beginning time of Operation.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "time_end" : {
+            "description" : "End time of Operation.  RFC 3339 format, per OpenAPI specification.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Time"
+            } ]
+          },
+          "ovn" : {
+            "description" : "Opaque version number of this ConstraintReference, used for updating or deleting the ConstraintReference.  Only populated by the DSS for ConstraintReferences owned by the requesting client.  Must be populated by a USS when notifying a subscriber of an altered Constraint or providing full Constraint information.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/EntityOVN"
+            } ]
+          }
+        },
+        "description" : "A ConstraintReference (area in which a Constraint is present, along with other high-level information, but no details).  The DSS reports only these references and clients must exchange details and additional information peer-to-peer.",
+        "example" : {
+          "owner" : "uss_owner",
+          "feedback_url" : "https://my_utm_uss.com/feedback",
+          "time_start" : "",
+          "ovn" : "",
+          "id" : "",
+          "time_end" : "",
+          "details_url" : "https://my_utm_uss.com/constraints"
+        }
+      },
+      "PostConstraintNotificationParameters" : {
+        "required" : [ "subscriptions" ],
+        "type" : "object",
+        "properties" : {
+          "constraint" : {
+            "description" : "Constraint that the notifying client changed or created.\n\nIf this field is populated, the Constraint was created or updated.  If this field is not populated, the Constraint was deleted.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Constraint"
+            } ]
+          },
+          "subscriptions" : {
+            "type" : "array",
+            "description" : "Subscription(s) prompting this notification.",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionState"
+            }
+          }
+        },
+        "description" : "Parameters of a message informing of new full information for a Constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions when another client makes a change to airspace within a cell with a subscription."
+      },
+      "Constraint" : {
+        "required" : [ "details", "reference" ],
+        "type" : "object",
+        "properties" : {
+          "reference" : {
+            "$ref" : "#/components/schemas/ConstraintReference"
+          },
+          "details" : {
+            "$ref" : "#/components/schemas/ConstraintDetails"
+          }
+        },
+        "description" : "Full specification of a UTM Constraint.",
+        "example" : {
+          "reference" : {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/constraints"
+          },
+          "details" : {
+            "volumes" : [ null, null ],
+            "exempt_operations" : [ "", "" ]
+          }
+        }
+      },
+      "ConstraintDetails" : {
+        "required" : [ "volumes" ],
+        "type" : "object",
+        "properties" : {
+          "volumes" : {
+            "minItems" : 1,
+            "type" : "array",
+            "description" : "Volumes that wholly contain the Constraint while being as small as practical.",
+            "items" : {
+              "$ref" : "#/components/schemas/Volume4D"
+            }
+          },
+          "exempt_operations" : {
+            "type" : "array",
+            "description" : "List of Operations exempt from this Constraint, if applicable.",
+            "items" : {
+              "$ref" : "#/components/schemas/EntityUUID"
+            }
+          }
+        },
+        "description" : "Details of a UTM Constraint. Note that this data is not stored in the DSS; only with the clients.",
+        "example" : {
+          "volumes" : [ null, null ],
+          "exempt_operations" : [ "", "" ]
+        }
+      },
+      "ChangeConstraintReferenceResponse" : {
+        "required" : [ "subscribers" ],
+        "type" : "object",
+        "properties" : {
+          "subscribers" : {
+            "type" : "array",
+            "description" : "DSS subscribers that this client now has the obligation to notify of the Constraint changes just made.  This client must call POST for each provided URL according to the `/uss/constraints/{id}` path API.",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriberToNotify"
+            }
+          },
+          "constraint_reference" : {
+            "description" : "Resulting ConstraintReference stored in DSS.  Omitted if and only if ConstraintReference was deleted.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/ConstraintReference"
+            } ]
+          }
+        },
+        "description" : "Response to a request to create, update, or delete a ConstraintReference. in the DSS.",
+        "example" : {
+          "constraint_reference" : "",
+          "subscribers" : [ {
+            "subscriptions" : [ {
+              "subscription_id" : "",
+              "notification_index" : 0
+            }, {
+              "subscription_id" : "",
+              "notification_index" : 0
+            } ],
+            "url" : ""
+          }, {
+            "subscriptions" : [ {
+              "subscription_id" : "",
+              "notification_index" : 0
+            }, {
+              "subscription_id" : "",
+              "notification_index" : 0
+            } ],
+            "url" : ""
+          } ]
+        }
+      },
+      "ChangeOperationReferenceResponse" : {
+        "required" : [ "subscribers" ],
+        "type" : "object",
+        "properties" : {
+          "subscribers" : {
+            "type" : "array",
+            "description" : "DSS subscribers that this client now has the obligation to notify of the Operation changes just made.  This client must call POST for each provided URL according to the `/uss/operations/{id}` path API.",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriberToNotify"
+            }
+          },
+          "operation_reference" : {
+            "description" : "Resulting OperationReference stored in DSS.  Omitted if and only if OperationReference was deleted.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/OperationReference"
+            } ]
+          }
+        },
+        "description" : "Response to a request to create, update, or delete an OperationReference in the DSS.",
+        "example" : {
+          "subscribers" : [ {
+            "subscriptions" : [ {
+              "subscription_id" : "",
+              "notification_index" : 0
+            }, {
+              "subscription_id" : "",
+              "notification_index" : 0
+            } ],
+            "url" : ""
+          }, {
+            "subscriptions" : [ {
+              "subscription_id" : "",
+              "notification_index" : 0
+            }, {
+              "subscription_id" : "",
+              "notification_index" : 0
+            } ],
+            "url" : ""
+          } ],
+          "operation_reference" : ""
+        }
+      },
+      "SearchConstraintReferencesResponse" : {
+        "required" : [ "constraint_references" ],
+        "type" : "object",
+        "properties" : {
+          "constraint_references" : {
+            "type" : "array",
+            "description" : "ConstraintReferences in the area of interest.",
+            "items" : {
+              "$ref" : "#/components/schemas/ConstraintReference"
+            }
+          }
+        },
+        "description" : "Response to DSS query for ConstraintReferences in an area of interest.",
+        "example" : {
+          "constraint_references" : [ {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/constraints"
+          }, {
+            "owner" : "uss_owner",
+            "feedback_url" : "https://my_utm_uss.com/feedback",
+            "time_start" : "",
+            "ovn" : "",
+            "id" : "",
+            "time_end" : "",
+            "details_url" : "https://my_utm_uss.com/constraints"
+          } ]
+        }
+      },
+      "EntityReference" : {
+        "type" : "object",
+        "properties" : {
+          "operation_reference" : {
+            "description" : "Operation (reference) data",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OperationReference"
+            } ]
+          },
+          "constraint_reference" : {
+            "description" : "Constraint (reference) data",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ConstraintReference"
+            } ]
+          }
+        },
+        "description" : "Reference to a generic Entity known to the DSS."
+      },
+      "GetConstraintResponse" : {
+        "required" : [ "constraint" ],
+        "type" : "object",
+        "properties" : {
+          "constraint" : {
+            "$ref" : "#/components/schemas/Constraint"
+          }
+        },
+        "description" : "Response to peer request for the details of Operation with the given ID.",
+        "example" : {
+          "constraint" : {
+            "reference" : {
+              "owner" : "uss_owner",
+              "feedback_url" : "https://my_utm_uss.com/feedback",
+              "time_start" : "",
+              "ovn" : "",
+              "id" : "",
+              "time_end" : "",
+              "details_url" : "https://my_utm_uss.com/constraints"
+            },
+            "details" : {
+              "volumes" : [ null, null ],
+              "exempt_operations" : [ "", "" ]
+            }
+          }
+        }
+      },
+      "GetOperationResponse" : {
+        "required" : [ "operation" ],
+        "type" : "object",
+        "properties" : {
+          "operation" : {
+            "$ref" : "#/components/schemas/Operation"
+          }
+        },
+        "description" : "Response to peer request for the details of Operation with the given ID.",
+        "example" : {
+          "operation" : {
+            "reference" : {
+              "owner" : "uss_owner",
+              "feedback_url" : "https://my_utm_uss.com/feedback",
+              "time_start" : "",
+              "ovn" : "",
+              "uss_may_be_down" : true,
+              "disabled" : true,
+              "id" : "",
+              "time_end" : "",
+              "details_url" : "https://my_utm_uss.com/operations",
+              "priority" : 0
+            },
+            "details" : {
+              "volumes" : [ {
+                "volume" : "",
+                "time_start" : "",
+                "time_end" : ""
+              }, {
+                "volume" : "",
+                "time_start" : "",
+                "time_end" : ""
+              } ],
+              "state" : "Proposed"
+            }
+          }
+        }
+      },
+      "SubscriptionCallbacks" : {
+        "type" : "object",
+        "properties" : {
+          "operation_url" : {
+            "description" : "If specified, other clients will be instructed by the DSS to call this endpoint when an Operation relevant to this Subscription is created, modified, or deleted.  Must implement POST according to the `/uss/operations/{id}` path API.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/OperationDetailsURL"
+            } ]
+          },
+          "constraint_url" : {
+            "description" : "If specified, other clients will be instructed by the DSS to call this endpoint when a Constraint relevant to this Subscription is created, modified, or deleted.  Must implement POST according to the `/uss/constraints/{id}` path API.",
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/ConstraintDetailsURL"
+            } ]
+          }
+        },
+        "description" : "Endpoints that should be called when an applicable event occurs.  At least one field must be specified.",
+        "example" : {
+          "constraint_url" : "",
+          "operation_url" : ""
+        }
+      },
+      "AirspaceConflictResponse" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "Human-readable message indicating what error occurred and/or why."
+          },
+          "entity_conflicts" : {
+            "type" : "array",
+            "description" : "List of Entity references for which current proof of knowledge was not provided.  If this field is present and contains elements, the calling USS should query the details URLs for these Entities to obtain their details and correct OVNs.  The OVNs can be used to update the key, at which point the USS may retry this call.",
+            "items" : {
+              "$ref" : "#/components/schemas/EntityReference"
+            }
+          }
+        },
+        "description" : "Data provided when an airspace conflict was encountered."
+      },
+      "OperationDetailsURL" : {
+        "description" : "The URL at which the details of an Operation may be retrieved.  See `/uss/operations/{id}` path for specification of this endpoint.  This URL is the base Operations resource.  If this URL is specified as https://my_utm_uss.com/operations then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.  This URL may not have a trailing / character.",
+        "example" : "https://my_utm_uss.com/operations",
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/URL"
+        } ]
+      },
+      "ConstraintDetailsURL" : {
+        "description" : "The URL at which the details of a Constraint may be retrieved.  See `/uss/constraints/{id}` path for specification of this endpoint.\nThis URL is the base Constraints resource.  If this URL is specified as https://my_utm_uss.com/constraints then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/constraints/{id}.  This URL may not have a trailing / character.",
+        "example" : "https://my_utm_uss.com/constraints",
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/URL"
+        } ]
+      },
+      "FeedbackURL" : {
+        "description" : "The URL at which feedback may be submitted.  See `/uss/feedback/{id}` path for specification of this endpoint.\nThis URL is the base Feedback resource.  If this URL is specified as https://my_utm_uss.com/feedback then feedback with {id} may be submitted at the URL https://my_utm_uss.com/feedback/{id}.  This URL may not have a trailing / character.",
+        "example" : "https://my_utm_uss.com/feedback",
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/URL"
+        } ]
+      },
+      "OperationPriority" : {
+        "type" : "integer",
+        "description" : "Ordinal priority of this Operation.  Determined by client USS via a function of the details of the Operation according to relevant regulations.  The simplest (non-prioritized) of these functions would be one that returns 0 priority for any Operations.",
+        "format" : "int32"
+      },
+      "OperationState" : {
+        "type" : "string",
+        "description" : "State of an Operation.\n\n`Proposed`: This Operation has not yet been fully deconflicted with other Entities, but the owning USS is pursuing negotiations to complete deconfliction.\n\n`Accepted`: This Operation was fully deconflicted from other Entities at the time it changed to this state, but no aircraft associated with it are active yet.\n\n`Activated`: One or more aircraft associated with this Operation are, or will imminently be, in flight.",
+        "enum" : [ "Proposed", "Accepted", "Activated" ]
+      }
+    },
+    "securitySchemes" : {
+      "Authority" : {
+        "type" : "oauth2",
+        "description" : "Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.\n\nThe following fields shall be included in the JWT claim for access tokens issued by this authority:\n* `iss`, with the URL at which the token generation request was received.\n* `exp`, with a time no further than 1 hour in the future.\n* `sub`, with unique ID of the client requesting the access token.\n* `scope`, with an array of strings indicating the scopes granted.\n\nMultiple scopes for a single token shall be granted if requested.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).\n\nClients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.",
+        "flows" : {
+          "clientCredentials" : {
+            "tokenUrl" : "https://token_vendor.com/oauth/token",
+            "scopes" : {
+              "utm.read.operations" : "Client may query, read, or create subscriptions for Operations for UTM.",
+              "utm.write.operations" : "Client may create, edit, and delete Operations for UTM.",
+              "utm.read.constraints" : "Client may query, read, or create subscriptions for Constraints for UTM.",
+              "utm.write.constraints" : "Client may create, edit, and delete Constraints for UTM."
+            }
+          }
+        }
+      }
+    }
+  }
+}
