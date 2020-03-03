@@ -1,0 +1,31 @@
+# Copyright Amazon.com Inc. or its affiliates.
+msc {
+    a [label="Operator-1 (USS-1)"],b [label="Operator-2 (USS-2)"],d [label="DSS"];
+
+    b note d [label="[0] As setup for this example, USS-2 successfully creates a Constraint in the DSS. The details of this process are omitted for simplicity, but documented in earlier examples."];
+
+    |||;
+    |||;
+    a abox d [label="[1] USS-1 defines a 'planning-volume' and uses this to query for existing entities (volumes) that intersect in both space and time with this volume. References to these intersecting volumes (USS URLs and UUIDs) are returned-- USS-2 'id-con' in this example."];
+
+    a:>d [label="GET DSS://operations/ <planning-volume>"];
+    a<<d [label="OK (200) <URL, {id-con}>"];
+
+    a abox b [label="[2] The DSS returns the URL of USS-2 along with the associated UUID of the Constraint that was created in [0]. USS-1 is now required to query the details of the USS-2 Constraint to have the data necessary to plan a de-conflicted Operation in this airspace. Note that USS-2 also returns a 'Key' (OVN) along with the volume details."];
+
+    a:>b [label="GET USS-2://constraints/{id-con}"];
+    a<<b [label="OK (200) <volume(s), Key>"];
+
+    a abox d [label="[3] USS-1 will now create an Operation (consisting of one or more volumes) that is well-clear of the USS-2 Constraint. This-- along with the Key-- will be written to the DSS. Note that USS-1 picks the value for the {id-op1} of this entity (a UUID)."];
+
+    a:>d [label="PUT DSS://operations/{id-op1} <volume, Key>"];
+    a<<d [label="CREATED (201) <URLs>"];
+
+    a note b [label="[4] The return value of the previous transaction (URLs of intersecting Operations) will be NULL.\n\nUSS-1 can now start and complete its Operation-- without notifying any peers... since there are none (the Constraint USS does not need to be informed)."];
+    |||;
+    |||;
+    a abox d [label="[5] USS-1 now removes its Operation from the DSS."];
+
+    a:>d [label="DELETE DSS://operations/{id-op1}"];
+    a<<d [label="OK (200)"];
+}

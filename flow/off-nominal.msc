@@ -1,0 +1,68 @@
+# Copyright Amazon.com Inc. or its affiliates.
+msc {
+    a [label="Operator-1 (USS-1)"],b [label="Operator-2 (USS-2)"],d [label="DSS"];
+
+    a note d [label="SETUP"];
+
+    b abox d [label="[0.1] USS-1 and USS-2 create Operations in the DSS.\nNote that Key is 'null' as we are making a simplifying assumption that there are no overlapping Operations. Furthermore, assume no overlapping Operations."];
+
+    b=>d [label="PUT DSS://operations/{id-op2} <volume(s), Key>"];
+    b<<d [label="CREATED (201) <OVN>"];
+
+    |||;
+    a note d [label="EXAMPLE"];
+
+    a abox d [label="[1] USS-1 defines a 'planning-volume' and uses this to create a 'subscription' to all future changes in the DSS that overlap (in time and space) with this volume. Existing overlaps (USS URLs and UUIDs) are returned immediately."];
+
+    a:>d [label="PUT DSS://subscriptions/{id-sub1} <planning-volume>"];
+    a<<d [label="CREATED (201) <URLs, UUIDs>"];
+
+    a abox b [label="[2] USS-1 queries this initial set of USS URLs (Operations) returned to form a (local) model of the airspace. (In the future, changes will be 'pushed' directly to USS-1)."];
+
+    a:>b [label="GET USS-2://operations/{id-op2}"];
+    a<<b [label="OK (200) <volume(s), OVN>"];
+
+    a abox d [label="[3] USS-1 will use this information to create de-conflicted Operation volume(s) and write this to the DSS. (Note: OVNs from overlapping Operations form the 'Key' and '{id-op1}' is the UUID USS-1 has picked for this Operation)"];
+
+    a:>d [label="PUT DSS://operations/{id-op1} <volume, Key>"];
+    a<<d [label="CREATED (201) <URLs, UUIDs>"];
+
+    a abox b [label="[4] USS-1 now updates peer USSs that its own Operation is valid"];
+
+    a:>b [label="PUT USS-2://operations/{id-op1} <operation-details>"];
+    a<<b [label="CREATED (201)"];
+
+    a=>b [label="PUT USS-2://operations/{id-op1} <flight-status: ACCEPTED>"];
+    a<<b [label="OK (200)"];
+
+    a abox b [label="[5] USS-1 flight starts..."];
+    
+    a=>b [label="PUT USS-2://operations/{id-op1} <flight-status: ACTIVE>"];
+    a<<b [label="OK (200)"];
+
+    a abox b [label="[6] ... and USS-1 flight completes."];
+
+    a=>b [label="PUT USS-2://operations/{id-op1} <flight-status: COMPLETE>"];
+    a<<b [label="OK (200)"];
+
+    |||;
+    a note d [label="CLEANUP"];
+    a abox d [label="[7] USS-1 removes its Operation from the DSS. The returned data will indicate the URLs of peer USSs that need to be informed of this deletion (in this example, this will be USS-2)."];
+
+    a:>d [label="DELETE DSS://operations/{id-op1}"];
+    a<<d [label="OK (200) <URLs, UUIDs>"];
+
+    a:>b [label="DELETE USS-2://operations/{id-op1}"];
+    a<<b [label="OK (200)"];
+
+    a abox d [label="[8] USS-1 removes its Subscription from the DSS. No peers need to be informed of this."];
+
+    a=>d [label="DELETE DSS://subscriptions/{id-sub1}"];
+    a<<d [label="OK (200)"];
+
+    |||;
+    b abox d [label="[9] USS-2 removes its Operation from the DSS."];
+
+    b=>d [label="DELETE DSS://operations/{id-op2}"];
+    b<<d [label="OK (200) <URLs, UUIDs>"];
+}

@@ -1,0 +1,23 @@
+# Copyright Amazon.com Inc. or its affiliates.
+msc {
+    a [label="Operator-1 (USS-1)"],d [label="DSS"];
+
+    a note d [label="[1] USS-1 defines a 'planning-volume' and uses this to query for existing entities (volumes) that intersect in both space and time with this volume. References to these intersecting USSs (URLs and UUIDs) are returned. Note: '<' and '>' delimit data in/out description."];
+
+    a:>d [label="GET ~/dss/operations/ <planning-volume>"];
+    a<<d [label="OK (200) <URLs, UUIDs>"];
+
+    a note d [label="[2] For simplicity, this example assumes that no other USSs are operating in this area. Therefore, the above transaction will return NO data. No additional queries are necessary."];
+
+    a note d [label="[3] USS-1 will create an Operation (consisting of one or more volumes) and write this to the DSS. Note that USS-1 picks the value for the 'id' of this entity, a UUIDv4."];
+
+    a:>d [label="PUT ~/dss/operations/{id-op1} <volume, Key>"];
+    a<<d [label="CREATED (201) <URLs>"];
+
+    a note a [label="[4] Success! USS-1 can now start flight operations..."];
+    
+    a note a [label="[5] ... and when this is completed, USS-1 removes its Operation from the DSS."];
+
+    a:>d [label="DELETE ~/dss/operations/{id-op1}"];
+    a<<d [label="OK (200)"];
+}
