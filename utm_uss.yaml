@@ -1,11 +1,13 @@
 ---
 openapi: 3.0.2
 info:
-  title: UTM Peer-To-Peer (USS - USS) API
+  title: UTM USS<->USS API
   version: 0.0.2
   description: |-
     Interface definitions for data exchange between UAS Service Suppliers (USS).
+
     Used by participating UTM clients (USSs) to share information about UAS operations.
+
     Note: Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
 
 security:
@@ -815,12 +817,12 @@ paths:
       required: true
 
     get:
+      tags:
+      - "Operations"
       security:
       - Authority:
         - utm.read.operations
       summary: Retrieve the specified Operation (details).
-      tags:
-      - "USS Peer-to-Peer"
       responses:
         "200":
           content:
@@ -856,6 +858,8 @@ paths:
           description: The requested Entity could not be found.
 
     post:
+      tags:
+      - "Operations"
       security:
       - Authority:
         - utm.write.operations
@@ -867,8 +871,6 @@ paths:
             schema:
               $ref: '#/components/schemas/PostOperationNotificationParameters'
         required: true
-      tags:
-      - "USS Peer-to-Peer"
       responses:
         "204":
           description: New or updated full Operation information received successfully.
@@ -920,7 +922,7 @@ paths:
 
     get:
       tags:
-      - "USS Peer-to-Peer"
+      - "Constraints"
       security:
       - Authority:
         - utm.read.constraints
@@ -961,6 +963,8 @@ paths:
           description: The requested Entity could not be found.
 
     post:
+      tags:
+      - "Constraints"
       security:
       - Authority:
         - utm.write.constraints
@@ -973,8 +977,6 @@ paths:
             schema:
               $ref: '#/components/schemas/PostConstraintNotificationParameters'
         required: true
-      tags:
-      - "USS Peer-to-Peer"
       responses:
         "204":
           description: New or updated full Constraint information received successfully.
@@ -1025,6 +1027,8 @@ paths:
        required: true
 
     post:
+      tags:
+        - "Feedback"
       security:
         - Authority:
           - utm.read.operations
@@ -1039,8 +1043,6 @@ paths:
             schema:
               $ref: '#/components/schemas/PutFeedbackParameters'
         required: true
-      tags:
-        - "USS Peer-to-Peer"
       responses:
         "201":
           description: Feedback received successfully and archived.

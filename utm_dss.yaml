@@ -1,11 +1,13 @@
 ---
 openapi: 3.0.2
 info:
-  title: UTM DSS API
+  title: UTM USS->DSS API
   version: 0.0.2
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
+
     Used for identification of peer UTM USS instances (managing flight operations and constraints).
+
     Note: Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
 
 security:
