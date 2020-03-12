@@ -16,8 +16,6 @@ security:
   - utm.write.operations
   - utm.read.constraints
   - utm.write.constraints
-  - utm.read.subscriptions
-  - utm.write.subscriptions
 
 tags:
 - name: "Operations"
@@ -35,8 +33,35 @@ tags:
 #
 
 components:
-  schemas:
+  securitySchemes:
+        Authority:
+          flows:
+            clientCredentials:
+              tokenUrl: https://token_vendor.com/oauth/token
+              scopes:
+                utm.read.operations: |-
+                  Client may read Operations (details) from a peer USS.
+                utm.write.operations: |-
+                  Client may send their own Operations (details) to a peer USS.
+                utm.read.constraints: |-
+                  Client may read Constraints (details) from a peer USS.
+                utm.write.constraints: |-
+                  Client may send their own Constraints (details) to a peer USS.
+          type: oauth2
+          description: |-
+            Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.
 
+            The following fields shall be included in the JWT claim for access tokens issued by this authority:
+            * `iss`, with the URL at which the token generation request was received.
+            * `exp`, with a time no further than 1 hour in the future.
+            * `sub`, with unique ID of the client requesting the access token.
+            * `scope`, with an array of strings indicating the scopes granted.
+
+            Multiple scopes for a single token shall be granted if requested.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
+
+            Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
+
+  schemas:
     Version:
       description: |-
         A version string used to reference an object at a particular point
@@ -774,45 +799,13 @@ components:
         - CONTINGENCY
         - ENDED
 
-#
-#
-#
-
-  securitySchemes:
-    Authority:
-      flows:
-        clientCredentials:
-          tokenUrl: https://token_vendor.com/oauth/token
-          scopes:
-            utm.read.operations: Client may query, read, or create subscriptions for
-              Operations for UTM.
-            utm.write.operations: Client may create, edit, and delete Operations for
-              UTM.
-            utm.read.constraints: Client may query, read, or create subscriptions
-              for Constraints for UTM.
-            utm.write.constraints: Client may create, edit, and delete Constraints
-              for UTM.
-      type: oauth2
-      description: |-
-        Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.
-
-        The following fields shall be included in the JWT claim for access tokens issued by this authority:
-        * `iss`, with the URL at which the token generation request was received.
-        * `exp`, with a time no further than 1 hour in the future.
-        * `sub`, with unique ID of the client requesting the access token.
-        * `scope`, with an array of strings indicating the scopes granted.
-
-        Multiple scopes for a single token shall be granted if requested.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
-
-        Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
-
 paths:
 
   #
   # USS Endpoint: OPERATIONS
   #
 
-  /uss-utm-v1/operations/{id}:
+  /v1/uss-utm/operations/{id}:
     summary: Push/Query detailed information of an Operation.
     parameters:
     - name: id
@@ -916,7 +909,7 @@ paths:
   # USS Endpoint: CONSTRAINTS
   #
 
-  /uss-utm-v1/constraints/{id}:
+  /v1/uss-utm/constraints/{id}:
     summary: Push/Query detailed information of a Constraint.
     parameters:
     - name: id
@@ -1022,7 +1015,7 @@ paths:
   # USS Endpoint: (OTHER)
   #
 
-  /uss-utm-v1/feedback/{id}:
+  /v1/uss-utm/feedback/{id}:
     summary: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.
     parameters:
      - name: id
