@@ -34,32 +34,33 @@ tags:
 
 components:
   securitySchemes:
-        Authority:
-          flows:
-            clientCredentials:
-              tokenUrl: https://token_vendor.com/oauth/token
-              scopes:
-                utm.read.operations: |-
-                  Client may read Operations (details) from a peer USS.
-                utm.write.operations: |-
-                  Client may send their own Operations (details) to a peer USS.
-                utm.read.constraints: |-
-                  Client may read Constraints (details) from a peer USS.
-                utm.write.constraints: |-
-                  Client may send their own Constraints (details) to a peer USS.
-          type: oauth2
-          description: |-
-            Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.
+    Authority:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://token_vendor.com/oauth/token
+          scopes:
+            utm.read.operations: |-
+              Client may read Operations (details) from a peer USS.
+            utm.write.operations: |-
+              Client may send their own Operations (details) to a peer USS.
+            utm.read.constraints: |-
+              Client may read Constraints (details) from a peer USS.
+            utm.write.constraints: |-
+              Client may send their own Constraints (details) to a peer USS.
+      description: |-
+        Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.
 
-            The following fields shall be included in the JWT claim for access tokens issued by this authority:
+        The following fields shall be included in the JWT claim for access tokens issued by this authority:
             * `iss`, with the URL at which the token generation request was received.
             * `exp`, with a time no further than 1 hour in the future.
             * `sub`, with unique ID of the client requesting the access token.
             * `scope`, with an array of strings indicating the scopes granted.
 
-            Multiple scopes for a single token shall be granted if requested.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
+        Multiple scopes for a single token shall be granted if requested.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
 
-            Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
+        Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
+
 
   schemas:
     Version:
