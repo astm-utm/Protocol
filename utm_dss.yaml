@@ -1,13 +1,12 @@
 ---
 openapi: 3.0.2
 info:
-  title: UTM DSS/USS API
-  version: 0.0.5
+  title: UTM DSS API
+  version: 0.0.2
   description: |-
-    Interface definitions for:
-      * 'Discovery and Synchronization Service' (DSS), used for identification of peer UAS flight operations and constraints
-      * UAS Service Suppliers (USS), used by participating UTM clients to share information about UAS fligth operations
-    Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
+    Interface definitions for 'Discovery and Synchronization Service' (DSS).
+    Used for identification of peer UTM USS instances (managing flight operations and constraints).
+    Note: Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
 
 security:
 - Authority:
@@ -25,9 +24,6 @@ tags:
   description: Endpoints exposed by the DSS for interaction with Constraint entities.
 - name: "DSS Subscriptions"
   description: Endpoints exposed by the DSS for interaction with Subscription entities.
-
-- name: "USS Peer-to-Peer"
-  description: Endpoints exposed by each participating UTM-USS for peer-to-peer interaction.
 
 #
 #
@@ -50,10 +46,9 @@ components:
       minLength: 36
       type: string
       format: uuid
+      pattern: >-
+        "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$"
       example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
-
-    Token:
-      $ref: '#/components/schemas/UUIDv4'
 
     EntityUUID:
       $ref: '#/components/schemas/UUIDv4'
@@ -81,7 +76,7 @@ components:
             for that EntityUUID, that subscription update should be ignored.
           type: integer
         token:
-          $ref: '#/components/schemas/Token'
+          $ref: '#/components/schemas/UUIDv4'
 
     OVNEntry:
       description: Mapping between an EntityUUID and an EntityOVN.
@@ -753,11 +748,6 @@ components:
           items:
             $ref: '#/components/schemas/EntityReference'
 
-    OperationPriority:
-      format: int32
-      description: Ordinal priority of this Operation.  Determined by client USS via a function of the details of the Operation according to relevant regulations.  The simplest (non-prioritized) of these functions would be one that returns 0 priority for any Operations.
-      type: integer
-
     OperationState:
       description: |-
         State of an Operation.
@@ -1016,6 +1006,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The access token was decoded successfully but did not include
               a scope appropriate to this endpoint.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The requested Entity could not be found.
 
   #
   # DSS Enpoint: CONSTRAINTS
@@ -1221,6 +1217,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The access token was decoded successfully but did not include
               a scope appropriate to this endpoint.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The requested Entity could not be found.
         "409":
           content:
             application/json:
@@ -1456,271 +1458,3 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: A Subscription with the specified ID was not found.
-
-  #
-  # USS Endpoint: OPERATIONS
-  #
-
-  /uss-utm-v1/operations/{id}:
-    summary: Push/Query detailed information of an Operation.
-    parameters:
-    - name: id
-      description: EntityUUID for this Operation (matches Operation identifier).
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
-
-    get:
-      security:
-      - Authority:
-        - utm.read.operations
-      summary: Retrieve the specified Operation (details).
-      tags:
-      - "USS Peer-to-Peer"
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetOperationResponse'
-          description: The full Operation information was retrieved successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: One or more input parameters were missing or invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The requested Entity could not be found.
-
-    post:
-      security:
-      - Authority:
-        - utm.write.operations
-      summary: Push the specified Operation (details) to peer USS.
-      description: Push details of an Operation directly to a peer USS (usually because interaction with a DSS triggered this action).
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostOperationNotificationParameters'
-        required: true
-      tags:
-      - "USS Peer-to-Peer"
-      responses:
-        "204":
-          description: New or updated full Operation information received successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * One or more parameters were missing or invalid.
-            * The Entity could not be parsed, or contains illegal data.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the owner of this Entity according to the receiving client's records.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The Entity version specified in this message is lower than
-            a previously-received notification, or identical to a previously-received
-            notification and the Entity is different.
-
-  #
-  # USS Endpoint: CONSTRAINTS
-  #
-
-  /uss-utm-v1/constraints/{id}:
-    summary: Push/Query detailed information of a Constraint.
-    parameters:
-    - name: id
-      description: EntityUUID of the Constraint.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
-
-    get:
-      tags:
-      - "USS Peer-to-Peer"
-      security:
-      - Authority:
-        - utm.read.constraints
-      summary: Retrieve the specified Constraint (details).
-      description: Retrieve the full details of a Constraint (from the entity owner).
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetConstraintResponse'
-          description: The full Constraint information was retrieved successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: One or more input parameters were missing or invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The requested Entity could not be found.
-
-    post:
-      security:
-      - Authority:
-        - utm.write.constraints
-      summary: Push the specified Constraint (details) to peer USS.
-      description: Publish new information about a Constraint to the host of this
-        endpoint (usually because of instructions from the DSS triggered by a subscription).
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostConstraintNotificationParameters'
-        required: true
-      tags:
-      - "USS Peer-to-Peer"
-      responses:
-        "204":
-          description: New or updated full Constraint information received successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * One or more parameters were missing or invalid.
-            * The Entity could not be parsed, or contains illegal data.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the owner of this Entity according to the receiving client's records.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The Entity version specified in this message is lower than
-            a previously-received notification, or identical to a previously-received
-            notification and the Entity is different.
-
-  #
-  # USS Endpoint: (OTHER)
-  #
-
-  /uss-utm-v1/feedback/{id}:
-    summary: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.
-    parameters:
-     - name: id
-       description: ID of the feedback.
-       schema:
-         $ref: '#/components/schemas/UUIDv4'
-       in: path
-       required: true
-
-    post:
-      security:
-        - Authority:
-          - utm.read.operations
-          - utm.write.operations
-          - utm.read.constraints
-          - utm.write.constraints
-      summary: Provide feedback (text) directly to peer UUS.
-      description: Notify USS of an error encountered that might otherwise go unnoticed.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PutFeedbackParameters'
-        required: true
-      tags:
-        - "USS Peer-to-Peer"
-      responses:
-        "201":
-          description: Feedback received successfully and archived.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeedbackURL'
-          description: |-
-            * One or more parameters were missing or invalid.
-            * The feedback could not be parsed, or contains unrecognized data.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.

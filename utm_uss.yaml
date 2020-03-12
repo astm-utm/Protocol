@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM Peer-To-Peer (USS - USS) API
-  version: 0.0.5
+  version: 0.0.2
   description: |-
     Interface definitions for data exchange between UAS Service Suppliers (USS).
     Used by participating UTM clients (USSs) to share information about UAS operations.
@@ -43,10 +43,9 @@ components:
       minLength: 36
       type: string
       format: uuid
+      pattern: >-
+        "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$"
       example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
-
-    Token:
-      $ref: '#/components/schemas/UUIDv4'
 
     EntityUUID:
       $ref: '#/components/schemas/UUIDv4'
@@ -74,7 +73,7 @@ components:
             for that EntityUUID, that subscription update should be ignored.
           type: integer
         token:
-          $ref: '#/components/schemas/Token'
+          $ref: '#/components/schemas/UUIDv4'
 
     OVNEntry:
       description: Mapping between an EntityUUID and an EntityOVN.
@@ -745,11 +744,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EntityReference'
-
-    OperationPriority:
-      format: int32
-      description: Ordinal priority of this Operation.  Determined by client USS via a function of the details of the Operation according to relevant regulations.  The simplest (non-prioritized) of these functions would be one that returns 0 priority for any Operations.
-      type: integer
 
     OperationState:
       description: |-
