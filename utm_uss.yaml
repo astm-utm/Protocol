@@ -20,9 +20,15 @@ security:
   - utm.write.subscriptions
 
 tags:
-- name: "USS Peer-to-Peer"
+- name: "Operations"
   description: |-
-    Endpoints exposed by each participating UTM USS for peer-to-peer data exchange.
+    Endpoints exposed by each participating UTM USS for exchange of Operations data.
+- name: "Constraints"
+  description: |-
+    Endpoints exposed by each participating UTM USS for exchange of Constraints data.
+- name: "Feedback"
+  description: |-
+    Endpoints exposed by each participating UTM USS for exchange of feedback (human-readable).
 
 #
 #

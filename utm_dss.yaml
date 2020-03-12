@@ -20,12 +20,15 @@ security:
   - utm.write.subscriptions
 
 tags:
-- name: "DSS Operations"
-  description: Endpoints exposed by the DSS for interaction with Operation entities.
-- name: "DSS Constraints"
-  description: Endpoints exposed by the DSS for interaction with Constraint entities.
-- name: "DSS Subscriptions"
-  description: Endpoints exposed by the DSS for interaction with Subscription entities.
+- name: "Operations"
+  description: |-
+    Endpoints exposed by the DSS for interaction with Operation entities.
+- name: "Constraints"
+  description: |-
+    Endpoints exposed by the DSS for interaction with Constraint entities.
+- name: "Subscriptions"
+  description: |-
+    Endpoints exposed by the DSS for interaction with Subscription entities.
 
 #
 #
@@ -814,7 +817,7 @@ paths:
 
     get:
       tags:
-      - "DSS Operations"
+      - "Operations"
       security:
       - Authority:
         - utm.read.operations
@@ -875,7 +878,7 @@ paths:
 
     get:
       tags:
-      - "DSS Operations"
+      - "Operations"
       security:
       - Authority:
         - utm.read.operations
@@ -922,7 +925,7 @@ paths:
               $ref: '#/components/schemas/CreateOperationReferenceParameters'
         required: true
       tags:
-      - "DSS Operations"
+      - "Operations"
       security:
       - Authority:
         - utm.write.operations
@@ -974,7 +977,7 @@ paths:
 
     delete:
       tags:
-        - "DSS Operations"
+        - "Operations"
       security:
         - Authority:
           - utm.write.operations
@@ -1025,7 +1028,7 @@ paths:
 
     get:
       tags:
-      - "DSS Constraints"
+      - "Constraints"
       security:
       - Authority:
         - utm.read.constraints
@@ -1087,7 +1090,7 @@ paths:
 
     get:
       tags:
-      - "DSS Constraints"
+      - "Constraints"
       security:
       - Authority:
         - utm.read.constraints
@@ -1134,7 +1137,7 @@ paths:
               $ref: '#/components/schemas/CreateConstraintReferenceParameters'
         required: true
       tags:
-      - "DSS Constraints"
+      - "Constraints"
       security:
       - Authority:
         - utm.write.constraints
@@ -1185,7 +1188,7 @@ paths:
 
     delete:
       tags:
-      - "DSS Constraints"
+      - "Constraints"
       security:
         - Authority:
           - utm.write.constraints
@@ -1243,7 +1246,7 @@ paths:
 
     get:
       tags:
-      - "DSS Subscriptions"
+      - "Subscriptions"
       security:
       - Authority:
         - dss.read.subscriptions
@@ -1308,7 +1311,7 @@ paths:
 
     get:
       tags:
-      - "DSS Subscriptions"
+      - "Subscriptions"
       security:
       - Authority:
         - dss.read.subscriptions
@@ -1365,7 +1368,7 @@ paths:
               $ref: '#/components/schemas/CreateSubscriptionParameters'
         required: true
       tags:
-      - "DSS Subscriptions"
+      - "Subscriptions"
       responses:
         "200":
           content:
@@ -1421,7 +1424,7 @@ paths:
 
     delete:
       tags:
-      - "DSS Subscriptions"
+      - "Subscriptions"
       security:
         - Authority:
           - dss.read.subscriptions
