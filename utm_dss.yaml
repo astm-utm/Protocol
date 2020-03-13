@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.0.2
+  version: 0.0.3
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -258,7 +258,28 @@ components:
           $ref: '#/components/schemas/Time'
         time_end:
           $ref: '#/components/schemas/Time'
- 
+
+
+    ErrorResponse:
+      description: Data provided when an off-nominal condition was encountered.
+      type: object
+      properties:
+        message:
+          description: Human-readable message indicating what error occurred and/or
+            why.
+          type: string
+
+
+    SubscriptionCallbacks:
+      description: Endpoints that should be called when an applicable event occurs.  At
+        least one field must be specified.
+      type: object
+      properties:
+        operation_url:
+          $ref: '#/components/schemas/OperationDetailsURL'
+        constraint_url:
+          $ref: '#/components/schemas/ConstraintDetailsURL'
+
     GetSubscriptionResponse:
       description: Response to DSS request for the subscription with the given id.
       required:
@@ -280,7 +301,6 @@ components:
           items:
             $ref: '#/components/schemas/Subscription'
 
-    
     SubscriptionNotificationIndex:
       format: int32
       description: Tracks the notifications sent for a subscription so the subscriber
@@ -298,15 +318,6 @@ components:
           $ref: '#/components/schemas/SubscriptionUUID'
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
-
-    ErrorResponse:
-      description: Data provided when an off-nominal condition was encountered.
-      type: object
-      properties:
-        message:
-          description: Human-readable message indicating what error occurred and/or
-            why.
-          type: string
 
     DeleteSubscriptionResponse:
       description: Response for a successful request to delete an Subscription.
@@ -401,6 +412,34 @@ components:
         version:
           $ref: '#/components/schemas/Version'
 
+
+    OperationDetailsURL:
+      description: |-
+        The URL at which the details of an Operation may be retrieved.  See `/uss/operations/{id}` path for specification of this endpoint.  This URL is the base Operations resource.  If this URL is specified as https://my_utm_uss.com/operations then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.  This URL may not have a trailing / character.
+      type: string
+      example: 'https://my_utm_uss.com/operations'
+
+    OperationState:
+      description: |-
+        State of an Operation.
+
+        'ACCEPTED': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no  aircraft associated with it are active yet.
+
+        'ACTIVATED': One or more aircraft associated with this Operation are, or will imminently be, in flight.
+
+        'NON_CONFORMING': This Operation is outside of the planned volume. A new volume MUST be submitted to the DSS.
+
+        'CONTINGENCY': (Also known as ROGUE). This Operation has been NON_CONFORMING for a certain period of time. This state must transition to ENDED. A new volume MUST be submitted to the DSS.
+
+        'ENDED': This Operation has ended (due to either an Operator-induced change or flight completion).
+      type: string
+      enum:
+        - ACCEPTED
+        - ACTIVATED
+        - NON_CONFORMING
+        - CONTINGENCY
+        - ENDED
+
     OperationReference:
       description: An OperationReference (area in which an Operation is being conducted,
         along with other high-level information, but no details).  The DSS reports
@@ -434,37 +473,6 @@ components:
         ovn:
           $ref: '#/components/schemas/EntityOVN'
 
-    GetOperationReferenceResponse:
-      description: Response to DSS request for the OperationReference with the given
-        ID.
-      required:
-      - operation_reference
-      type: object
-      properties:
-        operation_reference:
-          $ref: '#/components/schemas/OperationReference'
-
-    CreateOperationReferenceParameters:
-      description: Parameters for a request to create an OperationReference in the
-        DSS.
-      required:
-      - extents
-      - key
-      - details_url
-      - feedback_url
-      type: object
-      properties:
-        extents:
-          $ref: '#/components/schemas/Volume4D'
-        key:
-          $ref: '#/components/schemas/Key'
-        state:
-          $ref: '#/components/schemas/OperationState'
-        details_url:
-          $ref: '#/components/schemas/OperationDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
-
     Operation:
       description: Full description of a UTM Operation.
       required:
@@ -493,6 +501,54 @@ components:
         state:
           $ref: '#/components/schemas/OperationState'
 
+    GetOperationReferenceResponse:
+      description: Response to DSS request for the OperationReference with the given
+        ID.
+      required:
+      - operation_reference
+      type: object
+      properties:
+        operation_reference:
+          $ref: '#/components/schemas/OperationReference'
+
+    ChangeOperationReferenceResponse:
+      description: Response to a request to create, update, or delete an OperationReference
+        in the DSS.
+      required:
+      - subscribers
+      type: object
+      properties:
+        subscribers:
+          description: DSS subscribers that this client now has the obligation to
+            notify of the Operation changes just made.  This client must call POST
+            for each provided URL according to the `/uss/operations/{id}` path API.
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriberToNotify'
+        operation_reference:
+          $ref: '#/components/schemas/OperationReference'
+
+    CreateOperationReferenceParameters:
+      description: Parameters for a request to create an OperationReference in the
+        DSS.
+      required:
+      - extents
+      - key
+      - details_url
+      - feedback_url
+      type: object
+      properties:
+        extents:
+          $ref: '#/components/schemas/Volume4D'
+        key:
+          $ref: '#/components/schemas/Key'
+        state:
+          $ref: '#/components/schemas/OperationState'
+        details_url:
+          $ref: '#/components/schemas/OperationDetailsURL'
+        feedback_url:
+          $ref: '#/components/schemas/FeedbackURL'
+
     SearchOperationReferenceResponse:
       description: Response to DSS query for OperationReferences in an area of interest.
       required:
@@ -505,79 +561,13 @@ components:
           items:
             $ref: '#/components/schemas/OperationReference'
 
-    PostOperationNotificationParameters:
-      description: Parameters of a message informing of new full information for an
-        Operation.  Pushed (by a client, not the DSS) directly to clients with subscriptions
-        when another client makes a change to airspace within a cell with a subscription.
-      required:
-      - subscriptions
-      type: object
-      properties:
-        operation:
-          $ref: '#/components/schemas/Operation'
-        subscriptions:
-          type: array
-          description: Subscription(s) prompting this notification.
-          items:
-            $ref: '#/components/schemas/SubscriptionState'
 
-    PutFeedbackParameters:
-      description: Parameters of a message informing a USS of an error that the USS would otherwise not notice.
-      required:
-        - endpoint_url
-        - response_code
-        - problem
-        - timestamp
-      type: object
-      properties:
-        endpoint_url:
-          type: string
-          description: URL for request that resulted in an error.
-        headers:
-          description: Set of headers included in request that resulted in an error.
-          type: array
-          items:
-            type: string
-        body:
-          description: Base64-encoded body content sent in request that resulted in an error.
-          type: string
-        response_code:
-          type: integer
-          format: int32
-          description: HTTP response code encountered in error response.
-        response_body:
-          type: string
-          description: Base64-encoded body content received in response that was in error.
-        problem:
-          type: string
-          description: Human-readable description of the problem with the response.
-        timestamp:
-          $ref: '#/components/schemas/Time'
-
-    CreateConstraintReferenceParameters:
-      description: Parameters for a request to create/update a ConstraintReference in the
-        DSS.
-      required:
-      - extents
-      - details_url
-      type: object
-      properties:
-        extents:
-          $ref: '#/components/schemas/Volume4D'
-        details_url:
-          $ref: '#/components/schemas/ConstraintDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
-
-    GetConstraintReferenceResponse:
-      description: Response to DSS request for the ConstraintReference with the given
-        ID.
-      required:
-      - constraint_reference
-      type: object
-      properties:
-        constraint_reference:
-          $ref: '#/components/schemas/ConstraintReference'
+    ConstraintDetailsURL:
+      description: |-
+        The URL at which the details of a Constraint may be retrieved.  See `/uss/constraints/{id}` path for specification of this endpoint.
+        This URL is the base Constraints resource.  If this URL is specified as https://my_utm_uss.com/constraints then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/constraints/{id}.  This URL may not have a trailing / character.
+      type: string
+      example: 'https://my_utm_uss.com/constraints'
 
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
@@ -609,22 +599,6 @@ components:
           $ref: '#/components/schemas/Time'
         ovn:
           $ref: '#/components/schemas/EntityOVN'
-
-    PostConstraintNotificationParameters:
-      description: Parameters of a message informing of new full information for a
-        Constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
-        when another client makes a change to airspace within a cell with a subscription.
-      required:
-      - subscriptions
-      type: object
-      properties:
-        constraint:
-          $ref: '#/components/schemas/Constraint'
-        subscriptions:
-          description: Subscription(s) prompting this notification.
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriptionState'
 
     Constraint:
       description: Full specification of a UTM Constraint.
@@ -663,6 +637,31 @@ components:
           items:
             $ref: '#/components/schemas/EntityUUID'
 
+    CreateConstraintReferenceParameters:
+      description: Parameters for a request to create/update a ConstraintReference in the
+        DSS.
+      required:
+      - extents
+      - details_url
+      type: object
+      properties:
+        extents:
+          $ref: '#/components/schemas/Volume4D'
+        details_url:
+          $ref: '#/components/schemas/ConstraintDetailsURL'
+        feedback_url:
+          $ref: '#/components/schemas/FeedbackURL'
+
+    GetConstraintReferenceResponse:
+      description: Response to DSS request for the ConstraintReference with the given
+        ID.
+      required:
+      - constraint_reference
+      type: object
+      properties:
+        constraint_reference:
+          $ref: '#/components/schemas/ConstraintReference'
+
     ChangeConstraintReferenceResponse:
       description: Response to a request to create, update, or delete a ConstraintReference.
         in the DSS.
@@ -680,23 +679,6 @@ components:
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
-    ChangeOperationReferenceResponse:
-      description: Response to a request to create, update, or delete an OperationReference
-        in the DSS.
-      required:
-      - subscribers
-      type: object
-      properties:
-        subscribers:
-          description: DSS subscribers that this client now has the obligation to
-            notify of the Operation changes just made.  This client must call POST
-            for each provided URL according to the `/uss/operations/{id}` path API.
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriberToNotify'
-        operation_reference:
-          $ref: '#/components/schemas/OperationReference'
-
     SearchConstraintReferencesResponse:
       description: Response to DSS query for ConstraintReferences in an area of interest.
       required:
@@ -709,6 +691,7 @@ components:
           items:
             $ref: '#/components/schemas/ConstraintReference'
 
+
     EntityReference:
       description: Reference to a generic Entity known to the DSS.
       type: object
@@ -718,47 +701,6 @@ components:
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
-    GetConstraintResponse:
-      description: Response to peer request for the details of Operation with the
-        given ID.
-      required:
-      - constraint
-      type: object
-      properties:
-        constraint:
-          $ref: '#/components/schemas/Constraint'
-
-    GetOperationResponse:
-      description: Response to peer request for the details of Operation with the given ID.
-      required:
-      - operation
-      type: object
-      properties:
-        operation:
-          $ref: '#/components/schemas/Operation'
-
-    SubscriptionCallbacks:
-      description: Endpoints that should be called when an applicable event occurs.  At
-        least one field must be specified.
-      type: object
-      properties:
-        operation_url:
-          $ref: '#/components/schemas/OperationDetailsURL'
-        constraint_url:
-          $ref: '#/components/schemas/ConstraintDetailsURL'
-
-    OperationDetailsURL:
-      description: |-
-        The URL at which the details of an Operation may be retrieved.  See `/uss/operations/{id}` path for specification of this endpoint.  This URL is the base Operations resource.  If this URL is specified as https://my_utm_uss.com/operations then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.  This URL may not have a trailing / character.
-      type: string
-      example: 'https://my_utm_uss.com/operations'
-
-    ConstraintDetailsURL:
-      description: |-
-        The URL at which the details of a Constraint may be retrieved.  See `/uss/constraints/{id}` path for specification of this endpoint.
-        This URL is the base Constraints resource.  If this URL is specified as https://my_utm_uss.com/constraints then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/constraints/{id}.  This URL may not have a trailing / character.
-      type: string
-      example: 'https://my_utm_uss.com/constraints'
 
     FeedbackURL:
       description: |-
@@ -766,6 +708,7 @@ components:
         This URL is the base Feedback resource.  If this URL is specified as https://my_utm_uss.com/feedback then feedback with {id} may be submitted at the URL https://my_utm_uss.com/feedback/{id}.  This URL may not have a trailing / character.
       type: string
       example: 'https://my_utm_uss.com/feedback'
+
 
     AirspaceConflictResponse:
       description: Data provided when an airspace conflict was encountered.
@@ -784,27 +727,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EntityReference'
-
-    OperationState:
-      description: |-
-        State of an Operation.
-
-        'ACCEPTED': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no  aircraft associated with it are active yet.
-
-        'ACTIVATED': One or more aircraft associated with this Operation are, or will imminently be, in flight.
-
-        'NON_CONFORMING': This Operation is outside of the planned volume. A new volume MUST be submitted to the DSS.
-
-        'CONTINGENCY': (Also known as ROGUE). This Operation has been NON_CONFORMING for a certain period of time. This state must transition to ENDED. A new volume MUST be submitted to the DSS.
-
-        'ENDED': This Operation has ended (due to either an Operator-induced change or flight completion).
-      type: string
-      enum:
-        - ACCEPTED
-        - ACTIVATED
-        - NON_CONFORMING
-        - CONTINGENCY
-        - ENDED
 
 paths:
   #
