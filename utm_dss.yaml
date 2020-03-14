@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.0.4
+  version: 0.0.5
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -69,13 +69,6 @@ components:
 
 
   schemas:
-    Version:
-      description: |-
-        A version string used to reference an object at a particular point
-        in time. Any updates to an object must contain the corresponding version to
-        maintain idempotent updates.
-      type: string
-
     UUIDv4:
       description: |-
         Universally-unique identifier (version 4).
@@ -261,18 +254,21 @@ components:
 
 
     ErrorResponse:
-      description: Data provided when an off-nominal condition was encountered.
+      description: |-
+        Human-readable string returned when an error occurs
+        as a result of a USS - DSS transaction.
       type: object
       properties:
         message:
-          description: Human-readable message indicating what error occurred and/or
-            why.
+          description: |-
+            Human-readable message indicating what error occurred and/or why.
           type: string
 
 
     SubscriptionCallbacks:
-      description: Endpoints that should be called when an applicable event occurs.  At
-        least one field must be specified.
+      description: |-
+        Endpoints that should be called when an applicable event occurs.
+        At least one field must be specified.
       type: object
       properties:
         operation_url:
@@ -280,36 +276,9 @@ components:
         constraint_url:
           $ref: '#/components/schemas/ConstraintDetailsURL'
 
-    GetSubscriptionResponse:
-      description: Response to DSS request for the subscription with the given id.
-      required:
-      - subscription
-      type: object
-      properties:
-        subscription:
-          $ref: '#/components/schemas/Subscription'
-
-    SearchSubscriptionsResponse:
-      description: Response to DSS query for subscriptions in a particular geographic area.
-      required:
-      - subscriptions
-      type: object
-      properties:
-        subscriptions:
-          description: Subscriptions that overlap the specified geographic area.
-          type: array
-          items:
-            $ref: '#/components/schemas/Subscription'
-
-    SubscriptionNotificationIndex:
-      format: int32
-      description: Tracks the notifications sent for a subscription so the subscriber
-        can detect missed notifications more easily.
-      type: integer
-
     SubscriptionState:
-      description: State of Subscription which is causing a notification to be
-        sent.
+      description: |-
+        State of Subscription which is causing a notification to be sent.
       required:
       - subscription
       type: object
@@ -319,17 +288,9 @@ components:
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
 
-    DeleteSubscriptionResponse:
-      description: Response for a successful request to delete an Subscription.
-      required:
-      - subscription
-      type: object
-      properties:
-        subscription:
-          $ref: '#/components/schemas/Subscription'
-
     SubscriberToNotify:
-      description: Subscriber to notify of a creation/change/deletion of a change
+      description: |-
+        Subscriber to notify of a creation/change/deletion of a change
         in the airspace.  This is provided by the DSS to a client changing the airspace,
         and it is the responsibility of the client changing the airspace (they will
         receive a set of these notification requests) to send a notification to each
@@ -347,6 +308,73 @@ components:
         url:
           type: string
           example: 'https://my_utm_uss'
+
+    Subscription:
+      description: |-
+        Specification of a geographic area that a client is interested
+        in on an ongoing basis (e.g., “planning area”).  Internal to the DSS.
+      required:
+      - id
+      - notification_index
+      - owner
+      - callbacks
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/SubscriptionUUID'
+        owner:
+          type: string
+          example: '(uss_owner)'
+          description: Created by the DSS and based on creating client’s ID (via access
+            token).  Used for restricting mutation and deletion operations to owner.
+        notification_index:
+          $ref: '#/components/schemas/SubscriptionNotificationIndex'
+        time_start:
+          $ref: '#/components/schemas/Time'
+        time_end:
+          $ref: '#/components/schemas/Time'
+        callbacks:
+          $ref: '#/components/schemas/SubscriptionCallbacks'
+
+    SubscriptionNotificationIndex:
+      format: int32
+      description: Tracks the notifications sent for a subscription so the subscriber
+        can detect missed notifications more easily.
+      type: integer
+
+    SearchSubscriptionsResponse:
+      description: Response to DSS query for subscriptions in a particular geographic area.
+      required:
+      - subscriptions
+      type: object
+      properties:
+        subscriptions:
+          description: Subscriptions that overlap the specified geographic area.
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+
+    GetSubscriptionResponse:
+      description: Response to DSS request for the subscription with the given id.
+      required:
+      - subscription
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+
+    CreateSubscriptionParameters:
+      description: |-
+        Parameters for a request to create/update a subscription in the DSS.
+      required:
+      - extents
+      - callbacks
+      type: object
+      properties:
+        extents:
+          $ref: '#/components/schemas/Volume4D'
+        callbacks:
+          $ref: '#/components/schemas/SubscriptionCallbacks'
 
     PutSubscriptionResponse:
       description: |-
@@ -374,46 +402,14 @@ components:
           items:
             $ref: '#/components/schemas/ConstraintReference'
 
-    CreateSubscriptionParameters:
-      description: Parameters for a request to create/update a subscription in the DSS.
+    DeleteSubscriptionResponse:
+      description: Response for a successful request to delete an Subscription.
       required:
-      - extents
-      - callbacks
+      - subscription
       type: object
       properties:
-        extents:
-          $ref: '#/components/schemas/Volume4D'
-        callbacks:
-          $ref: '#/components/schemas/SubscriptionCallbacks'
-
-    Subscription:
-      description: Specification of a geographic area that a client is interested
-        in on an ongoing basis (e.g., “planning area”).  Internal to the DSS.
-      required:
-      - id
-      - callbacks
-      - notification_index
-      - owner
-      - version
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/SubscriptionUUID'
-        callbacks:
-          $ref: '#/components/schemas/SubscriptionCallbacks'
-        owner:
-          type: string
-          example: '(uss_owner)'
-          description: Created by the DSS and based on creating client’s ID (via access
-            token).  Used for restricting mutation and deletion operations to owner.
-        notification_index:
-          $ref: '#/components/schemas/SubscriptionNotificationIndex'
-        time_start:
-          $ref: '#/components/schemas/Time'
-        time_end:
-          $ref: '#/components/schemas/Time'
-        version:
-          $ref: '#/components/schemas/Version'
+        subscription:
+          $ref: '#/components/schemas/Subscription'
 
 
     OperationDetailsURL:
@@ -421,6 +417,19 @@ components:
         The URL at which the details of an Operation may be retrieved.  See `/uss/operations/{id}` path for specification of this endpoint.  This URL is the base Operations resource.  If this URL is specified as https://my_utm_uss.com/operations then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.  This URL may not have a trailing / character.
       type: string
       example: 'https://my_utm_uss.com/operations'
+
+    OperationCallbacks:
+      description: |-
+        Endpoints that should be called when an applicable event occurs.
+      required:
+      - details_url
+      - feedback_url
+      type: object
+      properties:
+        details_url:
+          $ref: '#/components/schemas/OperationDetailsURL'
+        feedback_url:
+          $ref: '#/components/schemas/FeedbackURL'
 
     OperationState:
       description: |-
@@ -446,14 +455,14 @@ components:
     OperationReference:
       description: |-
         The high-level information of a planned/active Operation with the URL
-        of a USS to query for details.
+        of a USS to query for details.  Note: 'OVN' is returned ONLY to the USS that
+        created the Operation but NEVER to other USS instances.
       required:
       - id
       - owner
       - time_start
       - time_end
-      - details_url
-      - feedback_url
+      - callbacks
       type: object
       properties:
         id:
@@ -468,12 +477,29 @@ components:
           $ref: '#/components/schemas/Time'
         time_end:
           $ref: '#/components/schemas/Time'
-        details_url:
-          $ref: '#/components/schemas/OperationDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
+        callbacks:
+          $ref: '#/components/schemas/OperationCallbacks'
         ovn:
           $ref: '#/components/schemas/EntityOVN'
+
+    CreateOperationReferenceParameters:
+      description: Parameters for a request to create an OperationReference in the
+        DSS.
+      required:
+      - extents
+      - key
+      - state
+      - callbacks
+      type: object
+      properties:
+        extents:
+          $ref: '#/components/schemas/Volume4D'
+        key:
+          $ref: '#/components/schemas/Key'
+        state:
+          $ref: '#/components/schemas/OperationState'
+        callbacks:
+          $ref: '#/components/schemas/OperationCallbacks'
 
     GetOperationReferenceResponse:
       description: |-
@@ -504,27 +530,6 @@ components:
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
-    CreateOperationReferenceParameters:
-      description: Parameters for a request to create an OperationReference in the
-        DSS.
-      required:
-      - extents
-      - key
-      - details_url
-      - feedback_url
-      type: object
-      properties:
-        extents:
-          $ref: '#/components/schemas/Volume4D'
-        key:
-          $ref: '#/components/schemas/Key'
-        state:
-          $ref: '#/components/schemas/OperationState'
-        details_url:
-          $ref: '#/components/schemas/OperationDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
-
     SearchOperationReferenceResponse:
       description: Response to DSS query for OperationReferences in an area of interest.
       required:
@@ -545,6 +550,19 @@ components:
       type: string
       example: 'https://my_utm_uss.com/constraints'
 
+    ConstraintCallbacks:
+      description: |-
+        Endpoints that should be called when an applicable event occurs.
+      required:
+      - details_url
+      - feedback_url
+      type: object
+      properties:
+        details_url:
+          $ref: '#/components/schemas/ConstraintDetailsURL'
+        feedback_url:
+          $ref: '#/components/schemas/FeedbackURL'
+
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
         with other high-level information, but no details).  The DSS reports only
@@ -552,18 +570,14 @@ components:
         peer-to-peer.
       required:
       - id
-      - details_url
       - owner
       - time_start
       - time_end
+      - callbacks
       type: object
       properties:
         id:
           $ref: '#/components/schemas/EntityUUID'
-        details_url:
-          $ref: '#/components/schemas/ConstraintDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
         owner:
           description: Created by the DSS and based on creating client’s ID (via access
             token).  Used for restricting mutation and deletion transactions to the entity owner.
@@ -573,24 +587,22 @@ components:
           $ref: '#/components/schemas/Time'
         time_end:
           $ref: '#/components/schemas/Time'
-        ovn:
-          $ref: '#/components/schemas/EntityOVN'
+        callbacks:
+          $ref: '#/components/schemas/ConstraintCallbacks'
 
     CreateConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
         DSS.
       required:
       - extents
-      - details_url
+      - callbacks
       - feedback_url
       type: object
       properties:
         extents:
           $ref: '#/components/schemas/Volume4D'
-        details_url:
-          $ref: '#/components/schemas/ConstraintDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
+        callbacks:
+          $ref: '#/components/schemas/ConstraintCallbacks'
 
     GetConstraintReferenceResponse:
       description: Response to DSS request for the ConstraintReference with the given
@@ -685,11 +697,13 @@ paths:
         - utm.read.operations
       summary: Retrieve all Operations (references) in the specified area/volume from the DSS.
       parameters:
-      - name: extents
+      - name: ' '
         description: |-
-          The area/volume in which to search for Operation entities.  References for some Operations near this area but wholly outside it may also be returned.
+          The area/volume in which to search for Operation entities.  References for some
+          Operations near this area but wholly outside it may also be returned.
           
-          Note that the search parameter is specified as follows: 'GET ~/operations?extents={'volume' : 'area' : ... }'. Also, either or both of the 'altitude' and 'time' values may be omitted.
+          Note that this parameter is a JSON object ('request-body'). Note that either
+          or both of the 'altitude' and 'time' values may be omitted from this parameter.
         schema:
           $ref: '#/components/schemas/Volume4D'
         in: query
@@ -896,12 +910,13 @@ paths:
         - utm.read.constraints
       summary: Retrieve all Constraints (references) in the specified area/volume from the DSS.
       parameters:
-      - name: extents
+      - name: ' '
         description: |-
-          The area/volume in which to search for Constraints.  References to some Constraints
-          near this area but wholly outside it may also be returned.
+          The area/volume in which to search for Constraint entities.  References for some
+          Constraints near this area but wholly outside it may also be returned.
           
-          Note that the search parameter is specified as follows: 'GET ~/constraints?extents={'volume' : 'area' : ... }'. Also, either or both of the 'altitude' and 'time' values may be omitted.
+          Note that this parameter is a JSON object (in the 'request-body'). Note that either
+          or both of the 'altitude' and 'time' values may be omitted from this parameter.
         schema:
           $ref: '#/components/schemas/Volume4D'
         in: query
@@ -1113,14 +1128,21 @@ paths:
       - Authority:
         - dss.read.subscriptions
       description: |-
-        Retrieve subscriptions intersecting an area of interest.  Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
-        
-        Note that the search parameter is specified as follows: 'GET ~/subscriptions?extents={'volume' : 'area' : ... }'. Also, either or both of the 'altitude' and 'time' values may be omitted.
+        Retrieve Subscriptions intersecting an area of interest.  Subscription
+        notifications are only triggered by (and contain full information of) changes to,
+        creation of, or deletion of, Entities referenced by or stored in the DSS;
+        they do not involve any data transfer (such as remote ID telemetry updates) apart
+        from Entity information.
 
-        Only Subscriptions belonging to the caller are returned.  This endpoint would be used if a USS lost track of Subscriptions they had created and/or wanted to resolve an error indicating that they had too many existing Subscriptions in an area.
+        Note that this parameter is a JSON object (in the 'request-body'). Note that either
+        or both of the 'altitude' and 'time' values may be omitted from this parameter.
+
+        Only Subscriptions belonging to the caller are returned.  This endpoint would be
+        used if a USS lost track of Subscriptions they had created and/or wanted to resolve
+        an error indicating that they had too many existing Subscriptions in an area.
       summary: Retrieve all Subscriptions (references) in the specified area/volume from the DSS.
       parameters:
-      - name: extents
+      - name: ' '
         in: query
         required: true
         description: The area/volume in which to search for Subscriptions.  References to some Subscriptions
