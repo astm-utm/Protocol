@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.0.3
+  version: 0.0.4
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -349,27 +349,30 @@ components:
           example: 'https://my_utm_uss'
 
     PutSubscriptionResponse:
-      description: Response for a request to create or update a subscription.
+      description: |-
+        Response for a request to create or update a subscription.
       required:
       - subscription
       type: object
       properties:
+        subscription:
+          $ref: '#/components/schemas/Subscription'
         operations:
-          description: Operations in or near the subscription area
+          description: |-
+            Operations in or near the subscription area
             at the time of creation/update, if `operation_url` callback
             was specified.
           type: array
           items:
-            $ref: '#/components/schemas/Operation'
+            $ref: '#/components/schemas/OperationReference'
         constraints:
-          description: Constraints in or near the subscription area
+          description: |-
+            Constraints in or near the subscription area
             at the time of creation/update, if `constraint_url` callback
             was specified.
           type: array
           items:
-            $ref: '#/components/schemas/Constraint'
-        subscription:
-          $ref: '#/components/schemas/Subscription'
+            $ref: '#/components/schemas/ConstraintReference'
 
     CreateSubscriptionParameters:
       description: Parameters for a request to create/update a subscription in the DSS.
@@ -441,10 +444,9 @@ components:
         - ENDED
 
     OperationReference:
-      description: An OperationReference (area in which an Operation is being conducted,
-        along with other high-level information, but no details).  The DSS reports
-        only these references and clients must exchange details and additional information
-        peer-to-peer.
+      description: |-
+        The high-level information of a planned/active Operation with the URL
+        of a USS to query for details.
       required:
       - id
       - owner
@@ -452,7 +454,6 @@ components:
       - time_end
       - details_url
       - feedback_url
-      - ovn
       type: object
       properties:
         id:
@@ -460,7 +461,8 @@ components:
         owner:
           type: string
           example: '(uss_owner)'
-          description: Created by the DSS and based on creating client’s ID (via access
+          description: |-
+            Created by the DSS and based on creating client’s ID (via access
             token).  Used for restricting mutation and deletion operations to owner.
         time_start:
           $ref: '#/components/schemas/Time'
@@ -473,37 +475,9 @@ components:
         ovn:
           $ref: '#/components/schemas/EntityOVN'
 
-    Operation:
-      description: Full description of a UTM Operation.
-      required:
-      - reference
-      - details
-      type: object
-      properties:
-        reference:
-          $ref: '#/components/schemas/OperationReference'
-        details:
-          $ref: '#/components/schemas/OperationDetails'
-
-    OperationDetails:
-      description: Details of a UTM Operation. Note that this data is not stored in the DSS; only with the clients.
-      required:
-      - volumes
-      type: object
-      properties:
-        volumes:
-          description: Volumes that wholly contain the Operation while being as small
-            as practical.
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/Volume4D'
-        state:
-          $ref: '#/components/schemas/OperationState'
-
     GetOperationReferenceResponse:
-      description: Response to DSS request for the OperationReference with the given
-        ID.
+      description: |-
+        Response to DSS request for the OperationReference with the given ID.
       required:
       - operation_reference
       type: object
@@ -512,14 +486,16 @@ components:
           $ref: '#/components/schemas/OperationReference'
 
     ChangeOperationReferenceResponse:
-      description: Response to a request to create, update, or delete an OperationReference
+      description: |-
+        Response to a request to create, update, or delete an OperationReference
         in the DSS.
       required:
       - subscribers
       type: object
       properties:
         subscribers:
-          description: DSS subscribers that this client now has the obligation to
+          description: |-
+            DSS subscribers that this client now has the obligation to
             notify of the Operation changes just made.  This client must call POST
             for each provided URL according to the `/uss/operations/{id}` path API.
           type: array
@@ -600,49 +576,13 @@ components:
         ovn:
           $ref: '#/components/schemas/EntityOVN'
 
-    Constraint:
-      description: Full specification of a UTM Constraint.
-      required:
-      - reference
-      - details
-      type: object
-      properties:
-        reference:
-          $ref: '#/components/schemas/ConstraintReference'
-        details:
-          $ref: '#/components/schemas/ConstraintDetails'
-
-    ConstraintDetails:
-      description: Details of a UTM Constraint. Note that this data is
-        not stored in the DSS; only with the clients.
-      required:
-      - volumes
-      type: object
-      properties:
-        volumes:
-          description: Volumes that wholly contain the Constraint while being as small
-            as practical.
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/Volume4D'
-        exempt_operations:
-          description: List of Operation UUIDs exempt from this Constraint, if applicable.
-          type: array
-          items:
-            $ref: '#/components/schemas/EntityUUID'
-        previous_operation:
-          description: Operation UUID that created this Constraint, if applicable.
-          type: string
-          items:
-            $ref: '#/components/schemas/EntityUUID'
-
     CreateConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
         DSS.
       required:
       - extents
       - details_url
+      - feedback_url
       type: object
       properties:
         extents:
