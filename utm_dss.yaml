@@ -421,13 +421,17 @@ components:
     OperationCallbacks:
       description: |-
         Endpoints that should be called when an applicable event occurs.
+        All fields are required.
       required:
-      - details_url
+      - operation_url
+      - constraint_url
       - feedback_url
       type: object
       properties:
-        details_url:
+        operation_url:
           $ref: '#/components/schemas/OperationDetailsURL'
+        constraint_url:
+          $ref: '#/components/schemas/ConstraintDetailsURL'
         feedback_url:
           $ref: '#/components/schemas/FeedbackURL'
 
@@ -483,8 +487,11 @@ components:
           $ref: '#/components/schemas/EntityOVN'
 
     CreateOperationReferenceParameters:
-      description: Parameters for a request to create an OperationReference in the
-        DSS.
+      description: |-
+        Parameters for a request to create an OperationReference in the DSS.
+        A subscription to changes overlapping this volume is implicitly created, but
+        this can be overridden by providing the (optional) 'subscription_id' to use.
+        Note: The implicit subscription is managed by the DSS, not the USS.
       required:
       - extents
       - key
@@ -498,6 +505,8 @@ components:
           $ref: '#/components/schemas/Key'
         state:
           $ref: '#/components/schemas/OperationState'
+        subscription_id:
+          $ref: '#/components/schemas/EntityUUID'
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
 
@@ -596,7 +605,6 @@ components:
       required:
       - extents
       - callbacks
-      - feedback_url
       type: object
       properties:
         extents:

@@ -1,3 +1,4 @@
+# Copyright Amazon.com Inc. or its affiliates.
 msc {
     a [label="Operator-1 (USS-1)"],d [label="DSS"];
 
