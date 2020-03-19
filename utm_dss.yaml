@@ -452,9 +452,9 @@ components:
     OperationNotificationImplicit:
       description: Callbacks to create Subscription used for notifications.
       type: object
-    properties:
-      subscription_callbacks:
-        $ref: '#/components/schemas/SubscriptionCallbacks'
+      properties:
+        subscription_callbacks:
+          $ref: '#/components/schemas/SubscriptionCallbacks'
 
     OperationNotificationExplicit:
       description: Existing Subscription (id) to be used for notifications.
