@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS<->USS API
-  version: 0.0.3
+  version: 0.0.4
   description: |-
     Interface definitions for data exchange between UAS Service Suppliers (USS).
 
@@ -246,10 +246,14 @@ components:
           type: string
 
 
-    FeedbackURL:
+    PutFeedbackURL:
       description: |-
-        The URL at which feedback may be submitted.  See `/uss/feedback/{id}` path for specification of this endpoint.
-        This URL is the base Feedback resource.  If this URL is specified as https://my_utm_uss.com/feedback then feedback with {id} may be submitted at the URL https://my_utm_uss.com/feedback/{id}.  This URL may not have a trailing / character.
+        The URL at which feedback may be submitted.
+        See `/uss/feedback/{id}` path for specification of this endpoint.
+        This URL is the base Feedback resource.  If this URL is specified as
+        https://my_utm_uss.com/feedback then feedback with {id} may be submitted at
+        the URL https://my_utm_uss.com/feedback/{id}.
+        This URL may not have a trailing / character.
       type: string
       example: 'https://my_utm_uss.com/feedback'
 
@@ -274,25 +278,42 @@ components:
         - CONTINGENCY
         - ENDED
 
-    OperationDetailsURL:
+    GetOperationDetailsURL:
       description: |-
-        The URL at which the details of an Operation may be retrieved.  See `/uss/operations/{id}` path for specification of this endpoint.  This URL is the base Operations resource.  If this URL is specified as https://my_utm_uss.com/operations then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.  This URL may not have a trailing / character.
+        The URL at which the details of an Operation may be retrieved.
+        See `/uss/operations/{id}` path for specification of this endpoint.
+        This URL is the base Operations resource.  If this URL is specified as
+        https://my_utm_uss.com/operations then the details for a particular {id} may be obtained at
+        the URL https://my_utm_uss.com/operations/{id}.
+        This URL may not have a trailing / character.
       type: string
       example: 'https://my_utm_uss.com/operations'
 
+    OperationCallbacks:
+      description: |-
+        Endpoints that should be called when an applicable event occurs.
+        All fields are required.
+      required:
+      - get_details_url
+      - put_feedback_url
+      type: object
+      properties:
+        get_details_url:
+          $ref: '#/components/schemas/GetOperationDetailsURL'
+        put_feedback_url:
+          $ref: '#/components/schemas/PutFeedbackURL'
+
     OperationReference:
-      description: An OperationReference (area in which an Operation is being conducted,
-        along with other high-level information, but no details).  The DSS reports
-        only these references and clients must exchange details and additional information
-        peer-to-peer.
+      description: |-
+        The high-level information of a planned/active Operation with the URL
+        of a USS to query for details.  Note: 'OVN' is returned ONLY to the USS that
+        created the Operation but NEVER to other USS instances.
       required:
       - id
       - owner
       - time_start
       - time_end
-      - details_url
-      - feedback_url
-      - ovn
+      - callbacks
       type: object
       properties:
         id:
@@ -307,10 +328,8 @@ components:
           $ref: '#/components/schemas/Time'
         time_end:
           $ref: '#/components/schemas/Time'
-        details_url:
-          $ref: '#/components/schemas/OperationDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
+        callbacks:
+          $ref: '#/components/schemas/OperationCallbacks'
         ovn:
           $ref: '#/components/schemas/EntityOVN'
 
@@ -370,12 +389,40 @@ components:
           $ref: '#/components/schemas/Operation'
 
 
-    ConstraintDetailsURL:
+    GetConstraintDetailsURL:
       description: |-
-        The URL at which the details of a Constraint may be retrieved.  See `/uss/constraints/{id}` path for specification of this endpoint.
-        This URL is the base Constraints resource.  If this URL is specified as https://my_utm_uss.com/constraints then the details for a particular {id} may be obtained at the URL https://my_utm_uss.com/constraints/{id}.  This URL may not have a trailing / character.
+        The URL at which the details of a Constraint may be retrieved.
+        See `/uss/constraints/{id}` path for specification of this endpoint.
+        This URL is the base Constraints resource.  If this URL is specified as
+        https://my_utm_uss.com/constraints then the details for a particular {id} may be
+        obtained at the URL https://my_utm_uss.com/constraints/{id}.
+        This URL may not have a trailing / character.
       type: string
       example: 'https://my_utm_uss.com/constraints'
+
+    PutConstraintDetailsURL:
+      description: |-
+        The URL at which the details of a peer Constraint will be pushed.
+        See `/uss/constraints/{id}` path for specification of this endpoint.
+        This URL is the base Constraints resource.  If this URL is specified as
+        https://my_utm_uss.com/constraints then the details for a particular {id} may be
+        obtained at the URL https://my_utm_uss.com/constraints/{id}.
+        This URL may not have a trailing / character.
+      type: string
+      example: 'https://my_utm_uss.com/constraints'
+
+    ConstraintCallbacks:
+      description: |-
+        Endpoints that should be called when an applicable event occurs.
+      required:
+      - get_details_url
+      - put_feedback_url
+      type: object
+      properties:
+        get_details_url:
+          $ref: '#/components/schemas/GetConstraintDetailsURL'
+        put_feedback_url:
+          $ref: '#/components/schemas/PutFeedbackURL'
 
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
@@ -384,18 +431,14 @@ components:
         peer-to-peer.
       required:
       - id
-      - details_url
       - owner
       - time_start
       - time_end
+      - callbacks
       type: object
       properties:
         id:
           $ref: '#/components/schemas/EntityUUID'
-        details_url:
-          $ref: '#/components/schemas/ConstraintDetailsURL'
-        feedback_url:
-          $ref: '#/components/schemas/FeedbackURL'
         owner:
           description: Created by the DSS and based on creating client’s ID (via access
             token).  Used for restricting mutation and deletion transactions to the entity owner.
@@ -405,8 +448,9 @@ components:
           $ref: '#/components/schemas/Time'
         time_end:
           $ref: '#/components/schemas/Time'
-        ovn:
-          $ref: '#/components/schemas/EntityOVN'
+        callbacks:
+          $ref: '#/components/schemas/ConstraintCallbacks'
+
 
     ConstraintDetails:
       description: Details of a UTM Constraint. Note that this data is
@@ -565,7 +609,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
 
-    post:
+    put:
       tags:
       - "Operations"
       security:
@@ -675,7 +719,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
 
-    post:
+    put:
       tags:
       - "Constraints"
       security:
@@ -764,7 +808,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeedbackURL'
+                $ref: '#/components/schemas/PutFeedbackURL'
           description: |-
             * One or more parameters were missing or invalid.
             * The feedback could not be parsed, or contains unrecognized data.
