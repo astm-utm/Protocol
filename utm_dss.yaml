@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.0.7
+  version: 0.0.8
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -310,6 +310,12 @@ components:
           type: string
           example: 'https://my_utm_uss'
 
+    OperationDependencyList:
+      description: List of Operations (UUIDs) that are dependent on this Subscription.
+      type: array
+      items:
+        $ref: '#/components/schemas/EntityUUID'
+
     Subscription:
       description: |-
         Specification of a geographic area that a client is interested
@@ -317,7 +323,6 @@ components:
       required:
       - id
       - notification_index
-      - owner
       - callbacks
       type: object
       properties:
@@ -336,6 +341,10 @@ components:
           $ref: '#/components/schemas/Time'
         callbacks:
           $ref: '#/components/schemas/SubscriptionCallbacks'
+        created_by_operation:
+          type: boolean
+        dependent_operations:
+          $ref: '#/components/schemas/OperationDependencyList'
 
     SubscriptionNotificationIndex:
       format: int32
@@ -364,7 +373,7 @@ components:
         subscription:
           $ref: '#/components/schemas/Subscription'
 
-    CreateSubscriptionParameters:
+    PutSubscriptionParameters:
       description: |-
         Parameters for a request to create/update a subscription in the DSS.
       required:
@@ -449,19 +458,6 @@ components:
         put_feedback_url:
           $ref: '#/components/schemas/PutFeedbackURL'
 
-    OperationNotificationImplicit:
-      description: Callbacks to create Subscription used for notifications.
-      type: object
-      properties:
-        subscription_callbacks:
-          $ref: '#/components/schemas/SubscriptionCallbacks'
-
-    OperationNotificationExplicit:
-      description: Existing Subscription (id) to be used for notifications.
-      properties:
-        subscription_id:
-          $ref: '#/components/schemas/EntityUUID'
-
     OperationState:
       description: |-
         State of an Operation.
@@ -490,7 +486,6 @@ components:
         created the Operation but NEVER to other USS instances.
       required:
       - id
-      - owner
       - time_start
       - time_end
       - callbacks
@@ -512,8 +507,10 @@ components:
           $ref: '#/components/schemas/Time'
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
+        subscription_id:
+          $ref: '#/components/schemas/EntityUUID'
 
-    CreateOperationReferenceParameters:
+    PutOperationReferenceParameters:
       description: |-
         Parameters for a request to create an OperationReference in the DSS.
         A subscription to changes overlapping this volume is implicitly created, but
@@ -536,14 +533,10 @@ components:
           $ref: '#/components/schemas/OperationState'
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
-        notification:
-          description: |-
-            Subscription that is used/created for notification of changes that may
-            affect this Operation. This Subscription can be implicitly created (based
-            on the supplied callbacks), or use an existing (explicit) Subscription id.
-          oneOf:
-          - $ref: '#/components/schemas/OperationNotificationImplicit'
-          - $ref: '#/components/schemas/OperationNotificationExplicit'
+        subscription_id:
+          $ref: '#/components/schemas/EntityUUID'
+        subscription_callbacks:
+          $ref: '#/components/schemas/SubscriptionCallbacks'
 
     GetOperationReferenceResponse:
       description: |-
@@ -629,7 +622,6 @@ components:
         peer-to-peer.
       required:
       - id
-      - owner
       - time_start
       - time_end
       - callbacks
@@ -651,7 +643,7 @@ components:
         callbacks:
           $ref: '#/components/schemas/ConstraintCallbacks'
 
-    CreateConstraintReferenceParameters:
+    PutConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
         DSS.
       required:
@@ -862,7 +854,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateOperationReferenceParameters'
+              $ref: '#/components/schemas/PutOperationReferenceParameters'
         required: true
       tags:
       - "Operations"
@@ -1075,7 +1067,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateConstraintReferenceParameters'
+              $ref: '#/components/schemas/PutConstraintReferenceParameters'
         required: true
       tags:
       - "Constraints"
@@ -1313,7 +1305,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSubscriptionParameters'
+              $ref: '#/components/schemas/PutSubscriptionParameters'
         required: true
       tags:
       - "Subscriptions"

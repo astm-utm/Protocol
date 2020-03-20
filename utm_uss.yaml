@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS<->USS API
-  version: 0.0.4
+  version: 0.0.5
   description: |-
     Interface definitions for data exchange between UAS Service Suppliers (USS).
 
@@ -310,7 +310,6 @@ components:
         created the Operation but NEVER to other USS instances.
       required:
       - id
-      - owner
       - time_start
       - time_end
       - callbacks
@@ -318,6 +317,8 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/EntityUUID'
+        ovn:
+          $ref: '#/components/schemas/EntityOVN'
         owner:
           type: string
           example: '(uss_owner)'
@@ -330,8 +331,8 @@ components:
           $ref: '#/components/schemas/Time'
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
-        ovn:
-          $ref: '#/components/schemas/EntityOVN'
+        subscription_id:
+          $ref: '#/components/schemas/EntityUUID'
 
     OperationDetails:
       description: |-
