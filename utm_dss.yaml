@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.0.8
+  version: 0.1.0
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -29,6 +29,9 @@ tags:
 - name: "Subscriptions"
   description: |-
     Endpoints exposed by the DSS for interaction with Subscription entities.
+- name: "Reports"
+  description: |-
+    Endpoints exposed by the DSS for reporting peer DSS issues.
 
 #
 #
@@ -138,83 +141,213 @@ components:
           $ref: '#/components/schemas/OVNList'
 
     Time:
-      # REVISIT-- make this an object and add units!
       type: string
       format: date-time
       example: '1985-04-12T23:20:50.52Z'
 
+    TimeWithUnits:
+      required:
+      - time
+      - units
+      type: object
+      properties:
+        time:
+          $ref: '#/components/schemas/Time'
+        units:
+          type: string
+          enum:
+          - RFC3339
+
+    Radius:
+      format: float
+      description: Distance, in meters, from the centerpoint of a circular area.
+      type: number
+      example: 300.183
+
+    RadiusWithUnits:
+      required:
+      - radius
+      - units
+      type: object
+      properties:
+        radius:
+          $ref: '#/components/schemas/Radius'
+        units:
+          type: string
+          enum:
+          - Meters
+
     Altitude:
-      # REVISIT-- make this an object and add units!
       format: float
       description: An altitude, in meters, above the WGS84 ellipsoid.
       type: number
       example: 19.5
 
+    AltitudeWithUnits:
+      required:
+      - altitude
+      - units
+      type: object
+      properties:
+        altitude:
+          $ref: '#/components/schemas/Altitude'
+        units:
+          type: string
+          enum:
+          - Meters_WGS84
+
     Latitude:
-      format: double
-      description: Degrees of latitude north of the equator, with reference to the
-        WGS84 ellipsoid.
+      description: Degrees of latitude north of the equator, with reference to the WGS84 ellipsoid.
       maximum: 90
       exclusiveMaximum: false
       minimum: -90
       exclusiveMinimum: false
       type: number
+      format: double
       example: 34.123
 
     Longitude:
-      format: double
-      description: Degrees of longitude east of the Prime Meridian, with reference
-        to the WGS84 ellipsoid.
+      description: Degrees of longitude east of the Prime Meridian, with reference to the WGS84 ellipsoid.
       maximum: -180
       exclusiveMaximum: false
       minimum: 180
       exclusiveMinimum: false
       type: number
+      format: double
       example: -118.456
 
-    Vertex:
-      description: Single point on the earth's surface (latitude/longitude pair).
-      required:
-      - lat
-      - lng
-      type: object
-      properties:
-        lng:
-          $ref: '#/components/schemas/Longitude'
-        lat:
-          $ref: '#/components/schemas/Latitude'
-
-    Disc:
-      description: |-
-        A circular area on the earth.
-      required:
-      - center
-      - radius
-      example:
-        center: { lat : -122.130343, lon : 47.677171 }
-        radius: 120.3
-      type: object
-      properties:
-        center:
-          $ref: '#/components/schemas/Vertex'
-        radius:
-          description: Distance from the center of the disc (in meters).
-          type: number
-          minimum: 0
-          example: 140.1
-
-    Loop:
-      description: |-
-        An enclosed geographic area on the earth.
-        The bounding edges of this polygon shall be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude.
-        The winding order shall be interpreted as the order which produces the smaller area.
-        The path between two vertices shall be the shortest possible path between those vertices.
-        Edges may not cross.
-        Vertices may not be duplicated.  In particular, the final polygon vertex shall not be identical to the first vertex.
+    LonLatPair:
+      description: Longitude/Latitude pair (in that order) used for specifying geographical vertex. Specified as an array. Order is important!
       type: array
-      minItems: 3
+      maxItems: 2
+      minItems: 2
       items:
-        $ref: '#/components/schemas/Vertex'
+        oneOf:
+          - $ref: '#/components/schemas/Longitude'
+          - $ref: '#/components/schemas/Latitude'
+      example: [-122.106325, 47.660898]
+
+#
+# GeoJSON definitions
+#
+
+# Original version: https://gist.github.com/bubbobne/fe5f2db65acf039be6a9fd92fc9c7233
+# Edits by joseph.rios@nasa.gov
+
+#MIT License
+#Copyright (c) 2017 Daniele Andreis
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+#
+#
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+
+    Point:
+      type: object
+      description: GeoJSon Point, limited to 2D.
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7946#section-3.1.2
+      properties:
+        type:
+          description: The type of Geometry. In this case, must be 'Point' per GeoJSON spec.
+          type: string
+          enum:
+          - Point
+        coordinates:
+          $ref: '#/components/schemas/LonLatPair'
+
+    Polygon:
+      type: object
+      required:
+        - type
+        - coordinates
+      description: GeoJSon Polygon. Positions all 2D.
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7946#section-3.1.6
+      properties:
+        type:
+          description: |
+            The type of Geometry. In this case, must be 'Polygon' per GeoJSON
+            spec.  Note that the "coordinates" member is validated to be be an
+            array of size one. This implies there are no interior rings allowed
+            currently.
+          type: string
+          enum:
+          - Polygon
+        coordinates:
+          type: array
+          description: >-
+            The number of polygons allowed.  Currently 1, implying no interior
+            rings.  If this number is changes, the maxItems should be considered.
+            From RFC7946:
+            o  For type "Polygon", the "coordinates" member MUST be an array of
+            linear ring coordinate arrays.
+            o  For Polygons with more than one of these rings, the first MUST be
+            the exterior ring, and any others MUST be interior rings.  The
+            exterior ring bounds the surface, and the interior rings (if
+            present) bound holes within the surface.
+            Again, note we only allow a single set of coordinates, implying no
+            interior rings.
+          minItems: 1
+          maxItems: 1
+          items:
+            type: array
+            description: >-
+              The number of vertices in this polygon. From RFC7946:
+                o  A linear ring is a closed LineString with four or more positions.
+                o  The first and last positions are equivalent, and they MUST contain
+                identical values; their representation SHOULD also be identical.
+                o  A linear ring is the boundary of a surface or the boundary of a
+                hole in a surface.
+                o  A linear ring MUST follow the right-hand rule with respect to the
+                area it bounds, i.e., exterior rings are counterclockwise, and
+                holes are clockwise.  (also in the spec:  parsers SHOULD NOT reject
+                Polygons that do not follow the right-hand rule.)
+                https://tools.ietf.org/html/rfc7946#section-3.1.6
+            minItems: 4
+            maxItems: 100
+            items:
+              $ref: '#/components/schemas/Point'
+
+    Circle:
+      description: |-
+        Local extension of the GeoJSON specification to add a circular area defined by a Point/Radius pair. We extend the Properties object to include a 'radius' and 'radius_units' value (see RadiusWithUnits for details).
+      required:
+        - type
+        - geometry
+        - properties
+      type: object
+      properties:
+        type:
+          description: The type of Geometry. In this case, must be 'Feature' per GeoJSON spec.
+          type: string
+          enum:
+          - Feature
+        geometry:
+          type: object
+          properties:
+            type:
+              description: The type of Geometry. Must be Point.
+              type: string
+              enum:
+              - Point
+            coordinates:
+              $ref: '#/components/schemas/Point'
+        properties:
+          $ref: '#/components/schemas/RadiusWithUnits'
 
     Volume3D:
       description: |-
@@ -227,15 +360,21 @@ components:
       properties:
         area:
           oneOf:
-          - $ref: '#/components/schemas/Loop'
-          - $ref: '#/components/schemas/Disc'
+          - $ref: '#/components/schemas/Polygon'
+          - $ref: '#/components/schemas/Circle'
           description: A geographic shape on the surface of the earth.
           example:
-            loop: [{lat : -122.130343, lon : 47.677171}, {lat : -122.129721, lon : 47.676781}, {lat : -122.130289, lon : 47.676701}]
+            type: 'Feature'
+            properties:
+              radius: 300.0
+              radius_units: 'METERS_WGS84'
+            geometry:
+              type: 'Point'
+              coordinates: [-121.0123, 156.789]
         altitude_lower:
-          $ref: '#/components/schemas/Altitude'
+          $ref: '#/components/schemas/AltitudeWithUnits'
         altitude_upper:
-          $ref: '#/components/schemas/Altitude'
+          $ref: '#/components/schemas/AltitudeWithUnits'
 
     Volume4D:
       description: Contiguous block of geographic spacetime.
@@ -246,9 +385,9 @@ components:
         volume:
           $ref: '#/components/schemas/Volume3D'
         time_start:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
 
 
     ErrorResponse:
@@ -268,14 +407,14 @@ components:
         Endpoints that should be called when an applicable event occurs.
         At least one field must be specified.
       required:
-      - put_operation_url
-      - put_constraint_url
+      - notify_operation_url
+      - notify_constraint_url
       type: object
       properties:
-        put_operation_url:
-          $ref: '#/components/schemas/PutOperationDetailsURL'
-        put_constraint_url:
-          $ref: '#/components/schemas/PutConstraintDetailsURL'
+        notify_operation_url:
+          $ref: '#/components/schemas/NotifyOperationDetailsURL'
+        notify_constraint_url:
+          $ref: '#/components/schemas/NotifyConstraintDetailsURL'
 
     SubscriptionState:
       description: |-
@@ -336,9 +475,9 @@ components:
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         callbacks:
           $ref: '#/components/schemas/SubscriptionCallbacks'
         created_by_operation:
@@ -422,62 +561,56 @@ components:
           $ref: '#/components/schemas/Subscription'
 
 
-    GetOperationDetailsURL:
+    QueryOperationDetailsURL:
       description: |-
         The URL at which the details of an Operation may be retrieved.
-        See `GET /uss/operations/{id}` path for specification of this endpoint.
-        This URL is the base Operations resource.
-        If this URL is specified as https://my_utm_uss.com/operations then the details for a
-        particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.
-        This URL may not have a trailing / character.
+        See `GET /v1/{query-operation-details}/{id}` path for specification of this endpoint.
+        Note: This URL may not have a trailing '/' character.
       type: string
-      example: 'https://my_utm_uss.com/operations'
+      example: 'https://v1/uss.com/query-operation-details'
 
-    PutOperationDetailsURL:
+    NotifyOperationDetailsURL:
       description: |-
-        The URL at which the details of a peer Operation will be pushed.
-        See `PUT /uss/operations/{id}` path for specification of this endpoint.
-        This URL is the base Operations resource.
-        If this URL is specified as https://my_utm_uss.com/operations then the details for a
-        particular {id} may be obtained at the URL https://my_utm_uss.com/operations/{id}.
-        This URL may not have a trailing / character.
+        The URL at which the details of a peer Operation will be sent.
+        See `PUT /v1/{notify-operation-details}/{id}` path for specification of this endpoint.
+        This URL may not have a trailing '/' character.
       type: string
-      example: 'https://my_utm_uss.com/operations'
+      example: 'https://v1/uss.com/notify-operation-details'
 
     OperationCallbacks:
       description: |-
         Endpoints that should be called when an applicable event occurs.
         All fields are required.
       required:
-      - get_details_url
-      - put_feedback_url
+      - query_details_url
+      - notify_feedback_url
       type: object
       properties:
-        get_details_url:
-          $ref: '#/components/schemas/GetOperationDetailsURL'
-        put_feedback_url:
-          $ref: '#/components/schemas/PutFeedbackURL'
+        query_details_url:
+          $ref: '#/components/schemas/QueryOperationDetailsURL'
+        notify_feedback_url:
+          $ref: '#/components/schemas/NotifyFeedbackURL'
 
     OperationState:
       description: |-
         State of an Operation.
 
-        'ACCEPTED': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no  aircraft associated with it are active yet.
+        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no  aircraft associated with it are active yet.
 
-        'ACTIVATED': One or more aircraft associated with this Operation are, or will imminently be, in flight.
+        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.
 
-        'NON_CONFORMING': This Operation is outside of the planned volume. A new volume MUST be submitted to the DSS.
+        'NonConforming': This Operation is outside of the planned volume.  A new volume MUST be submitted to the DSS.  In this state, the {query-operation-details}/{id}/telemetry' endpoint MUST respond (if possible) to queries from USS peers.
 
-        'CONTINGENCY': (Also known as ROGUE). This Operation has been NON_CONFORMING for a certain period of time. This state must transition to ENDED. A new volume MUST be submitted to the DSS.
+        'Contingent': (Also known as ROGUE). This Operation has been NON-CONFORMING for a certain period of time.  This state must transition to ENDED. A new volume MUST be submitted to the DSS.  In this state, the {query-operation-details}/{id}/telemetry' endpoint MUST respond (if possible) to queries from USS peers.
 
-        'ENDED': This Operation has ended (due to either an Operator-induced change or flight completion).
+        'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
       type: string
       enum:
-        - ACCEPTED
-        - ACTIVATED
-        - NON_CONFORMING
-        - CONTINGENCY
-        - ENDED
+        - Accepted
+        - Activated
+        - NonConforming
+        - Contingent
+        - Ended
 
     OperationReference:
       description: |-
@@ -502,9 +635,9 @@ components:
             Created by the DSS and based on creating client’s ID (via access
             token).  Used for restricting mutation and deletion operations to owner.
         time_start:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
         subscription_id:
@@ -548,7 +681,7 @@ components:
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
-    ChangeOperationReferenceResponse:
+    UpdateOperationReferenceResponse:
       description: |-
         Response to a request to create, update, or delete an OperationReference
         in the DSS.
@@ -580,40 +713,34 @@ components:
             $ref: '#/components/schemas/OperationReference'
 
 
-    GetConstraintDetailsURL:
+    QueryConstraintDetailsURL:
       description: |-
         The URL at which the details of a Constraint may be retrieved.
-        See `/uss/constraints/{id}` path for specification of this endpoint.
-        This URL is the base Constraints resource.  If this URL is specified as
-        https://my_utm_uss.com/constraints then the details for a particular {id} may be
-        obtained at the URL https://my_utm_uss.com/constraints/{id}.
-        This URL may not have a trailing / character.
+        See `GET /v1/{query-constraint-details}/{id}` path for specification of this endpoint.
+        This URL may not have a trailing '/' character.
       type: string
-      example: 'https://my_utm_uss.com/constraints'
+      example: 'https://v1/uss.com/query-constraint-details'
 
-    PutConstraintDetailsURL:
+    NotifyConstraintDetailsURL:
       description: |-
         The URL at which the details of a peer Constraint will be pushed.
-        See `/uss/constraints/{id}` path for specification of this endpoint.
-        This URL is the base Constraints resource.  If this URL is specified as
-        https://my_utm_uss.com/constraints then the details for a particular {id} may be
-        obtained at the URL https://my_utm_uss.com/constraints/{id}.
-        This URL may not have a trailing / character.
+        See `PUT /v1/{notify-constraint-details}/{id}` path for specification of this endpoint.
+        This URL may not have a trailing '/' character.
       type: string
-      example: 'https://my_utm_uss.com/constraints'
+      example: 'https://v1/uss.com/notify-constraint-details'
 
     ConstraintCallbacks:
       description: |-
         Endpoints that should be called when an applicable event occurs.
       required:
-      - get_details_url
-      - put_feedback_url
+      - query_details_url
+      - notify_feedback_url
       type: object
       properties:
-        get_details_url:
-          $ref: '#/components/schemas/GetConstraintDetailsURL'
-        put_feedback_url:
-          $ref: '#/components/schemas/PutFeedbackURL'
+        query_details_url:
+          $ref: '#/components/schemas/QueryConstraintDetailsURL'
+        notify_feedback_url:
+          $ref: '#/components/schemas/NotifyFeedbackURL'
 
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
@@ -637,9 +764,9 @@ components:
           type: string
           example: '(uss_owner)'
         time_start:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/Time'
+          $ref: '#/components/schemas/TimeWithUnits'
         callbacks:
           $ref: '#/components/schemas/ConstraintCallbacks'
 
@@ -706,14 +833,11 @@ components:
           $ref: '#/components/schemas/ConstraintReference'
 
 
-    PutFeedbackURL:
+    NotifyFeedbackURL:
       description: |-
         The URL at which feedback may be submitted.
-        See `/uss/feedback/{id}` path for specification of this endpoint.
-        This URL is the base Feedback resource.
-        If this URL is specified as https://my_utm_uss.com/feedback then feedback
-        with {id} may be submitted at the URL https://my_utm_uss.com/feedback/{id}.
-        This URL may not have a trailing / character.
+        See `POST /v1/{notify-feedback}/{id}` path for specification of this endpoint.
+        This URL may not have a trailing '/' character.
       type: string
       example: 'https://my_utm_uss.com/feedback'
 
@@ -736,13 +860,47 @@ components:
           items:
             $ref: '#/components/schemas/EntityReference'
 
+    MakeReportParameters:
+      description: Parameters of a message informing the DSS of a potential peer USS issue.
+      required:
+        - url_endpoint
+        - response_code
+        - problem
+        - timestamp
+      type: object
+      properties:
+        url_endpoint:
+          type: string
+          description: URL for request that resulted in an error.
+        headers:
+          description: Set of headers included in request that resulted in an error.
+          type: array
+          items:
+            type: string
+        body:
+          description: Base64-encoded body content sent in request that resulted in an error.
+          type: string
+        response_code:
+          type: integer
+          format: int32
+          description: HTTP response code encountered in error response.
+        response_body:
+          type: string
+          description: Base64-encoded body content received in response that was in error.
+        problem:
+          type: string
+          description: Human-readable description of the problem with the response.
+        timestamp:
+          $ref: '#/components/schemas/TimeWithUnits'
+
+
 paths:
   #
   # DSS Endpoint: OPERATIONS
   #
 
   /v1/dss-utm/operations:
-    summary: Query all Operations in the DSS that intersect with a specified geographic area and time-range.
+    summary: Query all Operations in the DSS that intersect with a specified geographic area, altitude-range, and time-range.
     description: "Interface to Operation references in the DSS."
 
     get:
@@ -751,19 +909,60 @@ paths:
       security:
       - Authority:
         - utm.read.operations
-      summary: Retrieve all Operations (references) in the specified area/volume from the DSS.
+      summary: Retrieve all Operations (references) in the specified area/volume/time from the DSS.
       parameters:
-      - name: ' '
-        description: |-
-          The area/volume in which to search for Operation entities.  References for some
-          Operations near this area but wholly outside it may also be returned.
-          
-          Note that this parameter is a JSON object ('request-body'). Note that either
-          or both of the 'altitude' and 'time' values may be omitted from this parameter.
+      - name: point
+        description: |+
+          Geographical vertex specification for search query. Specified as: 'point=[{LONGITUDE},{LATITUDE}]'. Units are degrees.
+
+          Used to define the search area, specified in one of two ways:
+          (a) POLYGON: THREE (minimum) 'point' values are required. For example: 'point=[{LON1},{LAT1}]&point=[{LON2},{LAT2}],point=[{LON3},{LAT3}]'
+
+          (b) CIRCLE: ONE 'point' value is required to specify the centerpoint, and ONE associated 'radius' parameter. For example: 'point=[{LON1},{LAT1}]&radius={METERS}'
         schema:
-          $ref: '#/components/schemas/Volume4D'
+          $ref: '#/components/schemas/LonLatPair'
         in: query
         required: true
+      - name: radius
+        description: |-
+          Radius of circular geographical area (only used when specifying a circular area).
+          Requires ONE accompanying 'point' parameter to specify the centerpoint of the circle.
+        schema:
+          $ref: '#/components/schemas/Radius'
+        in: query
+        required: false
+      - name: earliest
+        description: |-
+          Optional start-time bound for the query.
+          All Entities that are INACTIVE BEFORE this time will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Time'
+        in: query
+        required: false
+      - name: latest
+        description: |-
+          Optional end-time bound for the query.
+          All Entities that are ACTIVE AFTER this time will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Time'
+        in: query
+        required: false
+      - name: lower
+        description: |-
+          (Optional) lower-altitude bound for the query.
+          All Entities that have a LOWER upper-altitude bound will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Altitude'
+        in: query
+        required: false
+      - name: upper
+        description: |-
+          (Optional) lower-altitude bound for the query.
+          All Entities that have a HIGHER lower-altitude bound will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Altitude'
+        in: query
+        required: false
       responses:
         "200":
           content:
@@ -799,7 +998,7 @@ paths:
           description: The requested area was too large.
 
   /v1/dss-utm/operations/{id}:
-    summary: Create/Update/Query a specified Operation in/from the DSS.
+    summary: CRUD endpoint for a specified Operation in the DSS.
     parameters:
     - name: id
       description: EntityUUID of the Operation.
@@ -867,7 +1066,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+                $ref: '#/components/schemas/UpdateOperationReferenceResponse'
           description: An Operation was created successfully in the DSS.
         "400":
           content:
@@ -919,7 +1118,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+                $ref: '#/components/schemas/UpdateOperationReferenceResponse'
           description: The specified Operation was successfully removed from the DSS.
         "400":
           content:
@@ -955,7 +1154,7 @@ paths:
   #
 
   /v1/dss-utm/constraints:
-    summary: Query all Constraints in the DSS that intersect with a specified area/volume.
+    summary: Query all Constraints in the DSS that intersect with a specified area/volume/time.
     description: ""
 
     get:
@@ -966,17 +1165,58 @@ paths:
         - utm.read.constraints
       summary: Retrieve all Constraints (references) in the specified area/volume from the DSS.
       parameters:
-      - name: ' '
-        description: |-
-          The area/volume in which to search for Constraint entities.  References for some
-          Constraints near this area but wholly outside it may also be returned.
-          
-          Note that this parameter is a JSON object (in the 'request-body'). Note that either
-          or both of the 'altitude' and 'time' values may be omitted from this parameter.
+      - name: point
+        description: |+
+          Geographical vertex specification for search query. Specified as: 'point=[{LONGITUDE},{LATITUDE}]'. Units are degrees.
+
+          Used to define the search area, specified in one of two ways:
+          (a) POLYGON: THREE (minimum) 'point' values are required. For example: 'point=[{LON1},{LAT1}]&point=[{LON2},{LAT2}],point=[{LON3},{LAT3}]'
+
+          (b) CIRCLE: ONE 'point' value is required to specify the centerpoint, and ONE associated 'radius' parameter. For example: 'point=[{LON1},{LAT1}]&radius={METERS}'
         schema:
-          $ref: '#/components/schemas/Volume4D'
+          $ref: '#/components/schemas/LonLatPair'
         in: query
         required: true
+      - name: radius
+        description: |-
+          Optional radius of circular gregraphical area.
+          ONE required accompanying 'point' parameter to specify the centerpoint of the circle.
+        schema:
+          $ref: '#/components/schemas/Radius'
+        in: query
+        required: false
+      - name: earliest
+        description: |-
+          Optional start-time bound for the query.
+          All Entities that are INACTIVE BEFORE this time will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Time'
+        in: query
+        required: false
+      - name: latest
+        description: |-
+          Optional end-time bound for the query.
+          All Entities that are ACTIVE AFTER this time will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Time'
+        in: query
+        required: false
+      - name: lower
+        description: |-
+          (Optional) lower-altitude bound for the query.
+          All Entities that have a LOWER upper-altitude bound will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Altitude'
+        in: query
+        required: false
+      - name: upper
+        description: |-
+          (Optional) lower-altitude bound for the query.
+          All Entities that have a HIGHER lower-altitude bound will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Altitude'
+        in: query
+        required: false
       responses:
         "200":
           content:
@@ -1019,7 +1259,7 @@ paths:
         $ref: '#/components/schemas/EntityUUID'
       in: path
       required: true
-    summary: Create/Update/Query a specific Constraint in/from the DSS.
+    summary: CRUD endpoint for a specified Constraint in the DSS.
 
     get:
       tags:
@@ -1182,7 +1422,7 @@ paths:
       - "Subscriptions"
       security:
       - Authority:
-        - dss.read.subscriptions
+        - utm.read.subscriptions
       description: |-
         Retrieve Subscriptions intersecting an area of interest.  Subscription
         notifications are only triggered by (and contain full information of) changes to,
@@ -1198,13 +1438,58 @@ paths:
         an error indicating that they had too many existing Subscriptions in an area.
       summary: Retrieve all Subscriptions (references) in the specified area/volume from the DSS.
       parameters:
-      - name: ' '
+      - name: point
+        description: |+
+          Geographical vertex specification for search query. Specified as: 'point=[{LONGITUDE},{LATITUDE}]'. Units are degrees.
+
+          Used to define the search area, specified in one of two ways:
+          (a) POLYGON: THREE (minimum) 'point' values are required. For example: 'point=[{LON1},{LAT1}]&point=[{LON2},{LAT2}],point=[{LON3},{LAT3}]'
+
+          (b) CIRCLE: ONE 'point' value is required to specify the centerpoint, and ONE associated 'radius' parameter. For example: 'point=[{LON1},{LAT1}]&radius={METERS}'
+        schema:
+          $ref: '#/components/schemas/LonLatPair'
         in: query
         required: true
-        description: The area/volume in which to search for Subscriptions.  References to some Subscriptions
-          near this area but wholly outside it may also be returned.
+      - name: radius
+        description: |-
+          Optional radius of circular gregraphical area.
+          ONE required accompanying 'point' parameter to specify the centerpoint of the circle.
         schema:
-          $ref: '#/components/schemas/Volume4D'
+          $ref: '#/components/schemas/Radius'
+        in: query
+        required: false
+      - name: earliest
+        description: |-
+          Optional start-time bound for the query.
+          All Entities that are INACTIVE BEFORE this time will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Time'
+        in: query
+        required: false
+      - name: latest
+        description: |-
+          Optional end-time bound for the query.
+          All Entities that are ACTIVE AFTER this time will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Time'
+        in: query
+        required: false
+      - name: lower
+        description: |-
+          (Optional) lower-altitude bound for the query.
+          All Entities that have a LOWER upper-altitude bound will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Altitude'
+        in: query
+        required: false
+      - name: upper
+        description: |-
+          (Optional) lower-altitude bound for the query.
+          All Entities that have a HIGHER lower-altitude bound will be excluded from the results.
+        schema:
+          $ref: '#/components/schemas/Altitude'
+        in: query
+        required: false
       responses:
         "200":
           content:
@@ -1238,9 +1523,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
-  
+
   /v1/dss-utm/subscriptions/{id}:
-    summary: Create/Update/Query a specific Subscription (reference) in the DSS.
+    summary: Create/Update a specific Subscription (reference) in the DSS.
     parameters:
     - name: id
       description: SubscriptionUUID of the subscription of interest.
@@ -1254,7 +1539,7 @@ paths:
       - "Subscriptions"
       security:
       - Authority:
-        - dss.read.subscriptions
+        - utm.read.subscriptions
       summary: Retrieve the specified Subscription (reference) from the DSS.
       description: |-
         Retrieve a specific subscription.
@@ -1295,7 +1580,7 @@ paths:
     put:
       security:
       - Authority:
-        - dss.write.subscriptions
+        - utm.write.subscriptions
       summary: Create/Update the specified Subscription in the DSS.
       description: |-
         Create or update a subscription.  This call will fail if a Subscription with the same ID already exists.
@@ -1367,8 +1652,8 @@ paths:
       - "Subscriptions"
       security:
         - Authority:
-          - dss.read.subscriptions
-          - dss.write.subscriptions
+          - utm.read.subscriptions
+          - utm.write.subscriptions
       summary: Remove the specified Subscription from the DSS.
       responses:
         "200":
@@ -1403,3 +1688,63 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: A Subscription with the specified ID was not found.
+
+#
+# DSS Endpoint: REPORT
+#
+
+  /v1/dss-utm/reports/{id}:
+    summary: Report information about peer USS issues to the DSS.
+    parameters:
+    - name: id
+      description: Unique identifier attached to this report.
+      schema:
+        $ref: '#/components/schemas/UUIDv4'
+      in: path
+      required: true
+
+    post:
+      security:
+      - Authority:
+        - utm.read.operations
+        - utm.write.operations
+        - utm.read.constraints
+        - utm.write.constraints
+        - utm.read.subscriptions
+        - utm.write.subscriptions
+      summary: Create a report of potential operational issues with a peer USS.
+      description: Report peer USS issues. Data sent to this endpoint is archived.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MakeReportParameters'
+        required: true
+      tags:
+      - "Reports"
+      responses:
+        "201":
+          description: A new Report was created successfully (and archived).
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header,
+            token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+            * An EntityType was specified in `types_filter` to which the scopes included in the access token do not provide access.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * A Report with the specified ID already exists.
+            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
