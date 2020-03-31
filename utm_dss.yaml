@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.1.1
+  version: 0.1.3
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -46,17 +46,17 @@ components:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
             utm.read.operations: |-
-              Client may read Operations (references) from the DSS.
+              Client may read Operations from the DSS (references) and partner USSs (details).
             utm.write.operations: |-
-              Client may create, edit, and delete (their own) Operations.
+              Client may create, edit, and delete (their own) Operations, as well as all operations permitted by `utm.read.operations`.
             utm.read.constraints: |-
-              Client may read Constraints (references) from the DSS.
+              Client may read Constraints from the DSS (references) and partner USSs (details).
             utm.write.constraints: |-
-              Client may create, edit, and delete (their own) Constraints.
+              Client may create, edit, and delete (their own) Constraints, as well as all operations permitted by `utm.read.constraints`.
             utm.read.subscriptions: |-
-              Client may read (their own) Subscriptions (references) from the DSS.
+              Client may read their own Subscriptions from the DSS.
             utm.write.subscriptions: |-
-              Client may create, edit, and delete (their own) Subscriptions.
+              Client may create, edit, and delete their own Subscriptions in the DSS.
       description: |-
         Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.
 
@@ -1651,7 +1651,6 @@ paths:
       - "Subscriptions"
       security:
         - Authority:
-          - utm.read.subscriptions
           - utm.write.subscriptions
       summary: Remove the specified Subscription from the DSS.
       responses:
