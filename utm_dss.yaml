@@ -563,19 +563,19 @@ components:
 
     QueryOperationDetailsURL:
       description: |-
-        The URL at which the details of an Operation may be retrieved.
-        See `GET /v1/{query-operation-details}/{id}` path for specification of this endpoint.
-        Note: This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Operation data is retrieved. This URL may not have a trailing '/' character.
+        The path `/v1/operations/{id}` will be appended to this string to form the complete URL.
+        (See `GET /v1/operations/`, `GET /v1/operations/{id}`, and `GET /v1/operations/{id}/telemetry` for more information.)
       type: string
-      example: 'https://v1/uss.com/query-operation-details'
+      example: 'https://uss.com/utm'
 
     NotifyOperationDetailsURL:
       description: |-
-        The URL at which the details of a peer Operation will be sent.
-        See `PUT /v1/{notify-operation-details}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Operation data is received. This URL may not have a trailing '/' character.
+        The path `/v1/operations/{id}` will be appended to this string to form the complete URL.
+        (See `PUT /v1/operations/{id}` and `DELETE /v1/operations/{id}` for more information.)
       type: string
-      example: 'https://v1/uss.com/notify-operation-details'
+      example: 'https://uss.com/utm'
 
     OperationCallbacks:
       description: |-
@@ -589,7 +589,7 @@ components:
         query_details_url:
           $ref: '#/components/schemas/QueryOperationDetailsURL'
         notify_feedback_url:
-          $ref: '#/components/schemas/NotifyFeedbackURL'
+          $ref: '#/components/schemas/ReportsBaseURL'
 
     OperationState:
       description: |-
@@ -715,19 +715,19 @@ components:
 
     QueryConstraintDetailsURL:
       description: |-
-        The URL at which the details of a Constraint may be retrieved.
-        See `GET /v1/{query-constraint-details}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Constraint data is retrieved. This URL may not have a trailing '/' character.
+        The path `/v1/constraints/{id}` will be appended to this string to form the complete URL.
+        (See `GET /v1/constraints/` and `GET /v1/constraints/{id}` for more information.)
       type: string
-      example: 'https://v1/uss.com/query-constraint-details'
+      example: 'https://uss.com/utm'
 
     NotifyConstraintDetailsURL:
       description: |-
-        The URL at which the details of a peer Constraint will be pushed.
-        See `PUT /v1/{notify-constraint-details}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Constraint data is received. This URL may not have a trailing '/' character.
+        The path `/v1/constraints/{id}` will be appended to this string to form the complete URL.
+        (See `PUT /v1/constraints/{id}` and `DELETE /v1/constraints/{id}` for more information.)
       type: string
-      example: 'https://v1/uss.com/notify-constraint-details'
+      example: 'https://uss.com/utm'
 
     ConstraintCallbacks:
       description: |-
@@ -740,7 +740,7 @@ components:
         query_details_url:
           $ref: '#/components/schemas/QueryConstraintDetailsURL'
         notify_feedback_url:
-          $ref: '#/components/schemas/NotifyFeedbackURL'
+          $ref: '#/components/schemas/ReportsBaseURL'
 
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
@@ -833,13 +833,12 @@ components:
           $ref: '#/components/schemas/ConstraintReference'
 
 
-    NotifyFeedbackURL:
+    ReportsBaseURL:
       description: |-
-        The URL at which feedback may be submitted.
-        See `POST /v1/{notify-feedback}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The URL at which feedback may be submitted. This URL may not have a trailing '/' character.
+        See `POST /v1/reports/{id}` for specification of this endpoint.
       type: string
-      example: 'https://my_utm_uss.com/feedback'
+      example: 'https://uss.com/utm'
 
 
     AirspaceConflictResponse:
@@ -899,7 +898,7 @@ paths:
   # DSS Endpoint: OPERATIONS
   #
 
-  /v1/dss-utm/operations:
+  /v1/operations:
     summary: Query all Operations in the DSS that intersect with a specified geographic area, altitude-range, and time-range.
     description: "Interface to Operation references in the DSS."
 
@@ -997,7 +996,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /v1/dss-utm/operations/{id}:
+  /v1/operations/{id}:
     summary: CRUD endpoint for a specified Operation in the DSS.
     parameters:
     - name: id
@@ -1153,7 +1152,7 @@ paths:
   # DSS Enpoint: CONSTRAINTS
   #
 
-  /v1/dss-utm/constraints:
+  /v1/constraints:
     summary: Query all Constraints in the DSS that intersect with a specified area/volume/time.
     description: ""
 
@@ -1251,7 +1250,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /v1/dss-utm/constraints/{id}:
+  /v1/constraints/{id}:
     parameters:
     - name: id
       description: EntityUUID of the Constraint.
@@ -1414,7 +1413,7 @@ paths:
   # DSS Endpoint: SUBSCRIPTIONS
   #
 
-  /v1/dss-utm/subscriptions:
+  /v1/subscriptions:
     summary: Subscriptions for airspace updates to a volume of interest.
 
     get:
@@ -1524,7 +1523,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /v1/dss-utm/subscriptions/{id}:
+  /v1/subscriptions/{id}:
     summary: Create/Update a specific Subscription (reference) in the DSS.
     parameters:
     - name: id
@@ -1693,7 +1692,7 @@ paths:
 # DSS Endpoint: REPORT
 #
 
-  /v1/dss-utm/reports/{id}:
+  /v1/reports/{id}:
     summary: Report information about peer USS issues to the DSS.
     parameters:
     - name: id

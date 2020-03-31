@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS<->USS API
-  version: 0.1.0
+  version: 0.1.1
   description: |-
     Interface definitions for data exchange between UAS Service Suppliers (USS).
 
@@ -422,11 +422,11 @@ components:
 
     ReportURL:
       description: |-
-        The partial URL (path) at which a report may be submitted to a USS.
-        See `POST /v1/{report}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Reports are received. This URL may not have a trailing '/' character.
+        The path `/v1/reports/{id}` will be appended to this string to form the complete URL.
+        (See `POST /v1/reports/{id}` for more information.)
       type: string
-      example: 'https://my_utm_uss.com/reports'
+      example: 'https://uss.com/utm'
 
     OperationState:
       description: |-
@@ -451,19 +451,19 @@ components:
 
     QueryOperationDetailsURL:
       description: |-
-        The URL at which the details of an Operation may be retrieved.
-        See `GET /v1/{query-operation-details}/{id}` path for specification of this endpoint.
-        Note: This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Operation data is retrieved. This URL may not have a trailing '/' character.
+        The path `/v1/operations/{id}` will be appended to this string to form the complete URL.
+        (See `GET /v1/operations/`, `GET /v1/operations/{id}`, and `GET /v1/operations/{id}/telemetry` for more information.)
       type: string
-      example: 'https://v1/uss.com/query-operation-details'
+      example: 'https://uss.com/utm'
 
     NotifyOperationDetailsURL:
       description: |-
-        The URL at which the details of a peer Operation may be received.
-        See `PUT /v1/{notify-operation-details}/{id}` path for specification of this endpoint.
-        Note: This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Operation data is received. This URL may not have a trailing '/' character.
+        The path `/v1/operations/{id}` will be appended to this string to form the complete URL.
+        (See `PUT /v1/operations/{id}` and `DELETE /v1/operations/{id}` for more information.)
       type: string
-      example: 'https://v1/uss.com/notify-operation-details'
+      example: 'https://uss.com/utm'
 
     OperationCallbacks:
       description: |-
@@ -577,19 +577,19 @@ components:
 
     QueryConstraintDetailsURL:
       description: |-
-        The URL at which the details of a Constraint may be retrieved.
-        See `GET /v1/{query-constraint-details}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Constraint data is retrieved. This URL may not have a trailing '/' character.
+        The path `/v1/constraints/{id}` will be appended to this string to form the complete URL.
+        (See `GET /v1/constraints/` and `GET /v1/constraints/{id}` for more information.)
       type: string
-      example: 'https://v1/uss.com/query-constraint-details'
+      example: 'https://uss.com/utm'
 
     NotifyConstraintDetailsURL:
       description: |-
-        The URL at which the details of a peer Constraint will be received.
-        See `PUT /v1/{notify-constraint-details}/{id}` path for specification of this endpoint.
-        This URL may not have a trailing '/' character.
+        The base URL (protocol://hostname/path) where USS Constraint data is received. This URL may not have a trailing '/' character.
+        The path `/v1/constraints/{id}` will be appended to this string to form the complete URL.
+        (See `PUT /v1/constraints/{id}` and `DELETE /v1/constraints/{id}` for more information.)
       type: string
-      example: 'https://v1/uss.com/notify-constraint-details'
+      example: 'https://uss.com/utm'
 
     ConstraintCallbacks:
       description: |-
@@ -733,15 +733,9 @@ paths:
   # USS Endpoint: OPERATIONS
   #
 
-  /v1/{query-operation-details}/{id}:
+  /v1/operations/{id}:
     summary: Query detailed information of an Operation.
     parameters:
-    - name: query-operation-details
-      description: Partial path to URL for requesting details of the specified Operation.
-      schema:
-        $ref: '#/components/schemas/QueryOperationDetailsURL'
-      in: path
-      required: true
     - name: id
       description: EntityUUID for this Operation (matches Operation identifier).
       schema:
@@ -789,77 +783,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
-
-  /v1/{query-operation-details}/{id}/telemetry:
-    summary: Query detailed information on the position of an off-nominal Operation.
-    parameters:
-    - name: query-operation-details
-      description: Partial path to URL for requesting details of the specified Operation.
-      schema:
-        $ref: '#/components/schemas/QueryOperationDetailsURL'
-      in: path
-      required: true
-    - name: id
-      description: EntityUUID for this Operation (matches Operation identifier).
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
-
-    get:
-      tags:
-      - "Operations"
-      security:
-      - Authority:
-        - utm.read.operations
-      summary: Query detailed information on the position of an off-nominal Operation.
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetOperationTelemetryResponse'
-          description: Operation telemetry details were retrieved successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: One or more input parameters were missing or invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The requested Entity could not be found.
-
-  /v1/{notify-operation-details}/{id}:
-    summary: Receive detailed information of an Operation directly from a peer USS.
-    parameters:
-    - name: notify-operation-details
-      description: Partial path to URL for sharing details of the specified Operation.
-      schema:
-        $ref: '#/components/schemas/NotifyOperationDetailsURL'
-      in: path
-      required: true
-    - name: id
-      description: EntityUUID for this Operation (matches Operation identifier).
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
 
     put:
       tags:
@@ -955,19 +878,62 @@ paths:
             a previously-received notification, or identical to a previously-received
             notification and the Entity is different.
 
+  /v1/operations/{id}/telemetry:
+    summary: Query detailed information on the position of an off-nominal Operation.
+    parameters:
+    - name: id
+      description: EntityUUID for this Operation (matches Operation identifier).
+      schema:
+        $ref: '#/components/schemas/EntityUUID'
+      in: path
+      required: true
+
+    get:
+      tags:
+      - "Operations"
+      security:
+      - Authority:
+        - utm.read.operations
+      summary: Query detailed information on the position of an off-nominal Operation.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOperationTelemetryResponse'
+          description: Operation telemetry details were retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: One or more input parameters were missing or invalid.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The access token was decoded successfully but did not include a scope appropriate to this endpoint.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The requested Entity could not be found.
+
   #
   # USS Endpoint: CONSTRAINTS
   #
 
-  /v1/{query-constraint-details}/{id}:
+  /v1/constraints/{id}:
     summary: Query detailed information of a Constraint.
     parameters:
-    - name: query-constraint-details
-      description: Partial path to URL for requesting details of the specified Constraint.
-      schema:
-        $ref: '#/components/schemas/QueryConstraintDetailsURL'
-      in: path
-      required: true
     - name: id
       description: EntityUUID of the Constraint.
       schema:
@@ -1016,22 +982,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
-
-  /v1/{notify-constraint-details}/{id}:
-    summary: Send details of a Constraint to a peer USS.
-    parameters:
-    - name: notify-constraint-details
-      description: Path for sending details of the specified Constraint.
-      schema:
-        $ref: '#/components/schemas/NotifyConstraintDetailsURL'
-      in: path
-      required: true
-    - name: id
-      description: EntityUUID of the Constraint.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
 
     put:
       tags:
@@ -1131,15 +1081,9 @@ paths:
   # USS Endpoint: (OTHER)
   #
 
-  /v1/{reports}/{id}:
+  /v1/reports/{id}:
     summary: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.  This endpoint is used for all feedback related to Operations and Constraints. Note that {id} is generated by the sender.
     parameters:
-    - name: reports
-      description: Partial path to feedback URL.
-      schema:
-        $ref: '#/components/schemas/ReportURL'
-      in: path
-      required: true
     - name: id
       description: ID of the report. Generated by the sender.
       schema:
