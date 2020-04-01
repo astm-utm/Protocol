@@ -84,7 +84,11 @@ components:
       example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
 
     EntityUUID:
-      $ref: '#/components/schemas/UUIDv4'
+      description: |-
+        Universally-unique identifier for an Entity communicated through
+        the DSS.  Formatted as UUIDv4.
+      allOf:
+      - $ref: '#/components/schemas/UUIDv4'
 
     EntityOVN:
       title: EntityOVN
@@ -109,13 +113,17 @@ components:
             for that EntityUUID, that subscription update should be ignored.
           type: integer
         token:
-          $ref: '#/components/schemas/UUIDv4'
+          description: |-
+            Universally-unique identifier associated with a specific set of
+            data.
+          allOf:
+          - $ref: '#/components/schemas/UUIDv4'
 
     OVNEntry:
       description: Mapping between an EntityUUID and an EntityOVN.
       required:
-      - id
-      - signature
+      - entity_id
+      - entity_ovn
       type: object
       properties:
         entity_id:
@@ -130,7 +138,11 @@ components:
         $ref: '#/components/schemas/OVNEntry'
 
     SubscriptionUUID:
-      $ref: '#/components/schemas/UUIDv4'
+      description: |-
+        Universally-unique identifier for a Subscription communicated through
+        the DSS.  Formatted as UUIDv4.
+      allOf:
+      - $ref: '#/components/schemas/UUIDv4'
 
     Key:
       description: |
@@ -349,6 +361,10 @@ components:
         properties:
           $ref: '#/components/schemas/RadiusWithUnits'
 
+#
+# End of GeoJSON definitions
+#
+
     Volume3D:
       description: |-
         A three-dimensional geographic volume consisting of a vertically-extruded polygon.
@@ -372,9 +388,13 @@ components:
               type: 'Point'
               coordinates: [-121.0123, 156.789]
         altitude_lower:
-          $ref: '#/components/schemas/AltitudeWithUnits'
+          description: Minimum bounding altitude of this volume.
+          allOf:
+          - $ref: '#/components/schemas/AltitudeWithUnits'
         altitude_upper:
-          $ref: '#/components/schemas/AltitudeWithUnits'
+          description: Maximum bounding altitude of this volume.
+          allOf:
+          - $ref: '#/components/schemas/AltitudeWithUnits'
 
     Volume4D:
       description: Contiguous block of geographic spacetime.
@@ -385,9 +405,13 @@ components:
         volume:
           $ref: '#/components/schemas/Volume3D'
         time_start:
-          $ref: '#/components/schemas/TimeWithUnits'
+          description: Beginning time of this volume.
+          allOf:
+          - $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/TimeWithUnits'
+          description: End time of this volume.
+          allOf:
+          - $ref: '#/components/schemas/TimeWithUnits'
 
 
     ErrorResponse:
@@ -475,12 +499,21 @@ components:
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
-          $ref: '#/components/schemas/TimeWithUnits'
+          description: |-
+            If set, this subscription will not receive notifications before this time.
+          allOf:
+          - $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/TimeWithUnits'
+          description: |-
+            If set, this subscription will not receive notifications after this time.
+          allOf:
+          - $ref: '#/components/schemas/TimeWithUnits'
         callbacks:
           $ref: '#/components/schemas/SubscriptionCallbacks'
         created_by_operation:
+          description: |-
+            True if this Subscription was implicitly created by the DSS via the creation of an
+            Operation, and should therefore be deleted by the DSS when that Operation is deleted.
           type: boolean
         dependent_operations:
           $ref: '#/components/schemas/OperationDependencyList'
@@ -563,24 +596,32 @@ components:
 
     QueryOperationDetailsURL:
       description: |-
-        The base URL (protocol://hostname/path) where USS Operation data is retrieved. This URL may not have a trailing '/' character.
-        The path `/v1/operations/{id}` will be appended to this string to form the complete URL.
-        (See `GET /v1/operations/`, `GET /v1/operations/{id}`, and `GET /v1/operations/{id}/telemetry` for more information.)
+        The base URL of a USS implementation of (at least) the GET Operation details portion of the USS-USS API.
+        Per the USS-USS API, the full URL to retrieve the details of an Operation with a particular {id} can
+        be constructed by appending `/v1/operations/{id}` to this base URL.  Accordingly, this URL may
+        not have a trailing '/' character.  At times when telemetry is available for this operation, it may
+        be retrieved at `{QueryOperationBaseURL}/v1/operations/{id}/telemetry`.  See
+        `GET /v1/operations/{id}` and `GET /v1/operations/{id}/telemetry` in the USS-USS API for more information.
       type: string
       example: 'https://uss.com/utm'
 
     NotifyOperationDetailsURL:
       description: |-
-        The base URL (protocol://hostname/path) where USS Operation data is received. This URL may not have a trailing '/' character.
-        The path `/v1/operations/{id}` will be appended to this string to form the complete URL.
-        (See `PUT /v1/operations/{id}` and `DELETE /v1/operations/{id}` for more information.)
+        The base URL of a USS implementation of (at least) the PUT Operation details portion of the USS-USS API.
+        Per the USS-USS API, the full URL to notify the implementing USS of updated details for an Operation
+        with a particular {id} can be constructed by appending `/v1/operations/{id}` to this base URL.
+        Accordingly, this URL may not have a trailing '/' character.  See `PUT /v1/operations/{id}` and
+        `DELETE /v1/operations/{id}` in the USS-USS API for more information.
       type: string
       example: 'https://uss.com/utm'
 
     OperationCallbacks:
       description: |-
-        Endpoints that should be called when an applicable event occurs.
-        All fields are required.
+        Endpoints that should be called when an applicable event occurs to ensure the
+        Operator remains aware of relevant airspace information.
+        This field should be populated there is no existing Subscription provided in
+        `subscription_id` is not provided.  If provided, this
+        information will be used to create an implicit Subscription associated with this Operation.
       required:
       - query_details_url
       - notify_feedback_url
@@ -595,13 +636,13 @@ components:
       description: |-
         State of an Operation.
 
-        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no  aircraft associated with it are active yet.
+        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no aircraft associated with it are active yet.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
 
-        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.
+        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
 
-        'NonConforming': This Operation is outside of the planned volume.  A new volume MUST be submitted to the DSS.  In this state, the {query-operation-details}/{id}/telemetry' endpoint MUST respond (if possible) to queries from USS peers.
+        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operation_details/{id}/telemetry' USS-USS endpoint MUST respond (if possible) to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
-        'Contingent': (Also known as ROGUE). This Operation has been NON-CONFORMING for a certain period of time.  This state must transition to ENDED. A new volume MUST be submitted to the DSS.  In this state, the {query-operation-details}/{id}/telemetry' endpoint MUST respond (if possible) to queries from USS peers.
+        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operation_details/{id}/telemetry' USS-USS endpoint MUST respond (if possible) to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
         'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
       type: string
@@ -614,7 +655,7 @@ components:
 
     OperationReference:
       description: |-
-        The high-level information of a planned/active Operation with the URL
+        The high-level information of a planned or active Operation with the URL
         of a USS to query for details.  Note: 'OVN' is returned ONLY to the USS that
         created the Operation but NEVER to other USS instances.
       required:
@@ -627,21 +668,34 @@ components:
         id:
           $ref: '#/components/schemas/EntityUUID'
         ovn:
-          $ref: '#/components/schemas/EntityOVN'
+          description: |-
+            Opaque version number of this Operation.  Populated only when the OperationReference
+            is owned by the USS retrieving it.  Not populated when the OperationReference is not
+            owned by the USS retrieving it (instead, the USS must obtain the OVN from the details
+            retrieved from the owning USS).
+          allOf:
+          - $ref: '#/components/schemas/EntityOVN'
         owner:
           type: string
-          example: '(uss_owner)'
+          example: 'uss1'
           description: |-
             Created by the DSS and based on creating client’s ID (via access
             token).  Used for restricting mutation and deletion operations to owner.
         time_start:
-          $ref: '#/components/schemas/TimeWithUnits'
+          description: Beginning time of Operation.
+          allOf:
+          - $ref: '#/components/schemas/TimeWithUnits'
         time_end:
-          $ref: '#/components/schemas/TimeWithUnits'
+          description: End time of Operation.
+          allOf:
+          - $ref: '#/components/schemas/TimeWithUnits'
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
         subscription_id:
-          $ref: '#/components/schemas/EntityUUID'
+          description: |-
+            The ID of the Subscription that is ensuring the Operation owner receives relevant airspace updates while that Operation is 
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionUUID'
 
     PutOperationReferenceParameters:
       description: |-
@@ -667,9 +721,21 @@ components:
         callbacks:
           $ref: '#/components/schemas/OperationCallbacks'
         subscription_id:
-          $ref: '#/components/schemas/EntityUUID'
+          description: |-
+            The ID of an existing Subscription that the USS will use to keep the operator informed about
+            updates to relevant airspace information.  If this field is not provided, then the
+            `subscription_callbacks` field must be provided in order to provide notification capability
+            for the Operation.  The Subscription specified by this ID must cover at least the area over
+            which this Operation is conducted.
+          allOf:
+          - $ref: '#/components/schemas/EntityUUID'
         subscription_callbacks:
-          $ref: '#/components/schemas/SubscriptionCallbacks'
+          description: |-
+            If an existing Subscription is not specified in `subscription_id`, then the necessary
+            information to create an implicit Subscription must be provided in this field.  Both
+            URLs must be specified.
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionCallbacks'
 
     GetOperationReferenceResponse:
       description: |-
@@ -715,20 +781,23 @@ components:
 
     QueryConstraintDetailsURL:
       description: |-
-        The base URL (protocol://hostname/path) where USS Constraint data is retrieved. This URL may not have a trailing '/' character.
-        The path `/v1/constraints/{id}` will be appended to this string to form the complete URL.
-        (See `GET /v1/constraints/` and `GET /v1/constraints/{id}` for more information.)
+        The base URL of a USS implementation of (at least) the GET Constraint details portion of the USS-USS API.
+        Per the USS-USS API, the full URL to retrieve the details of a Constraint with a particular {id} can
+        be constructed by appending `/v1/constraints/{id}` to this base URL.  Accordingly, this URL may
+        not have a trailing '/' character.  See `GET /v1/constraints/{id}` in the USS-USS API for more information.
       type: string
       example: 'https://uss.com/utm'
 
     NotifyConstraintDetailsURL:
       description: |-
-        The base URL (protocol://hostname/path) where USS Constraint data is received. This URL may not have a trailing '/' character.
-        The path `/v1/constraints/{id}` will be appended to this string to form the complete URL.
-        (See `PUT /v1/constraints/{id}` and `DELETE /v1/constraints/{id}` for more information.)
+        The base URL of a USS implementation of (at least) the PUT Constraint details portion of the USS-USS API.
+        Per the USS-USS API, the full URL to notify the implementing USS of updated details for a Constraint
+        with a particular {id} can be constructed by appending `/v1/constraints/{id}` to this base URL.
+        Accordingly, this URL may not have a trailing '/' character.  See `PUT /v1/constraints/{id}` and
+        `DELETE /v1/constraints/{id}` in the USS-USS API for more information.
       type: string
       example: 'https://uss.com/utm'
-
+      
     ConstraintCallbacks:
       description: |-
         Endpoints that should be called when an applicable event occurs.
@@ -757,12 +826,18 @@ components:
         id:
           $ref: '#/components/schemas/EntityUUID'
         ovn:
-          $ref: '#/components/schemas/EntityOVN'
+          description: |-
+            Opaque version number of this Constraint.  Populated only when the ConstraintReference
+            is owned by the USS retrieving it.  Not populated when the ConstraintReference is not
+            owned by the USS retrieving it (instead, the USS must obtain the OVN from the details
+            retrieved from the owning USS).
+          allOf:
+          - $ref: '#/components/schemas/EntityOVN'
         owner:
           description: Created by the DSS and based on creating client’s ID (via access
             token).  Used for restricting mutation and deletion transactions to the entity owner.
           type: string
-          example: '(uss_owner)'
+          example: 'uss1'
         time_start:
           $ref: '#/components/schemas/TimeWithUnits'
         time_end:
@@ -835,8 +910,11 @@ components:
 
     ReportsBaseURL:
       description: |-
-        The URL at which feedback may be submitted. This URL may not have a trailing '/' character.
-        See `POST /v1/reports/{id}` for specification of this endpoint.
+        The base URL of a USS implementation of (at least) the PUT reports portion of the USS-USS API.
+        Per the USS-USS API, the full URL to notify the implementing USS of an error report with a
+        particular {id} can be constructed by appending `/v1/reports/{id}` to this base URL.
+        Accordingly, this URL may not have a trailing '/' character.  See `POST /v1/reports/{id}` in
+        the USS-USS API for more information.
       type: string
       example: 'https://uss.com/utm'
 
@@ -997,7 +1075,7 @@ paths:
           description: The requested area was too large.
 
   /v1/operations/{id}:
-    summary: CRUD endpoint for a specified Operation in the DSS.
+    summary: CRUD endpoint for a specified Operation (reference) in the DSS.
     parameters:
     - name: id
       description: EntityUUID of the Operation.
@@ -1059,7 +1137,7 @@ paths:
       security:
       - Authority:
         - utm.write.operations
-      summary: Create/Update the specified Operation.
+      summary: Create/Update the specified Operation (reference) in the DSS.
       responses:
         "200":
           content:
@@ -1111,7 +1189,7 @@ paths:
       security:
         - Authority:
           - utm.write.operations
-      summary: Remove the specified Operation from the DSS.
+      summary: Remove the specified Operation (reference) from the DSS.
       responses:
         "200":
           content:
