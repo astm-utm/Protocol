@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS<->USS API
-  version: 0.1.1
+  version: 0.1.2
   description: |-
     Interface definitions for data exchange between UAS Service Suppliers (USS).
 
@@ -646,11 +646,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
-        exempt_operations:
-          description: Whitelist of Operation UUIDs exempt from this Constraint, if applicable.
-          type: array
-          items:
-            $ref: '#/components/schemas/EntityUUID'
 
     Constraint:
       description: Full specification of a UTM Constraint.
