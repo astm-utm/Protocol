@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.1.7
+  version: 0.1.8
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -583,9 +583,9 @@ components:
 
         'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
 
-        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operation_details/{id}/telemetry' USS-USS endpoint MUST respond (if possible) to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should response, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
-        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operation_details/{id}/telemetry' USS-USS endpoint MUST respond (if possible) to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should response, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
         'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
       type: string
@@ -729,7 +729,7 @@ components:
           description: |-
             DSS subscribers that this client now has the obligation to
             notify of the Operation changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/v1/operations/{id}` path API.
+            for each provided URL according to the USS-USS `/v1/operations/{entityid}` path API.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -838,7 +838,7 @@ components:
         subscribers:
           description: DSS subscribers that this client now has the obligation to
             notify of the Constraint changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/v1/constraints/{id}` path API.
+            for each provided URL according to the USS-USS `/v1/constraints/{entityid}` path API.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -987,10 +987,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /v1/operations/{id}:
+  /v1/operations/{entityid}:
     summary: CRUD endpoint for a specified Operation reference in the DSS.
     parameters:
-    - name: id
+    - name: entityid
       description: EntityUUID of the Operation.
       schema:
         $ref: '#/components/schemas/EntityUUID'
@@ -1196,9 +1196,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /v1/constraints/{id}:
+  /v1/constraints/{entityid}:
     parameters:
-    - name: id
+    - name: entityid
       description: EntityUUID of the Constraint.
       schema:
         $ref: '#/components/schemas/EntityUUID'
@@ -1425,10 +1425,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /v1/subscriptions/{id}:
+  /v1/subscriptions/{subscriptionid}:
     summary: Create/Update a specific Subscription in the DSS.
     parameters:
-    - name: id
+    - name: subscriptionid
       description: SubscriptionUUID of the subscription of interest.
       schema:
         $ref: '#/components/schemas/SubscriptionUUID'
@@ -1596,10 +1596,10 @@ paths:
 # DSS Endpoint: REPORT
 #
 
-  /v1/reports/{id}:
+  /v1/reports/{reportid}:
     summary: Report information about peer USS issues to the DSS.
     parameters:
-    - name: id
+    - name: reportid
       description: Unique identifier attached to this report.
       schema:
         $ref: '#/components/schemas/UUIDv4'
