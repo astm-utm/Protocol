@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.1.6
+  version: 0.1.7
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -324,7 +324,7 @@ components:
 
     Volume3D:
       description: |-
-        A three-dimensional geographic volume consisting of a vertically-extruded polygon.
+        A three-dimensional geographic volume consisting of a vertically-extruded shape.
       required:
       - area
       - altitude_lower
@@ -370,7 +370,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/TimeWithUnits'
 
-
     ErrorResponse:
       description: |-
         Human-readable string returned when an error occurs
@@ -382,26 +381,12 @@ components:
             Human-readable message indicating what error occurred and/or why.
           type: string
 
-
-    SubscriptionCallbacks:
-      description: |-
-        Endpoints that should be called when an applicable event occurs.
-        At least one field must be specified.
-      required:
-      - notify_operation_url
-      - notify_constraint_url
-      type: object
-      properties:
-        notify_operation_url:
-          $ref: '#/components/schemas/NotifyOperationDetailsURL'
-        notify_constraint_url:
-          $ref: '#/components/schemas/NotifyConstraintDetailsURL'
-
     SubscriptionState:
       description: |-
         State of Subscription which is causing a notification to be sent.
       required:
-      - subscription
+      - subscription_id
+      - notification_index
       type: object
       properties:
         subscription_id:
@@ -411,14 +396,13 @@ components:
 
     SubscriberToNotify:
       description: |-
-        Subscriber to notify of a creation/change/deletion of a change
-        in the airspace.  This is provided by the DSS to a client changing the airspace,
-        and it is the responsibility of the client changing the airspace (they will
-        receive a set of these notification requests) to send a notification to each
-        specified `url`.
+        Subscriber to notify of a change in the airspace.  This is provided by the DSS
+        to a client changing the airspace, and it is the responsibility of that client
+        to send a notification to the specified USS according to the change made to the
+        airspace.
       required:
       - subscriptions
-      - url
+      - base_url
       type: object
       properties:
         subscriptions:
@@ -426,9 +410,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionState'
-        url:
-          type: string
-          example: 'https://my_utm_uss'
+        base_url:
+          $ref: '#/components/schemas/UssBaseURL'
 
     OperationDependencyList:
       description: List of Operations (UUIDs) that are dependent on this Subscription.
@@ -443,9 +426,8 @@ components:
       required:
       - id
       - version
-      - owner
       - notification_index
-      - callbacks
+      - base_url
       type: object
       properties:
         id:
@@ -457,11 +439,6 @@ components:
             in read-modify-write operations and distributed systems.
           type: integer
           format: int32
-        owner:
-          type: string
-          example: '(uss_owner)'
-          description: Created by the DSS and based on creating client’s ID (via access
-            token).  Used for restricting mutation and deletion operations to owner.
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
@@ -474,8 +451,14 @@ components:
             If set, this subscription will not receive notifications after this time.
           allOf:
           - $ref: '#/components/schemas/TimeWithUnits'
-        callbacks:
-          $ref: '#/components/schemas/SubscriptionCallbacks'
+        base_url:
+          $ref: '#/components/schemas/UssBaseURL'
+        notify_for_operations:
+          description: If true, trigger notifications when Operations are created, updated, or deleted.
+          type: boolean
+        notify_for_constraints:
+          description: If true, trigger notifications when Constraints are created, updated, or deleted.
+          type: boolean
         created_by_operation:
           description: |-
             True if this Subscription was implicitly created by the DSS via the creation of an
@@ -529,7 +512,7 @@ components:
       required:
       - extents
       - version
-      - callbacks
+      - uss_base_url
       type: object
       properties:
         extents:
@@ -541,8 +524,14 @@ components:
             Subscription is being created, this version should be set to 0.
           type: integer
           format: int32
-        callbacks:
+        uss_base_url:
           $ref: '#/components/schemas/SubscriptionCallbacks'
+        notify_for_operations:
+          description: If true, trigger notifications when Operations are created, updated, or deleted.
+          type: boolean
+        notify_for_constraints:
+          description: If true, trigger notifications when Constraints are created, updated, or deleted.
+          type: boolean
 
     PutSubscriptionResponse:
       description: |-
@@ -555,16 +544,15 @@ components:
           $ref: '#/components/schemas/Subscription'
         operations:
           description: |-
-            Operations in or near the subscription area
-            at the time of creation/update, if `operation_url` callback
-            was specified.
+            Operations in or near the subscription area at the time of creation/update,
+            if `notify_for_operations` is true
           type: array
           items:
             $ref: '#/components/schemas/OperationReference'
         constraints:
           description: |-
-            Constraints in or near the subscription area
-            at the time of creation/update, if `constraint_url` callback
+            Constraints in or near the subscription area at the time of creation/update,
+            if `notify_for_constraints` is true
             was specified.
           type: array
           items:
@@ -579,44 +567,13 @@ components:
         subscription:
           $ref: '#/components/schemas/Subscription'
 
-
-    QueryOperationDetailsURL:
+    UssBaseURL:
       description: |-
-        The base URL of a USS implementation of (at least) the GET Operation details portion of the USS-USS API.
-        Per the USS-USS API, the full URL to retrieve the details of an Operation with a particular {id} can
-        be constructed by appending `/v1/operations/{id}` to this base URL.  Accordingly, this URL may
-        not have a trailing '/' character.  At times when telemetry is available for this operation, it may
-        be retrieved at `{QueryOperationBaseURL}/v1/operations/{id}/telemetry`.  See
-        `GET /v1/operations/{id}` and `GET /v1/operations/{id}/telemetry` in the USS-USS API for more information.
+        The base URL of a USS implementation of part or all of the USS-USS API. Per the USS-USS API, the full URL
+        of a particular resource can be constructed by appending, e.g., `/v1/{resource}/{id}` to this base URL.
+        Accordingly, this URL may not have a trailing '/' character.
       type: string
       example: 'https://uss.com/utm'
-
-    NotifyOperationDetailsURL:
-      description: |-
-        The base URL of a USS implementation of (at least) the PUT Operation details portion of the USS-USS API.
-        Per the USS-USS API, the full URL to notify the implementing USS of updated details for an Operation
-        with a particular {id} can be constructed by appending `/v1/operations/{id}` to this base URL.
-        Accordingly, this URL may not have a trailing '/' character.  See `PUT /v1/operations/{id}` and
-        `DELETE /v1/operations/{id}` in the USS-USS API for more information.
-      type: string
-      example: 'https://uss.com/utm'
-
-    OperationCallbacks:
-      description: |-
-        Endpoints that should be called when an applicable event occurs to ensure the
-        Operator remains aware of relevant airspace information.
-        This field should be populated there is no existing Subscription provided in
-        `subscription_id` is not provided.  If provided, this
-        information will be used to create an implicit Subscription associated with this Operation.
-      required:
-      - query_details_url
-      - notify_feedback_url
-      type: object
-      properties:
-        query_details_url:
-          $ref: '#/components/schemas/QueryOperationDetailsURL'
-        notify_feedback_url:
-          $ref: '#/components/schemas/ReportsBaseURL'
 
     OperationState:
       description: |-
@@ -647,10 +604,9 @@ components:
       required:
       - id
       - version
-      - owner
       - time_start
       - time_end
-      - callbacks
+      - uss_base_url
       - subscription_id
       type: object
       properties:
@@ -671,12 +627,6 @@ components:
             retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
-        owner:
-          type: string
-          example: 'uss1'
-          description: |-
-            Created by the DSS and based on creating client’s ID (via access
-            token).  Used for restricting mutation and deletion operations to owner.
         time_start:
           description: Beginning time of Operation.
           allOf:
@@ -685,11 +635,12 @@ components:
           description: End time of Operation.
           allOf:
           - $ref: '#/components/schemas/TimeWithUnits'
-        callbacks:
-          $ref: '#/components/schemas/OperationCallbacks'
+        uss_base_url:
+          $ref: '#/components/schemas/UssBaseURL'
         subscription_id:
           description: |-
-            The ID of the Subscription that is ensuring the Operation owner receives relevant airspace updates while that Operation is 
+            The ID of the Subscription that is ensuring the Operation owner receives relevant
+            airspace updates.
           allOf:
           - $ref: '#/components/schemas/SubscriptionUUID'
 
@@ -701,14 +652,14 @@ components:
         Note: The implicit subscription is managed by the DSS, not the USS.
       required:
       - extents
-      - version
+      - old_version
       - state
-      - callbacks
+      - uss_base_url
       type: object
       properties:
         extents:
           $ref: '#/components/schemas/Volume4D'
-        version:
+        old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
             specify the version of this Operation in the DSS that it is attempting to modify.  If a new
@@ -725,24 +676,36 @@ components:
           - $ref: '#/components/schemas/Key'
         state:
           $ref: '#/components/schemas/OperationState'
-        callbacks:
-          $ref: '#/components/schemas/OperationCallbacks'
+        uss_base_url:
+          $ref: '#/components/schemas/UssBaseURL'
         subscription_id:
           description: |-
             The ID of an existing Subscription that the USS will use to keep the operator informed about
             updates to relevant airspace information.  If this field is not provided, then the
-            `subscription_callbacks` field must be provided in order to provide notification capability
+            `new_subscription` field must be provided in order to provide notification capability
             for the Operation.  The Subscription specified by this ID must cover at least the area over
-            which this Operation is conducted.
+            which this Operation is conducted, and it must provide notifications for Operations.
           allOf:
           - $ref: '#/components/schemas/EntityUUID'
-        subscription_callbacks:
+        new_subscription:
           description: |-
-            If an existing Subscription is not specified in `subscription_id`, then the necessary
-            information to create an implicit Subscription must be provided in this field.  Both
-            URLs must be specified.
+            If an existing Subscription is not specified in `subscription_id`, then this field must be
+            populated.
           allOf:
-          - $ref: '#/components/schemas/SubscriptionCallbacks'
+          - $ref '#/components/schemas/ImplicitSubscriptionParameters'
+
+    ImplicitSubscriptionParameters:
+      description: |-
+        Information necessary to create a Subscription to serve a single Operation's notification needs.
+      type: object
+      required:
+      - base_url
+      properties:
+        base_url:
+          $ref: '#/components/schemas/UssBaseURL'
+        notify_for_constraints:
+          description: |-
+            True if this Operation's Subscription should trigger notifications when Constraints change.
 
     GetOperationReferenceResponse:
       description: |-
@@ -766,7 +729,7 @@ components:
           description: |-
             DSS subscribers that this client now has the obligation to
             notify of the Operation changes just made.  This client must call POST
-            for each provided URL according to the `/uss/operations/{id}` path API.
+            for each provided URL according to the USS-USS `/v1/operations/{id}` path API.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -797,39 +760,6 @@ components:
           items:
             $ref: '#/components/schemas/OperationReference'
 
-
-    QueryConstraintDetailsURL:
-      description: |-
-        The base URL of a USS implementation of (at least) the GET Constraint details portion of the USS-USS API.
-        Per the USS-USS API, the full URL to retrieve the details of a Constraint with a particular {id} can
-        be constructed by appending `/v1/constraints/{id}` to this base URL.  Accordingly, this URL may
-        not have a trailing '/' character.  See `GET /v1/constraints/{id}` in the USS-USS API for more information.
-      type: string
-      example: 'https://uss.com/utm'
-
-    NotifyConstraintDetailsURL:
-      description: |-
-        The base URL of a USS implementation of (at least) the PUT Constraint details portion of the USS-USS API.
-        Per the USS-USS API, the full URL to notify the implementing USS of updated details for a Constraint
-        with a particular {id} can be constructed by appending `/v1/constraints/{id}` to this base URL.
-        Accordingly, this URL may not have a trailing '/' character.  See `PUT /v1/constraints/{id}` and
-        `DELETE /v1/constraints/{id}` in the USS-USS API for more information.
-      type: string
-      example: 'https://uss.com/utm'
-      
-    ConstraintCallbacks:
-      description: |-
-        Endpoints that should be called when an applicable event occurs.
-      required:
-      - query_details_url
-      - notify_feedback_url
-      type: object
-      properties:
-        query_details_url:
-          $ref: '#/components/schemas/QueryConstraintDetailsURL'
-        notify_feedback_url:
-          $ref: '#/components/schemas/ReportsBaseURL'
-
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
         with other high-level information, but no details).  The DSS reports only
@@ -838,10 +768,9 @@ components:
       required:
       - id
       - version
-      - owner
       - time_start
       - time_end
-      - callbacks
+      - uss_base_url
       type: object
       properties:
         id:
@@ -861,38 +790,33 @@ components:
             retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
-        owner:
-          description: Created by the DSS and based on creating client’s ID (via access
-            token).  Used for restricting mutation and deletion transactions to the entity owner.
-          type: string
-          example: 'uss1'
         time_start:
           $ref: '#/components/schemas/TimeWithUnits'
         time_end:
           $ref: '#/components/schemas/TimeWithUnits'
-        callbacks:
-          $ref: '#/components/schemas/ConstraintCallbacks'
+        uss_base_url:
+          $ref: '#/components/schemas/UssBaseURL'
 
     PutConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
         DSS.
       required:
       - extents
-      - version
-      - callbacks
+      - old_version
+      - uss_base_url
       type: object
       properties:
         extents:
           $ref: '#/components/schemas/Volume4D'
-        version:
+        old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
             specify the version of this Constraint in the DSS that it is attempting to modify.  If a new
             Constraint is being created, this version should be set to 0.
           type: integer
           format: int32
-        callbacks:
-          $ref: '#/components/schemas/ConstraintCallbacks'
+        uss_base_url:
+          $ref: '#/components/schemas/UssBaseURL'
 
     GetConstraintReferenceResponse:
       description: Response to DSS request for the ConstraintReference with the given
@@ -914,7 +838,7 @@ components:
         subscribers:
           description: DSS subscribers that this client now has the obligation to
             notify of the Constraint changes just made.  This client must call POST
-            for each provided URL according to the `/uss/constraints/{id}` path API.
+            for each provided URL according to the USS-USS `/v1/constraints/{id}` path API.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -954,18 +878,6 @@ components:
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
-
-    ReportsBaseURL:
-      description: |-
-        The base URL of a USS implementation of (at least) the PUT reports portion of the USS-USS API.
-        Per the USS-USS API, the full URL to notify the implementing USS of an error report with a
-        particular {id} can be constructed by appending `/v1/reports/{id}` to this base URL.
-        Accordingly, this URL may not have a trailing '/' character.  See `POST /v1/reports/{id}` in
-        the USS-USS API for more information.
-      type: string
-      example: 'https://uss.com/utm'
-
-
     AirspaceConflictResponse:
       description: Data provided when an airspace conflict was encountered.
       type: object
@@ -987,15 +899,16 @@ components:
     MakeReportParameters:
       description: Parameters of a message informing the DSS of a potential peer USS issue.
       required:
-        - url_endpoint
+        - uss_base_url
         - response_code
         - problem
         - timestamp
       type: object
       properties:
-        url_endpoint:
-          type: string
+        uss_base_url:
           description: URL for request that resulted in an error.
+          allOf:
+          - $ref '#/components/schemas/UssBaseURL'
         headers:
           description: Set of headers included in request that resulted in an error.
           type: array
@@ -1075,7 +988,7 @@ paths:
           description: The requested area was too large.
 
   /v1/operations/{id}:
-    summary: CRUD endpoint for a specified Operation (reference) in the DSS.
+    summary: CRUD endpoint for a specified Operation reference in the DSS.
     parameters:
     - name: id
       description: EntityUUID of the Operation.
@@ -1090,7 +1003,7 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Retrieve the specified Operation (reference) from the DSS.
+      summary: Retrieve the specified Operation reference from the DSS.
       responses:
         "200":
           content:
@@ -1137,7 +1050,7 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Create/Update the specified Operation (reference) in the DSS.
+      summary: Create/Update the specified Operation reference in the DSS.
       responses:
         "200":
           content:
@@ -1189,7 +1102,7 @@ paths:
       security:
         - Authority:
           - utm.strategic_coordination
-      summary: Remove the specified Operation (reference) from the DSS.
+      summary: Remove the specified Operation reference from the DSS.
       responses:
         "200":
           content:
@@ -1248,7 +1161,7 @@ paths:
         - utm.constraint_management
         - utm.constraint_consumption
         - utm.strategic_coordination
-      summary: Retrieve all Constraints (references) in the specified area/volume from the DSS.
+      summary: Retrieve all Constraints references in the specified area/volume from the DSS.
       responses:
         "200":
           content:
@@ -1291,7 +1204,7 @@ paths:
         $ref: '#/components/schemas/EntityUUID'
       in: path
       required: true
-    summary: CRUD endpoint for a specified Constraint in the DSS.
+    summary: CRUD endpoint for a specified Constraint reference in the DSS.
 
     get:
       tags:
@@ -1301,7 +1214,7 @@ paths:
         - utm.constraint_management
         - utm.constraint_consumption
         - utm.strategic_coordination
-      summary: Retrieve the specified Constraint (reference) from the DSS.
+      summary: Retrieve the specified Constraint reference from the DSS.
       responses:
         "200":
           content:
@@ -1348,7 +1261,7 @@ paths:
       security:
       - Authority:
         - utm.constraint_management
-      summary: Create/Update the specified Constraint in the DSS.
+      summary: Create/Update the specified Constraint reference in the DSS.
       responses:
         "200":
           content:
@@ -1399,7 +1312,7 @@ paths:
       security:
         - Authority:
           - utm.constraint_management
-      summary: Delete the specified Constraint from the DSS.
+      summary: Delete the specified Constraint reference from the DSS.
       responses:
         "200":
           content:
@@ -1477,60 +1390,7 @@ paths:
         Only Subscriptions belonging to the caller are returned.  This endpoint would be
         used if a USS lost track of Subscriptions they had created and/or wanted to resolve
         an error indicating that they had too many existing Subscriptions in an area.
-      summary: Retrieve all Subscriptions (references) in the specified area/volume from the DSS.
-      parameters:
-      - name: point
-        description: |+
-          Geographical vertex specification for search query. Specified as: 'point=[{LONGITUDE},{LATITUDE}]'. Units are degrees.
-
-          Used to define the search area, specified in one of two ways:
-          (a) POLYGON: THREE (minimum) 'point' values are required. For example: 'point=[{LON1},{LAT1}]&point=[{LON2},{LAT2}],point=[{LON3},{LAT3}]'
-
-          (b) CIRCLE: ONE 'point' value is required to specify the centerpoint, and ONE associated 'radius' parameter. For example: 'point=[{LON1},{LAT1}]&radius={METERS}'
-        schema:
-          $ref: '#/components/schemas/LonLatPair'
-        in: query
-        required: true
-      - name: radius
-        description: |-
-          Optional radius of circular gregraphical area.
-          ONE required accompanying 'point' parameter to specify the centerpoint of the circle.
-        schema:
-          $ref: '#/components/schemas/Radius'
-        in: query
-        required: false
-      - name: earliest
-        description: |-
-          Optional start-time bound for the query.
-          All Entities that are INACTIVE BEFORE this time will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Time'
-        in: query
-        required: false
-      - name: latest
-        description: |-
-          Optional end-time bound for the query.
-          All Entities that are ACTIVE AFTER this time will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Time'
-        in: query
-        required: false
-      - name: lower
-        description: |-
-          (Optional) lower-altitude bound for the query.
-          All Entities that have a LOWER upper-altitude bound will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Altitude'
-        in: query
-        required: false
-      - name: upper
-        description: |-
-          (Optional) lower-altitude bound for the query.
-          All Entities that have a HIGHER lower-altitude bound will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Altitude'
-        in: query
-        required: false
+      summary: Retrieve all Subscriptions in the specified area/volume from the DSS.
       responses:
         "200":
           content:
@@ -1566,7 +1426,7 @@ paths:
           description: The requested area was too large.
 
   /v1/subscriptions/{id}:
-    summary: Create/Update a specific Subscription (reference) in the DSS.
+    summary: Create/Update a specific Subscription in the DSS.
     parameters:
     - name: id
       description: SubscriptionUUID of the subscription of interest.
@@ -1582,7 +1442,7 @@ paths:
       - Authority:
         - utm.constraint_consumption
         - utm.strategic_coordination
-      summary: Retrieve the specified Subscription (reference) from the DSS.
+      summary: Retrieve the specified Subscription from the DSS.
       description: |-
         Retrieve a specific subscription.
       responses:
@@ -1626,7 +1486,7 @@ paths:
         - utm.strategic_coordination
       summary: Create/Update the specified Subscription in the DSS.
       description: |-
-        Create or update a subscription.  This call will fail if a Subscription with the same ID already exists.
+        Create or update a subscription.
 
         Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
       requestBody:
