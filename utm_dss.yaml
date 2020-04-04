@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.1.8
+  version: 0.1.9
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -525,7 +525,7 @@ components:
           type: integer
           format: int32
         uss_base_url:
-          $ref: '#/components/schemas/SubscriptionCallbacks'
+          $ref: '#/components/schemas/UssBaseURL'
         notify_for_operations:
           description: If true, trigger notifications when Operations are created, updated, or deleted.
           type: boolean
@@ -692,7 +692,7 @@ components:
             If an existing Subscription is not specified in `subscription_id`, then this field must be
             populated.
           allOf:
-          - $ref '#/components/schemas/ImplicitSubscriptionParameters'
+          - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
 
     ImplicitSubscriptionParameters:
       description: |-
@@ -729,7 +729,8 @@ components:
           description: |-
             DSS subscribers that this client now has the obligation to
             notify of the Operation changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/v1/operations/{entityid}` path API.
+            for each provided URL according to the USS-USS `/v1/operations/{entityid}`
+            path API.  The client's own Subscriptions will also be included in this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -838,7 +839,8 @@ components:
         subscribers:
           description: DSS subscribers that this client now has the obligation to
             notify of the Constraint changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/v1/constraints/{entityid}` path API.
+            for each provided URL according to the USS-USS `/v1/constraints/{entityid}`
+            path API.  The client's own Subscriptions will also be included in this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -908,7 +910,7 @@ components:
         uss_base_url:
           description: URL for request that resulted in an error.
           allOf:
-          - $ref '#/components/schemas/UssBaseURL'
+          - $ref: '#/components/schemas/UssBaseURL'
         headers:
           description: Set of headers included in request that resulted in an error.
           type: array
@@ -1087,7 +1089,7 @@ paths:
                 $ref: '#/components/schemas/AirspaceConflictResponse'
           description: |-
             * The provided key did not prove knowledge of all current and relevant airspace Entities
-            * An Operation with the specified ID already exists.
+            * The provided `old_version` does not match the current version of the existing Operation.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "413":
           content:
@@ -1138,6 +1140,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+              * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
 
   #
   # DSS Enpoint: CONSTRAINTS
@@ -1297,7 +1306,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Constraint with the specified ID already exists.
+            * The provided `old_version` does not match the current version of the existing Constraint.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "413":
           content:
@@ -1354,7 +1363,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-              * A Constraint with the specified ID already exists.
               * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
 
   #
