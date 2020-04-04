@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.1.5
+  version: 0.1.6
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -12,12 +12,9 @@ info:
 
 security:
 - Authority:
-  - utm.read.operations
-  - utm.write.operations
-  - utm.read.constraints
-  - utm.write.constraints
-  - utm.read.subscriptions
-  - utm.write.subscriptions
+  - utm.strategic_coordination
+  - utm.constraint_management
+  - utm.constraint_consumption
 
 tags:
 - name: "Operations"
@@ -45,28 +42,23 @@ components:
         clientCredentials:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
-            utm.read.operations: |-
-              Client may read Operations from the DSS (references) and partner USSs (details).
-            utm.write.operations: |-
-              Client may create, edit, and delete (their own) Operations, as well as all operations permitted by `utm.read.operations`.
-            utm.read.constraints: |-
+            utm.strategic_coordination: |-
+              Client may perform planning, strategic conflict detection, and conformance monitoring activities.
+            utm.constraint_management: |-
+              Client may manage (create, edit, and delete) Constraints they own.
+            utm.constraint_consumption: |-
               Client may read Constraints from the DSS (references) and partner USSs (details).
-            utm.write.constraints: |-
-              Client may create, edit, and delete (their own) Constraints, as well as all operations permitted by `utm.read.constraints`.
-            utm.read.subscriptions: |-
-              Client may read their own Subscriptions from the DSS.
-            utm.write.subscriptions: |-
-              Client may create, edit, and delete their own Subscriptions in the DSS.
       description: |-
-        Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, and publish to all providers the public key for verifying that signature.
+        Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
 
         The following fields shall be included in the JWT claim for access tokens issued by this authority:
             * `iss`, with the URL at which the token generation request was received.
             * `exp`, with a time no further than 1 hour in the future.
             * `sub`, with unique ID of the client requesting the access token.
             * `scope`, with an array of strings indicating the scopes granted.
+            * `jti`, according to RFC 7519.
 
-        Multiple scopes for a single token shall be granted if requested.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
+        Only one scope shall be granted for a token.  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
 
         Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
 
@@ -1046,7 +1038,7 @@ paths:
       - "Operations"
       security:
       - Authority:
-        - utm.read.operations
+        - utm.strategic_coordination
       summary: Retrieve all Operations (references) in the specified area/volume/time from the DSS.
       responses:
         "200":
@@ -1097,7 +1089,7 @@ paths:
       - "Operations"
       security:
       - Authority:
-        - utm.read.operations
+        - utm.strategic_coordination
       summary: Retrieve the specified Operation (reference) from the DSS.
       responses:
         "200":
@@ -1144,7 +1136,7 @@ paths:
       - "Operations"
       security:
       - Authority:
-        - utm.write.operations
+        - utm.strategic_coordination
       summary: Create/Update the specified Operation (reference) in the DSS.
       responses:
         "200":
@@ -1196,7 +1188,7 @@ paths:
         - "Operations"
       security:
         - Authority:
-          - utm.write.operations
+          - utm.strategic_coordination
       summary: Remove the specified Operation (reference) from the DSS.
       responses:
         "200":
@@ -1253,7 +1245,9 @@ paths:
       - "Constraints"
       security:
       - Authority:
-        - utm.read.constraints
+        - utm.constraint_management
+        - utm.constraint_consumption
+        - utm.strategic_coordination
       summary: Retrieve all Constraints (references) in the specified area/volume from the DSS.
       responses:
         "200":
@@ -1304,7 +1298,9 @@ paths:
       - "Constraints"
       security:
       - Authority:
-        - utm.read.constraints
+        - utm.constraint_management
+        - utm.constraint_consumption
+        - utm.strategic_coordination
       summary: Retrieve the specified Constraint (reference) from the DSS.
       responses:
         "200":
@@ -1351,7 +1347,7 @@ paths:
       - "Constraints"
       security:
       - Authority:
-        - utm.write.constraints
+        - utm.constraint_management
       summary: Create/Update the specified Constraint in the DSS.
       responses:
         "200":
@@ -1402,7 +1398,7 @@ paths:
       - "Constraints"
       security:
         - Authority:
-          - utm.write.constraints
+          - utm.constraint_management
       summary: Delete the specified Constraint from the DSS.
       responses:
         "200":
@@ -1466,7 +1462,8 @@ paths:
       - "Subscriptions"
       security:
       - Authority:
-        - utm.read.subscriptions
+        - utm.constraint_consumption
+        - utm.strategic_coordination
       description: |-
         Retrieve Subscriptions intersecting an area of interest.  Subscription
         notifications are only triggered by (and contain full information of) changes to,
@@ -1583,7 +1580,8 @@ paths:
       - "Subscriptions"
       security:
       - Authority:
-        - utm.read.subscriptions
+        - utm.constraint_consumption
+        - utm.strategic_coordination
       summary: Retrieve the specified Subscription (reference) from the DSS.
       description: |-
         Retrieve a specific subscription.
@@ -1624,7 +1622,8 @@ paths:
     put:
       security:
       - Authority:
-        - utm.write.subscriptions
+        - utm.constraint_consumption
+        - utm.strategic_coordination
       summary: Create/Update the specified Subscription in the DSS.
       description: |-
         Create or update a subscription.  This call will fail if a Subscription with the same ID already exists.
@@ -1696,7 +1695,8 @@ paths:
       - "Subscriptions"
       security:
         - Authority:
-          - utm.write.subscriptions
+          - utm.constraint_consumption
+          - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
       responses:
         "200":
@@ -1749,12 +1749,9 @@ paths:
     post:
       security:
       - Authority:
-        - utm.read.operations
-        - utm.write.operations
-        - utm.read.constraints
-        - utm.write.constraints
-        - utm.read.subscriptions
-        - utm.write.subscriptions
+        - utm.constraint_management
+        - utm.constraint_consumption
+        - utm.strategic_coordination
       summary: Create a report of potential operational issues with a peer USS.
       description: Report peer USS issues. Data sent to this endpoint is archived.
       requestBody:
