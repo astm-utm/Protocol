@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM USS->DSS API
-  version: 0.1.4
+  version: 0.1.5
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS).
 
@@ -498,6 +498,18 @@ components:
         can detect missed notifications more easily.
       type: integer
 
+    SearchSubscriptionParameters:
+      description: |-
+        Parameters for a request to find Subscriptions matching the provided criteria.
+      type: object
+      properties:
+        volumes:
+          description: |-
+            Return Subscriptions that may intersect any of these volumes.
+          type: array
+          items:
+            $ref: '#/components/schemas/Volume4D'
+
     SearchSubscriptionsResponse:
       description: Response to DSS query for subscriptions in a particular geographic area.
       required:
@@ -769,6 +781,18 @@ components:
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
+    SearchOperationReferenceParameters:
+      description: |-
+        Parameters for a request to find OperationReferences matching the provided criteria.
+      type: object
+      properties:
+        volumes:
+          description: |-
+            Return Operation references that may intersect any of these volumes.
+          type: array
+          items:
+            $ref: '#/components/schemas/Volume4D'
+
     SearchOperationReferenceResponse:
       description: Response to DSS query for OperationReferences in an area of interest.
       required:
@@ -905,6 +929,18 @@ components:
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
+    SearchConstraintReferenceParameters:
+      description: |-
+        Parameters for a request to find ConstraintReferences matching the provided criteria.
+      type: object
+      properties:
+        volumes:
+          description: |-
+            Return Constraint references that may intersect any of these volumes.
+          type: array
+          items:
+            $ref: '#/components/schemas/Volume4D'
+
     SearchConstraintReferencesResponse:
       description: Response to DSS query for ConstraintReferences in an area of interest.
       required:
@@ -916,7 +952,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
-
 
     EntityReference:
       description: Reference to a generic Entity known to the DSS.
@@ -996,70 +1031,23 @@ paths:
   # DSS Endpoint: OPERATIONS
   #
 
-  /v1/operations:
+  /v1/operations/query:
     summary: Query all Operations in the DSS that intersect with a specified geographic area, altitude-range, and time-range.
     description: "Interface to Operation references in the DSS."
 
-    get:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchOperationReferenceParameters'
+        required: true
       tags:
       - "Operations"
       security:
       - Authority:
         - utm.read.operations
       summary: Retrieve all Operations (references) in the specified area/volume/time from the DSS.
-      parameters:
-      - name: point
-        description: |+
-          Geographical vertex specification for search query. Specified as: 'point=[{LONGITUDE},{LATITUDE}]'. Units are degrees.
-
-          Used to define the search area, specified in one of two ways:
-          (a) POLYGON: THREE (minimum) 'point' values are required. For example: 'point=[{LON1},{LAT1}]&point=[{LON2},{LAT2}],point=[{LON3},{LAT3}]'
-
-          (b) CIRCLE: ONE 'point' value is required to specify the centerpoint, and ONE associated 'radius' parameter. For example: 'point=[{LON1},{LAT1}]&radius={METERS}'
-        schema:
-          $ref: '#/components/schemas/LonLatPair'
-        in: query
-        required: true
-      - name: radius
-        description: |-
-          Radius of circular geographical area (only used when specifying a circular area).
-          Requires ONE accompanying 'point' parameter to specify the centerpoint of the circle.
-        schema:
-          $ref: '#/components/schemas/Radius'
-        in: query
-        required: false
-      - name: earliest
-        description: |-
-          Optional start-time bound for the query.
-          All Entities that are INACTIVE BEFORE this time will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Time'
-        in: query
-        required: false
-      - name: latest
-        description: |-
-          Optional end-time bound for the query.
-          All Entities that are ACTIVE AFTER this time will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Time'
-        in: query
-        required: false
-      - name: lower
-        description: |-
-          (Optional) lower-altitude bound for the query.
-          All Entities that have a LOWER upper-altitude bound will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Altitude'
-        in: query
-        required: false
-      - name: upper
-        description: |-
-          (Optional) lower-altitude bound for the query.
-          All Entities that have a HIGHER lower-altitude bound will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Altitude'
-        in: query
-        required: false
       responses:
         "200":
           content:
@@ -1250,70 +1238,23 @@ paths:
   # DSS Enpoint: CONSTRAINTS
   #
 
-  /v1/constraints:
-    summary: Query all Constraints in the DSS that intersect with a specified area/volume/time.
+  /v1/constraints/query:
+    summary: Query all Constraint references in the DSS that intersect with a specified area/volume/time.
     description: ""
 
-    get:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchConstraintReferenceParameters'
+        required: true
       tags:
       - "Constraints"
       security:
       - Authority:
         - utm.read.constraints
       summary: Retrieve all Constraints (references) in the specified area/volume from the DSS.
-      parameters:
-      - name: point
-        description: |+
-          Geographical vertex specification for search query. Specified as: 'point=[{LONGITUDE},{LATITUDE}]'. Units are degrees.
-
-          Used to define the search area, specified in one of two ways:
-          (a) POLYGON: THREE (minimum) 'point' values are required. For example: 'point=[{LON1},{LAT1}]&point=[{LON2},{LAT2}],point=[{LON3},{LAT3}]'
-
-          (b) CIRCLE: ONE 'point' value is required to specify the centerpoint, and ONE associated 'radius' parameter. For example: 'point=[{LON1},{LAT1}]&radius={METERS}'
-        schema:
-          $ref: '#/components/schemas/LonLatPair'
-        in: query
-        required: true
-      - name: radius
-        description: |-
-          Optional radius of circular gregraphical area.
-          ONE required accompanying 'point' parameter to specify the centerpoint of the circle.
-        schema:
-          $ref: '#/components/schemas/Radius'
-        in: query
-        required: false
-      - name: earliest
-        description: |-
-          Optional start-time bound for the query.
-          All Entities that are INACTIVE BEFORE this time will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Time'
-        in: query
-        required: false
-      - name: latest
-        description: |-
-          Optional end-time bound for the query.
-          All Entities that are ACTIVE AFTER this time will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Time'
-        in: query
-        required: false
-      - name: lower
-        description: |-
-          (Optional) lower-altitude bound for the query.
-          All Entities that have a LOWER upper-altitude bound will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Altitude'
-        in: query
-        required: false
-      - name: upper
-        description: |-
-          (Optional) lower-altitude bound for the query.
-          All Entities that have a HIGHER lower-altitude bound will be excluded from the results.
-        schema:
-          $ref: '#/components/schemas/Altitude'
-        in: query
-        required: false
       responses:
         "200":
           content:
@@ -1511,10 +1452,16 @@ paths:
   # DSS Endpoint: SUBSCRIPTIONS
   #
 
-  /v1/subscriptions:
+  /v1/subscriptions/query:
     summary: Subscriptions for airspace updates to a volume of interest.
 
-    get:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchSubscriptionParameters'
+        required: true
       tags:
       - "Subscriptions"
       security:
