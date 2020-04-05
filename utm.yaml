@@ -498,12 +498,8 @@ components:
         Parameters for a request to find Subscriptions matching the provided criteria.
       type: object
       properties:
-        volumes:
-          description: |-
-            Return Subscriptions that may intersect any of these volumes.
-          type: array
-          items:
-            $ref: '#/components/schemas/Volume4D'
+        volume:
+          $ref: '#/components/schemas/Volume4D'
 
     SearchSubscriptionsResponse:
       description: Response to DSS query for subscriptions in a particular geographic area.
@@ -618,14 +614,14 @@ components:
 
         'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST
         contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry'
-        USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request
+        USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request
         for this Operation may omit a Key in this case because the Operation is being adjusted as flown and
         cannot necessarily deconflict.
 
         'Contingent': This Operation is executing a contingency action, either because it has been
         NonConforming for a certain period of time, or because of operator initiation.  This state must
         transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.
-        In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible,
+        In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if available,
         to queries from USS peers.  The create or update request for this Operation may omit a Key in this
         case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
@@ -666,9 +662,9 @@ components:
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
-            is owned by the USS retrieving it.  Not populated when the OperationReference is not
-            owned by the USS retrieving it (instead, the USS must obtain the OVN from the details
-            retrieved from the owning USS).
+            is owned by the USS retrieving or providing it.  Not populated when the
+            OperationReference is not owned by the USS retrieving it (instead, the USS must obtain
+            the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -699,7 +695,7 @@ components:
     PutOperationReferenceParameters:
       description: |-
         Parameters for a request to create an OperationReference in the DSS.
-        A subscription to changes overlapping this volume is implicitly created, but
+        A subscription to changes overlapping this volume may be implicitly created, but
         this can be overridden by providing the (optional) 'subscription_id' to use.
         Note: The implicit subscription is managed by the DSS, not the USS.
       required:
@@ -727,7 +723,7 @@ components:
             Proof that the USS creating or mutating this Operation was aware of the current state of the
             airspace, with the expectation that this Operation is therefore deconflicted from all relevant
             features in the airspce.  This field is not required when declaring an Operation NonConforming
-            or Contingent, but is otherwise required.
+            or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
           allOf:
           - $ref: '#/components/schemas/Key'
         state:
@@ -760,7 +756,8 @@ components:
         base_url:
           description: |-
             The base URL of a USS implementation of the parts of the USS-USS API necessary for
-            receiving the notifications required for the Operation.
+            receiving the notifications that the Operation must be aware of.  This includes, at least,
+            notifications for relevant changes in Operations.
           allOf:
           - $ref: '#/components/schemas/UssBaseURL'
         notify_for_constraints:
@@ -844,9 +841,9 @@ components:
         ovn:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
-            is owned by the USS retrieving it.  Not populated when the ConstraintReference is not
-            owned by the USS retrieving it (instead, the USS must obtain the OVN from the details
-            retrieved from the owning USS).
+            is owned by the USS retrieving or providing it.  Not populated when the
+            ConstraintReference is not owned by the USS retrieving it (instead, the USS must obtain
+            the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -883,6 +880,8 @@ components:
             Constraint is being created, this version should be set to 0.
           type: integer
           format: int32
+          minimum: 0
+          exclusiveMinimum: false
         uss_base_url:
           $ref: '#/components/schemas/ConstraintUssBaseURL'
 
@@ -1228,7 +1227,7 @@ paths:
   # DSS Endpoint: OPERATIONS
   #
 
-  /dss/v1/operations/query:
+  /dss/v1/operation_references/query:
     summary: Query all Operations in the DSS that intersect with a specified geographic area, altitude-range, and time-range.
     description: "Interface to Operation references in the DSS."
 
@@ -1279,7 +1278,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /dss/v1/operations/{entityid}:
+  /dss/v1/operation_references/{entityid}:
     summary: CRUD endpoint for a specified Operation reference in the DSS.
     parameters:
     - name: entityid
@@ -1302,7 +1301,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOperationReferenceResponse'
-          description: Operation was retrieved successfully.
+          description: Operation reference was retrieved successfully.
         "400":
           content:
             application/json:
@@ -1520,7 +1519,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetConstraintReferenceResponse'
-          description: Constraint was retrieved successfully.
+          description: Constraint reference was retrieved successfully.
         "400":
           content:
             application/json:
@@ -2234,7 +2233,7 @@ paths:
         - Authority:
           - utm.strategic_coordination
           - utm.constraint_consumption
-      summary: Receive feedback (human-readable text) directly from a peer USS.
+      summary: Provide feedback (human-readable text) directly to a peer USS.
       description: Notify USS of an error encountered that might otherwise go unnoticed.
       requestBody:
         content:
