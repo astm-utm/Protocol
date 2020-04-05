@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.0
+  version: 0.2.1
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -82,7 +82,7 @@ components:
         the DSS.  Formatted as UUIDv4.
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
-      example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
+      example: '2f8343be-6482-4d1b-a474-16847e01af1e'
 
     EntityOVN:
       title: EntityOVN
@@ -103,6 +103,7 @@ components:
         the DSS.  Formatted as UUIDv4.
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
+      example: '78ea3fe8-71c2-4f5c-9b44-9c02f5563c6f'
 
     Key:
       description: |
@@ -113,11 +114,11 @@ components:
 
     Time:
       required:
-      - text
+      - value
       - units
       type: object
       properties:
-        text:
+        value:
           type: string
           description: RFC3339-formatted time/date string.
           format: date-time
@@ -129,28 +130,29 @@ components:
 
     Radius:
       required:
-      - distance
+      - value
       - units
       type: object
       properties:
-        distance:
+        value:
           format: float
-          description: Distance, in meters, from the centerpoint of a circular area.
+          description: Distance from the centerpoint of a circular area.
           type: number
           example: 300.183
         units:
           type: string
+          description: FIXM-compatible units.  Only meters ("M") are acceptable for UTM.
           enum:
-          - Meters
+          - M
 
     Altitude:
       type: object
       required:
-      - height
+      - value
       - reference
       - units
       properties:
-        height:
+        value:
           description: |-
             The numeric value of the altitude. Note that min and max values are
             added as a sanity check. As use cases evolve and more options are
@@ -209,7 +211,7 @@ components:
         oneOf:
           - $ref: '#/components/schemas/Longitude'
           - $ref: '#/components/schemas/Latitude'
-      example: [47.660898, -122.106325]
+      example: [-122.106325, 47.660898]
 
 #
 # GeoJSON definitions
@@ -354,11 +356,11 @@ components:
           example:
             type: 'Feature'
             properties:
-              radius: 300.0
-              radius_units: 'METERS_WGS84'
+              value: 300.0
+              units: 'M'
             geometry:
               type: 'Point'
-              coordinates: [156.789, -121.0123]
+              coordinates: [-121.0123, 56.789]
         altitude_lower:
           description: Minimum bounding altitude of this volume.
           allOf:
@@ -428,21 +430,15 @@ components:
         base_url:
           $ref: '#/components/schemas/UssBaseURL'
 
-    OperationDependencyList:
-      description: List of Operations (UUIDs) that are dependent on this Subscription.
-      type: array
-      items:
-        $ref: '#/components/schemas/EntityUUID'
-
     Subscription:
       description: |-
         Specification of a geographic area that a client is interested
-        in on an ongoing basis (e.g., “planning area”).  Internal to the DSS.
+        in on an ongoing basis (e.g., "planning area").
       required:
       - id
       - version
       - notification_index
-      - base_url
+      - uss_base_url
       type: object
       properties:
         id:
@@ -454,20 +450,24 @@ components:
             in read-modify-write operations and distributed systems.
           type: integer
           format: int32
+          minimum: 1
+          exclusiveMinimum: false
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
           description: |-
-            If set, this subscription will not receive notifications before this time.
+            If set, this subscription will not receive notifications involving airspace changes
+            entirely before this time.
           allOf:
           - $ref: '#/components/schemas/Time'
         time_end:
           description: |-
-            If set, this subscription will not receive notifications after this time.
+            If set, this subscription will not receive notifications involving airspace changes
+            entirely after this time.
           allOf:
           - $ref: '#/components/schemas/Time'
-        base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+        uss_base_url:
+          $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
           description: If true, trigger notifications when Operations are created, updated, or deleted.
           type: boolean
@@ -480,25 +480,26 @@ components:
             Operation, and should therefore be deleted by the DSS when that Operation is deleted.
           type: boolean
         dependent_operations:
-          $ref: '#/components/schemas/OperationDependencyList'
+          description: List of Operations (UUIDs) that are dependent on this Subscription.
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityUUID'
 
     SubscriptionNotificationIndex:
       format: int32
       description: Tracks the notifications sent for a subscription so the subscriber
         can detect missed notifications more easily.
       type: integer
+      minimum: 0
+      exclusiveMinimum: false
 
     SearchSubscriptionParameters:
       description: |-
         Parameters for a request to find Subscriptions matching the provided criteria.
       type: object
       properties:
-        volumes:
-          description: |-
-            Return Subscriptions that may intersect any of these volumes.
-          type: array
-          items:
-            $ref: '#/components/schemas/Volume4D'
+        volume:
+          $ref: '#/components/schemas/Volume4D'
 
     SearchSubscriptionsResponse:
       description: Response to DSS query for subscriptions in a particular geographic area.
@@ -526,27 +527,36 @@ components:
         Parameters for a request to create/update a subscription in the DSS.
       required:
       - extents
-      - version
+      - old_version
       - uss_base_url
       type: object
       properties:
         extents:
           $ref: '#/components/schemas/Volume4D'
-        version:
+        old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
             specify the version of this Subscription in the DSS that it is attempting to modify.  If a new
             Subscription is being created, this version should be set to 0.
           type: integer
           format: int32
+          minimum: 0
+          exclusiveMinimum: false
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
           description: If true, trigger notifications when Operations are created, updated, or deleted.
           type: boolean
         notify_for_constraints:
           description: If true, trigger notifications when Constraints are created, updated, or deleted.
           type: boolean
+
+    SubscriptionUssBaseURL:
+      description: |-
+        The base URL of a USS implementation of the parts of the USS-USS API necessary for
+        receiving the notifications requested by this Subscription.
+      allOf:
+      - $ref: '#/components/schemas/UssBaseURL'
 
     PutSubscriptionResponse:
       description: |-
@@ -594,13 +604,26 @@ components:
       description: |-
         State of an Operation.
 
-        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no aircraft associated with it are active yet.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
+        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this
+        state, but no aircraft associated with it are active yet.  The create or update request for this
+        Operation must include a Key containing all OVNs for all relevant Entities.
 
-        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
+        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in
+        flight.  The create or update request for this Operation must include a Key containing all OVNs for
+        all relevant Entities.
 
-        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST
+        contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry'
+        USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request
+        for this Operation may omit a Key in this case because the Operation is being adjusted as flown and
+        cannot necessarily deconflict.
 
-        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'Contingent': This Operation is executing a contingency action, either because it has been
+        NonConforming for a certain period of time, or because of operator initiation.  This state must
+        transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.
+        In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if available,
+        to queries from USS peers.  The create or update request for this Operation may omit a Key in this
+        case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
         'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
       type: string
@@ -634,12 +657,14 @@ components:
             must be retrieved.
           type: integer
           format: int32
+          minimum: 1
+          exclusiveMinimum: false
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
-            is owned by the USS retrieving it.  Not populated when the OperationReference is not
-            owned by the USS retrieving it (instead, the USS must obtain the OVN from the details
-            retrieved from the owning USS).
+            is owned by the USS retrieving or providing it.  Not populated when the
+            OperationReference is not owned by the USS retrieving it (instead, the USS must obtain
+            the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -651,7 +676,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/Time'
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/OperationUssBaseURL'
         subscription_id:
           description: |-
             The ID of the Subscription that is ensuring the Operation owner receives relevant
@@ -659,10 +684,18 @@ components:
           allOf:
           - $ref: '#/components/schemas/SubscriptionUUID'
 
+    OperationUssBaseURL:
+      description: |-
+        The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
+        providing the details of this Operation, and telemetry during non-conformance or contingency,
+        if applicable.
+      allOf:
+      - $ref: '#/components/schemas/UssBaseURL'
+
     PutOperationReferenceParameters:
       description: |-
         Parameters for a request to create an OperationReference in the DSS.
-        A subscription to changes overlapping this volume is implicitly created, but
+        A subscription to changes overlapping this volume may be implicitly created, but
         this can be overridden by providing the (optional) 'subscription_id' to use.
         Note: The implicit subscription is managed by the DSS, not the USS.
       required:
@@ -683,18 +716,20 @@ components:
             Operation is being created, this version should be set to 0.
           type: integer
           format: int32
+          minimum: 0
+          exclusiveMinimum: false
         key:
           description: |-
             Proof that the USS creating or mutating this Operation was aware of the current state of the
             airspace, with the expectation that this Operation is therefore deconflicted from all relevant
             features in the airspce.  This field is not required when declaring an Operation NonConforming
-            or Contingent, but is otherwise required.
+            or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
           allOf:
           - $ref: '#/components/schemas/Key'
         state:
           $ref: '#/components/schemas/OperationState'
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/OperationUssBaseURL'
         subscription_id:
           description: |-
             The ID of an existing Subscription that the USS will use to keep the operator informed about
@@ -719,7 +754,12 @@ components:
       - base_url
       properties:
         base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          description: |-
+            The base URL of a USS implementation of the parts of the USS-USS API necessary for
+            receiving the notifications that the Operation must be aware of.  This includes, at least,
+            notifications for relevant changes in Operations.
+          allOf:
+          - $ref: '#/components/schemas/UssBaseURL'
         notify_for_constraints:
           description: |-
             True if this Operation's Subscription should trigger notifications when Constraints change.
@@ -796,12 +836,14 @@ components:
             must be retrieved.
           type: integer
           format: int32
+          minimum: 1
+          exclusiveMinimum: false
         ovn:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
-            is owned by the USS retrieving it.  Not populated when the ConstraintReference is not
-            owned by the USS retrieving it (instead, the USS must obtain the OVN from the details
-            retrieved from the owning USS).
+            is owned by the USS retrieving or providing it.  Not populated when the
+            ConstraintReference is not owned by the USS retrieving it (instead, the USS must obtain
+            the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -809,7 +851,14 @@ components:
         time_end:
           $ref: '#/components/schemas/Time'
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/ConstraintUssBaseURL'
+
+    ConstraintUssBaseURL:
+      description: |-
+        The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
+        providing the details of this Constraint.
+      allOf:
+      - $ref: '#/components/schemas/UssBaseURL'
 
     PutConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
@@ -831,8 +880,10 @@ components:
             Constraint is being created, this version should be set to 0.
           type: integer
           format: int32
+          minimum: 0
+          exclusiveMinimum: false
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/ConstraintUssBaseURL'
 
     GetConstraintReferenceResponse:
       description: Response to DSS request for the ConstraintReference with the given
@@ -915,8 +966,6 @@ components:
         - url
         - response_code
         - problem
-        - time_request
-        - time_response
       type: object
       properties:
         url:
@@ -1178,7 +1227,7 @@ paths:
   # DSS Endpoint: OPERATIONS
   #
 
-  /dss/v1/operations/query:
+  /dss/v1/operation_references/query:
     summary: Query all Operations in the DSS that intersect with a specified geographic area, altitude-range, and time-range.
     description: "Interface to Operation references in the DSS."
 
@@ -1194,7 +1243,7 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Retrieve all Operations (references) in the specified area/volume/time from the DSS.
+      summary: Retrieve all Operation references in the specified area/volume/time from the DSS.
       responses:
         "200":
           content:
@@ -1229,7 +1278,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /dss/v1/operations/{entityid}:
+  /dss/v1/operation_references/{entityid}:
     summary: CRUD endpoint for a specified Operation reference in the DSS.
     parameters:
     - name: entityid
@@ -1252,7 +1301,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOperationReferenceResponse'
-          description: Operation was retrieved successfully.
+          description: Operation reference was retrieved successfully.
         "400":
           content:
             application/json:
@@ -1470,7 +1519,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetConstraintReferenceResponse'
-          description: Constraint was retrieved successfully.
+          description: Constraint reference was retrieved successfully.
         "400":
           content:
             application/json:
@@ -2184,7 +2233,7 @@ paths:
         - Authority:
           - utm.strategic_coordination
           - utm.constraint_consumption
-      summary: Receive feedback (human-readable text) directly from a peer USS.
+      summary: Provide feedback (human-readable text) directly to a peer USS.
       description: Notify USS of an error encountered that might otherwise go unnoticed.
       requestBody:
         content:
