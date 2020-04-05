@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.0
+  version: 0.2.1
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -113,11 +113,11 @@ components:
 
     Time:
       required:
-      - text
+      - value
       - units
       type: object
       properties:
-        text:
+        value:
           type: string
           description: RFC3339-formatted time/date string.
           format: date-time
@@ -129,13 +129,13 @@ components:
 
     Radius:
       required:
-      - distance
+      - value
       - units
       type: object
       properties:
-        distance:
+        value:
           format: float
-          description: Distance, in meters, from the centerpoint of a circular area.
+          description: Distance from the centerpoint of a circular area.
           type: number
           example: 300.183
         units:
@@ -146,11 +146,11 @@ components:
     Altitude:
       type: object
       required:
-      - height
+      - value
       - reference
       - units
       properties:
-        height:
+        value:
           description: |-
             The numeric value of the altitude. Note that min and max values are
             added as a sanity check. As use cases evolve and more options are
@@ -209,7 +209,7 @@ components:
         oneOf:
           - $ref: '#/components/schemas/Longitude'
           - $ref: '#/components/schemas/Latitude'
-      example: [47.660898, -122.106325]
+      example: [-122.106325, 47.660898]
 
 #
 # GeoJSON definitions
@@ -358,7 +358,7 @@ components:
               radius_units: 'METERS_WGS84'
             geometry:
               type: 'Point'
-              coordinates: [156.789, -121.0123]
+              coordinates: [-121.0123, 56.789]
         altitude_lower:
           description: Minimum bounding altitude of this volume.
           allOf:
@@ -428,16 +428,10 @@ components:
         base_url:
           $ref: '#/components/schemas/UssBaseURL'
 
-    OperationDependencyList:
-      description: List of Operations (UUIDs) that are dependent on this Subscription.
-      type: array
-      items:
-        $ref: '#/components/schemas/EntityUUID'
-
     Subscription:
       description: |-
         Specification of a geographic area that a client is interested
-        in on an ongoing basis (e.g., “planning area”).  Internal to the DSS.
+        in on an ongoing basis (e.g., “planning area”).
       required:
       - id
       - version
@@ -480,7 +474,10 @@ components:
             Operation, and should therefore be deleted by the DSS when that Operation is deleted.
           type: boolean
         dependent_operations:
-          $ref: '#/components/schemas/OperationDependencyList'
+          description: List of Operations (UUIDs) that are dependent on this Subscription.
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityUUID'
 
     SubscriptionNotificationIndex:
       format: int32
@@ -594,13 +591,26 @@ components:
       description: |-
         State of an Operation.
 
-        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this state, but no aircraft associated with it are active yet.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
+        'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this
+        state, but no aircraft associated with it are active yet.  The create or update request for this
+        Operation must include a Key containing all OVNs for all relevant Entities.
 
-        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
+        'Activated': One or more aircraft associated with this Operation are, or will imminently be, in
+        flight.  The create or update request for this Operation must include a Key containing all OVNs for
+        all relevant Entities.
 
-        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST
+        contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry'
+        USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request
+        for this Operation may omit a Key in this case because the Operation is being adjusted as flown and
+        cannot necessarily deconflict.
 
-        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'Contingent': This Operation is executing a contingency action, either because it has been
+        NonConforming for a certain period of time, or because of operator initiation.  This state must
+        transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.
+        In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible,
+        to queries from USS peers.  The create or update request for this Operation may omit a Key in this
+        case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
         'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
       type: string
@@ -915,8 +925,6 @@ components:
         - url
         - response_code
         - problem
-        - time_request
-        - time_response
       type: object
       properties:
         url:
