@@ -82,7 +82,7 @@ components:
         the DSS.  Formatted as UUIDv4.
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
-      example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
+      example: '2f8343be-6482-4d1b-a474-16847e01af1e'
 
     EntityOVN:
       title: EntityOVN
@@ -103,6 +103,7 @@ components:
         the DSS.  Formatted as UUIDv4.
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
+      example: '78ea3fe8-71c2-4f5c-9b44-9c02f5563c6f'
 
     Key:
       description: |
@@ -140,8 +141,9 @@ components:
           example: 300.183
         units:
           type: string
+          description: FIXM-compatible units.  Only meters ("M") are acceptable for UTM.
           enum:
-          - Meters
+          - M
 
     Altitude:
       type: object
@@ -354,8 +356,8 @@ components:
           example:
             type: 'Feature'
             properties:
-              radius: 300.0
-              radius_units: 'METERS_WGS84'
+              value: 300.0
+              units: 'M'
             geometry:
               type: 'Point'
               coordinates: [-121.0123, 56.789]
@@ -431,12 +433,12 @@ components:
     Subscription:
       description: |-
         Specification of a geographic area that a client is interested
-        in on an ongoing basis (e.g., “planning area”).
+        in on an ongoing basis (e.g., "planning area").
       required:
       - id
       - version
       - notification_index
-      - base_url
+      - uss_base_url
       type: object
       properties:
         id:
@@ -448,20 +450,24 @@ components:
             in read-modify-write operations and distributed systems.
           type: integer
           format: int32
+          minimum: 1
+          exclusiveMinimum: false
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
           description: |-
-            If set, this subscription will not receive notifications before this time.
+            If set, this subscription will not receive notifications involving airspace changes
+            entirely before this time.
           allOf:
           - $ref: '#/components/schemas/Time'
         time_end:
           description: |-
-            If set, this subscription will not receive notifications after this time.
+            If set, this subscription will not receive notifications involving airspace changes
+            entirely after this time.
           allOf:
           - $ref: '#/components/schemas/Time'
-        base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+        uss_base_url:
+          $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
           description: If true, trigger notifications when Operations are created, updated, or deleted.
           type: boolean
@@ -484,6 +490,8 @@ components:
       description: Tracks the notifications sent for a subscription so the subscriber
         can detect missed notifications more easily.
       type: integer
+      minimum: 0
+      exclusiveMinimum: false
 
     SearchSubscriptionParameters:
       description: |-
@@ -523,27 +531,36 @@ components:
         Parameters for a request to create/update a subscription in the DSS.
       required:
       - extents
-      - version
+      - old_version
       - uss_base_url
       type: object
       properties:
         extents:
           $ref: '#/components/schemas/Volume4D'
-        version:
+        old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
             specify the version of this Subscription in the DSS that it is attempting to modify.  If a new
             Subscription is being created, this version should be set to 0.
           type: integer
           format: int32
+          minimum: 0
+          exclusiveMinimum: false
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
           description: If true, trigger notifications when Operations are created, updated, or deleted.
           type: boolean
         notify_for_constraints:
           description: If true, trigger notifications when Constraints are created, updated, or deleted.
           type: boolean
+
+    SubscriptionUssBaseURL:
+      description: |-
+        The base URL of a USS implementation of the parts of the USS-USS API necessary for
+        receiving the notifications requested by this Subscription.
+      allOf:
+      - $ref: '#/components/schemas/UssBaseURL'
 
     PutSubscriptionResponse:
       description: |-
@@ -644,6 +661,8 @@ components:
             must be retrieved.
           type: integer
           format: int32
+          minimum: 1
+          exclusiveMinimum: false
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
@@ -661,13 +680,21 @@ components:
           allOf:
           - $ref: '#/components/schemas/Time'
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/OperationUssBaseURL'
         subscription_id:
           description: |-
             The ID of the Subscription that is ensuring the Operation owner receives relevant
             airspace updates.
           allOf:
           - $ref: '#/components/schemas/SubscriptionUUID'
+
+    OperationUssBaseURL:
+      description: |-
+        The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
+        providing the details of this Operation, and telemetry during non-conformance or contingency,
+        if applicable.
+      allOf:
+      - $ref: '#/components/schemas/UssBaseURL'
 
     PutOperationReferenceParameters:
       description: |-
@@ -693,6 +720,8 @@ components:
             Operation is being created, this version should be set to 0.
           type: integer
           format: int32
+          minimum: 0
+          exclusiveMinimum: false
         key:
           description: |-
             Proof that the USS creating or mutating this Operation was aware of the current state of the
@@ -704,7 +733,7 @@ components:
         state:
           $ref: '#/components/schemas/OperationState'
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/OperationUssBaseURL'
         subscription_id:
           description: |-
             The ID of an existing Subscription that the USS will use to keep the operator informed about
@@ -729,7 +758,11 @@ components:
       - base_url
       properties:
         base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          description: |-
+            The base URL of a USS implementation of the parts of the USS-USS API necessary for
+            receiving the notifications required for the Operation.
+          allOf:
+          - $ref: '#/components/schemas/UssBaseURL'
         notify_for_constraints:
           description: |-
             True if this Operation's Subscription should trigger notifications when Constraints change.
@@ -806,6 +839,8 @@ components:
             must be retrieved.
           type: integer
           format: int32
+          minimum: 1
+          exclusiveMinimum: false
         ovn:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
@@ -819,7 +854,14 @@ components:
         time_end:
           $ref: '#/components/schemas/Time'
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/ConstraintUssBaseURL'
+
+    ConstraintUssBaseURL:
+      description: |-
+        The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
+        providing the details of this Constraint.
+      allOf:
+      - $ref: '#/components/schemas/UssBaseURL'
 
     PutConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
@@ -842,7 +884,7 @@ components:
           type: integer
           format: int32
         uss_base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+          $ref: '#/components/schemas/ConstraintUssBaseURL'
 
     GetConstraintReferenceResponse:
       description: Response to DSS request for the ConstraintReference with the given
@@ -1202,7 +1244,7 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Retrieve all Operations (references) in the specified area/volume/time from the DSS.
+      summary: Retrieve all Operation references in the specified area/volume/time from the DSS.
       responses:
         "200":
           content:
