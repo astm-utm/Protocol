@@ -1,12 +1,13 @@
 ---
 openapi: 3.0.2
 info:
-  title: UTM USS->DSS API
-  version: 0.1.10
+  title: UTM API (USS->DSS and USS->USS)
+  version: 0.2.0
   description: |-
-    Interface definitions for 'Discovery and Synchronization Service' (DSS).
+    Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
-    Used for identification of peer UTM USS instances (managing flight operations and constraints).
+    DSS functionality includes identification of peer UTM USS instances (managing flight operations and constraints).
+    USS functionality includes sharing details of flight operations and constraints.
 
     Note: Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
 
@@ -72,7 +73,7 @@ components:
       type: string
       format: uuid
       pattern: >-
-        "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$"
+        '^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$'
       example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
 
     EntityUUID:
@@ -81,6 +82,7 @@ components:
         the DSS.  Formatted as UUIDv4.
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
+      example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
 
     EntityOVN:
       title: EntityOVN
@@ -110,60 +112,73 @@ components:
         $ref: '#/components/schemas/EntityOVN'
 
     Time:
-      type: string
-      format: date-time
-      example: '1985-04-12T23:20:50.52Z'
-
-    TimeWithUnits:
       required:
-      - time
+      - text
       - units
       type: object
       properties:
-        time:
-          $ref: '#/components/schemas/Time'
+        text:
+          type: string
+          description: RFC3339-formatted time/date string.
+          format: date-time
+          example: '1985-04-12T23:20:50.52Z'
         units:
           type: string
           enum:
           - RFC3339
 
     Radius:
-      format: float
-      description: Distance, in meters, from the centerpoint of a circular area.
-      type: number
-      example: 300.183
-
-    RadiusWithUnits:
       required:
-      - radius
+      - distance
       - units
       type: object
       properties:
-        radius:
-          $ref: '#/components/schemas/Radius'
+        distance:
+          format: float
+          description: Distance, in meters, from the centerpoint of a circular area.
+          type: number
+          example: 300.183
         units:
           type: string
           enum:
           - Meters
 
     Altitude:
-      format: float
-      description: An altitude, in meters, above the WGS84 ellipsoid.
-      type: number
-      example: 19.5
-
-    AltitudeWithUnits:
-      required:
-      - altitude
-      - units
       type: object
+      required:
+      - height
+      - reference
+      - units
       properties:
-        altitude:
-          $ref: '#/components/schemas/Altitude'
-        units:
+        height:
+          description: |-
+            The numeric value of the altitude. Note that min and max values are
+            added as a sanity check. As use cases evolve and more options are
+            made available in terms of units of measure or reference systems,
+            these bounds should be re-evaluated.
+          type: number
+          format: double
+          minimum: -8000.0
+          exclusiveMinimum: false
+          maximum: 100000.0
+          exclusiveMaximum: false
+        reference:
+          description: |-
+            A code indicating the reference for a vertical distance. See AIXM 5.1
+            and FIXM 4.1.0. Currently, UTM only allows WGS84 with no immediate
+            plans to allow other options. FIXM and AIXM allow for 'SFC' which is
+            equivalent to AGL.
           type: string
           enum:
-          - Meters_WGS84
+          - W84
+        units:
+          description: |-
+            The reference quantities used to express the value of altitude. See
+            FIXM 4.1. Currently, UTM only allows feet with no immediate plans to allow
+            other options.  FIXM allows for feet or meters.
+          type: string
+          enum:
+          - FT
 
     Latitude:
       description: Degrees of latitude north of the equator, with reference to the WGS84 ellipsoid.
@@ -194,7 +209,7 @@ components:
         oneOf:
           - $ref: '#/components/schemas/Longitude'
           - $ref: '#/components/schemas/Latitude'
-      example: [-122.106325, 47.660898]
+      example: [47.660898, -122.106325]
 
 #
 # GeoJSON definitions
@@ -293,7 +308,7 @@ components:
 
     Circle:
       description: |-
-        Local extension of the GeoJSON specification to add a circular area defined by a Point/Radius pair. We extend the Properties object to include a 'radius' and 'radius_units' value (see RadiusWithUnits for details).
+        Local extension of the GeoJSON specification to add a circular area defined by a Point/Radius pair. We extend the Properties object to include a 'radius' and 'radius_units' value (see Radius for details).
       required:
         - type
         - geometry
@@ -316,7 +331,7 @@ components:
             coordinates:
               $ref: '#/components/schemas/Point'
         properties:
-          $ref: '#/components/schemas/RadiusWithUnits'
+          $ref: '#/components/schemas/Radius'
 
 #
 # End of GeoJSON definitions
@@ -343,15 +358,15 @@ components:
               radius_units: 'METERS_WGS84'
             geometry:
               type: 'Point'
-              coordinates: [-121.0123, 156.789]
+              coordinates: [156.789, -121.0123]
         altitude_lower:
           description: Minimum bounding altitude of this volume.
           allOf:
-          - $ref: '#/components/schemas/AltitudeWithUnits'
+          - $ref: '#/components/schemas/Altitude'
         altitude_upper:
           description: Maximum bounding altitude of this volume.
           allOf:
-          - $ref: '#/components/schemas/AltitudeWithUnits'
+          - $ref: '#/components/schemas/Altitude'
 
     Volume4D:
       description: Contiguous block of geographic spacetime.
@@ -364,11 +379,11 @@ components:
         time_start:
           description: Beginning time of this volume.
           allOf:
-          - $ref: '#/components/schemas/TimeWithUnits'
+          - $ref: '#/components/schemas/Time'
         time_end:
           description: End time of this volume.
           allOf:
-          - $ref: '#/components/schemas/TimeWithUnits'
+          - $ref: '#/components/schemas/Time'
 
     ErrorResponse:
       description: |-
@@ -445,12 +460,12 @@ components:
           description: |-
             If set, this subscription will not receive notifications before this time.
           allOf:
-          - $ref: '#/components/schemas/TimeWithUnits'
+          - $ref: '#/components/schemas/Time'
         time_end:
           description: |-
             If set, this subscription will not receive notifications after this time.
           allOf:
-          - $ref: '#/components/schemas/TimeWithUnits'
+          - $ref: '#/components/schemas/Time'
         base_url:
           $ref: '#/components/schemas/UssBaseURL'
         notify_for_operations:
@@ -583,9 +598,9 @@ components:
 
         'Activated': One or more aircraft associated with this Operation are, or will imminently be, in flight.  The create or update request for this Operation must include a Key containing all OVNs for all relevant Entities.
 
-        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should response, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
-        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should response, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
+        'Contingent': This Operation is executing a contingency action, either because is has been NonConforming for a certain period of time, or because of operator initiation.  This state must transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if possible, to queries from USS peers.  The create or update request for this Operation may omit a Key in this case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
         'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
       type: string
@@ -630,11 +645,11 @@ components:
         time_start:
           description: Beginning time of Operation.
           allOf:
-          - $ref: '#/components/schemas/TimeWithUnits'
+          - $ref: '#/components/schemas/Time'
         time_end:
           description: End time of Operation.
           allOf:
-          - $ref: '#/components/schemas/TimeWithUnits'
+          - $ref: '#/components/schemas/Time'
         uss_base_url:
           $ref: '#/components/schemas/UssBaseURL'
         subscription_id:
@@ -658,7 +673,9 @@ components:
       type: object
       properties:
         extents:
-          $ref: '#/components/schemas/Volume4D'
+          type: array
+          items:
+            $ref: '#/components/schemas/Volume4D'
         old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
@@ -742,12 +759,8 @@ components:
         Parameters for a request to find OperationReferences matching the provided criteria.
       type: object
       properties:
-        volumes:
-          description: |-
-            Return Operation references that may intersect any of these volumes.
-          type: array
-          items:
-            $ref: '#/components/schemas/Volume4D'
+        volume:
+          $ref: '#/components/schemas/Volume4D'
 
     SearchOperationReferenceResponse:
       description: Response to DSS query for OperationReferences in an area of interest.
@@ -792,9 +805,9 @@ components:
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
-          $ref: '#/components/schemas/TimeWithUnits'
+          $ref: '#/components/schemas/Time'
         time_end:
-          $ref: '#/components/schemas/TimeWithUnits'
+          $ref: '#/components/schemas/Time'
         uss_base_url:
           $ref: '#/components/schemas/UssBaseURL'
 
@@ -808,7 +821,9 @@ components:
       type: object
       properties:
         extents:
-          $ref: '#/components/schemas/Volume4D'
+          type: array
+          items:
+            $ref: '#/components/schemas/Volume4D'
         old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
@@ -852,12 +867,8 @@ components:
         Parameters for a request to find ConstraintReferences matching the provided criteria.
       type: object
       properties:
-        volumes:
-          description: |-
-            Return Constraint references that may intersect any of these volumes.
-          type: array
-          items:
-            $ref: '#/components/schemas/Volume4D'
+        volume:
+          $ref: '#/components/schemas/Volume4D'
 
     SearchConstraintReferencesResponse:
       description: Response to DSS query for ConstraintReferences in an area of interest.
@@ -904,7 +915,8 @@ components:
         - url
         - response_code
         - problem
-        - timestamp
+        - time_request
+        - time_response
       type: object
       properties:
         url:
@@ -928,8 +940,10 @@ components:
         problem:
           type: string
           description: Human-readable description of the problem with the response.
-        timestamp:
-          $ref: '#/components/schemas/TimeWithUnits'
+        time_request:
+          $ref: '#/components/schemas/Time'
+        time_response:
+          $ref: '#/components/schemas/Time'
 
 #
 # USS-USS schema components
@@ -1033,8 +1047,8 @@ components:
             $ref: '#/components/schemas/SubscriptionState'
 
     GetConstraintDetailsResponse:
-      description: Response to peer request for the details of Operation with the
-        given ID.
+      description: |-
+        Response to peer request for the details of Operation with the given ID.
       required:
       - constraint
       type: object
@@ -1054,40 +1068,110 @@ components:
     VehicleTelemetry:
       description: Vehicle position, altitude, and velocity.
       required:
+      - id
       - position
-      - position_uncertainty
-      - altitude
       - velocity
       - time_measured
       type: object
       properties:
+        id:
+          $ref: '#/components/schemas/EntityUUID'
         position:
-          $ref: '#/components/schemas/Point'
-        altitude:
-          $ref: '#/components/schemas/AltitudeWithUnits'
-        velocity:
-          $ref: '#/components/schemas/VelocityWithUnits'
-        time_measured:
-          $ref: '#/components/schemas/TimeWithUnits'
-
-    VelocityWithUnits:
-      required:
-      - velocity
-      - units
-      type: object
-      properties:
+          $ref: '#/components/schemas/Position'
         velocity:
           $ref: '#/components/schemas/Velocity'
-        units:
+        time_measured:
+          $ref: '#/components/schemas/Time'
+
+    PositionAccuracyVertical:
+      description: |-
+        Vertical error that is likely to be present in this reported position.
+        This is the GVA enumeration from ADS-B, plus some finer values for UAS.
+      type: string
+      enum:
+      - VAUnknown
+      - VA150mPlus
+      - VA150m
+      - VA45m
+      - VA25m
+      - VA10m
+      - VA3m
+      - VA1m
+
+    PositionAccuracyHorizontal:
+      description: |-
+        Horizontal error that is likely to be present in this reported position.
+        This is the NACp enumeration from ADS-B, plus 1m for a more complete range for UAS.
+      type: string
+      enum:
+      - HAUnknown
+      - HA10NMPlus
+      - HA10NM
+      - HA4NM
+      - HA2NM
+      - HA1NM
+      - HA05NM
+      - HA03NM
+      - HA01NM
+      - HA005NM
+      - HA30m
+      - HA10m
+      - HA3m
+      - HA1m
+
+    Position:
+      description: |-
+        Location of the vehicle (UAS) as reported for UTM.
+        Note: 'accuracy' values are required when extrapolated field is true
+        and always in the entry for the current state.
+      required:
+      - longitude
+      - latitude
+      - accuracy_h
+      - accuracy_v
+      - altitude
+      type: object
+      properties:
+        longitude:
+          $ref: '#/components/schemas/Longitude'
+        latitude:
+          $ref: '#/components/schemas/Latitude'
+        accuracy_h:
+          $ref: '#/components/schemas/PositionAccuracyHorizontal'
+        accuracy_v:
+          $ref: '#/components/schemas/PositionAccuracyVertical'
+        extrapolated:
+          description: |-
+            True if this position was generated primarily by computation
+            rather than primarily from a direct instrument measurement.
+            Assumed false if not specified.
+        altitude:
+          $ref: '#/components/schemas/Altitude'
+
+    Velocity:
+      required:
+      - speed
+      - units_speed
+      - track
+      type: object
+      properties:
+        speed:
+          format: float
+          type: number
+          description: |-
+            Ground speed in meters/second.
+          example: 200.1
+        units_speed:
           type: string
           enum:
           - MetersSecond
-
-    Velocity:
-      format: float
-      description: Speed in meters/second.
-      type: number
-      example: 200.1
+        track:
+          format: float
+          type: number
+          description: |-
+            Direction of flight expressed as a "True North-based" ground track angle.
+            This value is provided in degrees East of North with a minimum resolution of 1 degree.
+          example: 120
 
 paths:
   #
@@ -1965,6 +2049,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        "412":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: UAS is non-conforming and no telemetry data is available.
 
   #
   # USS Endpoint: CONSTRAINTS
