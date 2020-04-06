@@ -1036,7 +1036,13 @@ components:
       type: object
       properties:
         operation:
-          $ref: '#/components/schemas/Operation'
+          description: |-
+            Full information about the Operation that has changed.  If this field is omitted,
+            the Operation was deleted.  A newly-created Operation can be differentiated from
+            an updated Operation by examining the `version` field.  The `ovn` field in the
+            nested `reference` must be populated.
+          allOf:
+          - $ref: '#/components/schemas/Operation'
         subscriptions:
           type: array
           description: Subscription(s) prompting this notification.
@@ -1066,6 +1072,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
+        type:
+          description: Type of airspace feature this Constraint represents.
+          type: string
+          example: 'NonUTMAircraftOperations'
 
     Constraint:
       description: Full specification of a UTM Constraint.
@@ -1088,7 +1098,13 @@ components:
       type: object
       properties:
         constraint:
-          $ref: '#/components/schemas/Constraint'
+          description: |-
+            Full information about the Constraint that has changed.  If this field is omitted,
+            the Constraint was deleted.  A newly-created Constraint can be differentiated from
+            an updated Constraint by examining the `version` field.  The `ovn` field in the
+            nested `reference` must be populated.
+          allOf:
+          - $ref: '#/components/schemas/Constraint'
         subscriptions:
           description: Subscription(s) prompting this notification.
           type: array
