@@ -115,7 +115,7 @@ components:
     Time:
       required:
       - value
-      - units
+      - format
       type: object
       properties:
         value:
@@ -123,7 +123,7 @@ components:
           description: RFC3339-formatted time/date string.  The time zone must be 'Z'.
           format: date-time
           example: '1985-04-12T23:20:50.52Z'
-        units:
+        format:
           type: string
           enum:
           - RFC3339
