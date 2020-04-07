@@ -111,6 +111,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/EntityOVN'
+      default: []
 
     Time:
       required:
@@ -427,6 +428,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionState'
+          minItems: 1
         base_url:
           $ref: '#/components/schemas/UssBaseURL'
 
@@ -469,21 +471,25 @@ components:
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
-          description: If true, trigger notifications when Operations are created, updated, or deleted.
+          description: If true, trigger notifications when Operations are created, updated, or deleted.  Otherwise, changes in Operations should not trigger notifications.
           type: boolean
+          default: false
         notify_for_constraints:
-          description: If true, trigger notifications when Constraints are created, updated, or deleted.
+          description: If true, trigger notifications when Constraints are created, updated, or deleted.  Otherwise, changes in Constraints should not trigger notifications.
           type: boolean
+          default: false
         created_by_operation:
           description: |-
             True if this Subscription was implicitly created by the DSS via the creation of an
             Operation, and should therefore be deleted by the DSS when that Operation is deleted.
           type: boolean
+          default: false
         dependent_operations:
           description: List of Operations (UUIDs) that are dependent on this Subscription.
           type: array
           items:
             $ref: '#/components/schemas/EntityUUID'
+          default: []
 
     SubscriptionNotificationIndex:
       format: int32
@@ -492,6 +498,7 @@ components:
       type: integer
       minimum: 0
       exclusiveMinimum: false
+      default: 0
 
     SearchSubscriptionParameters:
       description: |-
@@ -512,6 +519,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Subscription'
+          default: []
 
     GetSubscriptionResponse:
       description: Response to DSS request for the subscription with the given id.
@@ -542,14 +550,17 @@ components:
           format: int32
           minimum: 0
           exclusiveMinimum: false
+          default: 0
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
-          description: If true, trigger notifications when Operations are created, updated, or deleted.
+          description: If true, trigger notifications when Operations are created, updated, or deleted.  Otherwise, changes in Operations should not trigger notifications.
           type: boolean
+          default: false
         notify_for_constraints:
-          description: If true, trigger notifications when Constraints are created, updated, or deleted.
+          description: If true, trigger notifications when Constraints are created, updated, or deleted.  Otherwise, changes in Constraints should not trigger notifications.
           type: boolean
+          default: false
 
     SubscriptionUssBaseURL:
       description: |-
@@ -574,6 +585,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationReference'
+          default: []
         constraints:
           description: |-
             Constraints in or near the subscription area at the time of creation/update,
@@ -582,6 +594,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
+          default: []
 
     DeleteSubscriptionResponse:
       description: Response for a successful request to delete an Subscription.
@@ -709,6 +722,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
+          minItems: 1
         old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
@@ -718,6 +732,7 @@ components:
           format: int32
           minimum: 0
           exclusiveMinimum: false
+          default: 0
         key:
           description: |-
             Proof that the USS creating or mutating this Operation was aware of the current state of the
@@ -762,7 +777,9 @@ components:
           - $ref: '#/components/schemas/UssBaseURL'
         notify_for_constraints:
           description: |-
-            True if this Operation's Subscription should trigger notifications when Constraints change.
+            True if this Operation's Subscription should trigger notifications when Constraints change.  Otherwise, changes in Constraints should not trigger notifications.
+          type: boolean
+          default: false
 
     GetOperationReferenceResponse:
       description: |-
@@ -780,6 +797,7 @@ components:
         in the DSS.
       required:
       - subscribers
+      - operation_reference
       type: object
       properties:
         subscribers:
@@ -791,6 +809,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
+          default: []
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
@@ -813,6 +832,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationReference'
+          default: []
 
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
@@ -873,6 +893,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
+          minItems: 1
         old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
@@ -882,6 +903,7 @@ components:
           format: int32
           minimum: 0
           exclusiveMinimum: false
+          default: 0
         uss_base_url:
           $ref: '#/components/schemas/ConstraintUssBaseURL'
 
@@ -910,6 +932,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
+          default: []
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
@@ -932,6 +955,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
+          default: []
 
     EntityReference:
       description: Reference to a generic Entity known to the DSS.
@@ -959,6 +983,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EntityReference'
+          default: []
 
     MakeReportParameters:
       description: Parameters of a message informing a server of a problem communicating with a server.
@@ -976,6 +1001,7 @@ components:
           type: array
           items:
             type: string
+          default: []
         body:
           description: Base64-encoded body content sent in request that resulted in an error.
           type: string
@@ -1048,6 +1074,7 @@ components:
           description: Subscription(s) prompting this notification.
           items:
             $ref: '#/components/schemas/SubscriptionState'
+          minItems: 1
 
     GetOperationDetailsResponse:
       description: Response to peer request for the details of Operation with the given ID.
@@ -1110,6 +1137,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionState'
+          minItems: 1
 
     GetConstraintDetailsResponse:
       description: |-
