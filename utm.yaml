@@ -136,7 +136,7 @@ components:
       properties:
         value:
           format: float
-          description: Distance from the centerpoint of a circular area.
+          description: Distance from the centerpoint of a circular area, along the WGS84 ellipsoid.
           type: number
           example: 300.183
         units:
