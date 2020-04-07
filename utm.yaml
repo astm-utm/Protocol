@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.3
+  version: 0.2.4
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -169,7 +169,7 @@ components:
         reference:
           description: |-
             A code indicating the reference for a vertical distance. See AIXM 5.1
-            and FIXM 4.1.0. Currently, UTM only allows WGS84 with no immediate
+            and FIXM 4.2.0. Currently, UTM only allows WGS84 with no immediate
             plans to allow other options. FIXM and AIXM allow for 'SFC' which is
             equivalent to AGL.
           type: string
@@ -178,11 +178,11 @@ components:
         units:
           description: |-
             The reference quantities used to express the value of altitude. See
-            FIXM 4.1. Currently, UTM only allows feet with no immediate plans to allow
-            other options.  FIXM allows for feet or meters.
+            FIXM 4.2. Currently, UTM only allows meters with no immediate plans
+            to allow other options.
           type: string
           enum:
-          - FT
+          - M
 
     Latitude:
       description: Degrees of latitude north of the equator, with reference to the WGS84 ellipsoid.
