@@ -96,6 +96,7 @@ components:
         (either via GET, or via a subscription notification).
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
+      example: '9d158f59-80b7-4c11-9c0c-8a2b4d936b2d'
 
     SubscriptionUUID:
       description: |-
@@ -611,7 +612,7 @@ components:
         of a particular resource can be constructed by appending, e.g., `/v1/{resource}/{id}` to this base URL.
         Accordingly, this URL may not have a trailing '/' character.
       type: string
-      example: 'https://uss.com/utm'
+      example: 'https://utm_uss.com/utm'
 
     OperationState:
       description: |-
