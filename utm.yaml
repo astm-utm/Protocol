@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.1
+  version: 0.2.2
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -96,6 +96,7 @@ components:
         (either via GET, or via a subscription notification).
       allOf:
       - $ref: '#/components/schemas/UUIDv4'
+      example: '9d158f59-80b7-4c11-9c0c-8a2b4d936b2d'
 
     SubscriptionUUID:
       description: |-
@@ -111,19 +112,20 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/EntityOVN'
+      default: []
 
     Time:
       required:
       - value
-      - units
+      - format
       type: object
       properties:
         value:
           type: string
-          description: RFC3339-formatted time/date string.
+          description: RFC3339-formatted time/date string.  The time zone must be 'Z'.
           format: date-time
           example: '1985-04-12T23:20:50.52Z'
-        units:
+        format:
           type: string
           enum:
           - RFC3339
@@ -136,7 +138,7 @@ components:
       properties:
         value:
           format: float
-          description: Distance from the centerpoint of a circular area.
+          description: Distance from the centerpoint of a circular area, along the WGS84 ellipsoid.
           type: number
           example: 300.183
         units:
@@ -427,6 +429,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionState'
+          minItems: 1
         base_url:
           $ref: '#/components/schemas/UssBaseURL'
 
@@ -469,21 +472,25 @@ components:
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
-          description: If true, trigger notifications when Operations are created, updated, or deleted.
+          description: If true, trigger notifications when Operations are created, updated, or deleted.  Otherwise, changes in Operations should not trigger notifications.
           type: boolean
+          default: false
         notify_for_constraints:
-          description: If true, trigger notifications when Constraints are created, updated, or deleted.
+          description: If true, trigger notifications when Constraints are created, updated, or deleted.  Otherwise, changes in Constraints should not trigger notifications.
           type: boolean
+          default: false
         created_by_operation:
           description: |-
             True if this Subscription was implicitly created by the DSS via the creation of an
             Operation, and should therefore be deleted by the DSS when that Operation is deleted.
           type: boolean
+          default: false
         dependent_operations:
           description: List of Operations (UUIDs) that are dependent on this Subscription.
           type: array
           items:
             $ref: '#/components/schemas/EntityUUID'
+          default: []
 
     SubscriptionNotificationIndex:
       format: int32
@@ -492,6 +499,7 @@ components:
       type: integer
       minimum: 0
       exclusiveMinimum: false
+      default: 0
 
     SearchSubscriptionParameters:
       description: |-
@@ -512,6 +520,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Subscription'
+          default: []
 
     GetSubscriptionResponse:
       description: Response to DSS request for the subscription with the given id.
@@ -542,14 +551,17 @@ components:
           format: int32
           minimum: 0
           exclusiveMinimum: false
+          default: 0
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
-          description: If true, trigger notifications when Operations are created, updated, or deleted.
+          description: If true, trigger notifications when Operations are created, updated, or deleted.  Otherwise, changes in Operations should not trigger notifications.
           type: boolean
+          default: false
         notify_for_constraints:
-          description: If true, trigger notifications when Constraints are created, updated, or deleted.
+          description: If true, trigger notifications when Constraints are created, updated, or deleted.  Otherwise, changes in Constraints should not trigger notifications.
           type: boolean
+          default: false
 
     SubscriptionUssBaseURL:
       description: |-
@@ -574,6 +586,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationReference'
+          default: []
         constraints:
           description: |-
             Constraints in or near the subscription area at the time of creation/update,
@@ -582,6 +595,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
+          default: []
 
     DeleteSubscriptionResponse:
       description: Response for a successful request to delete an Subscription.
@@ -598,7 +612,7 @@ components:
         of a particular resource can be constructed by appending, e.g., `/v1/{resource}/{id}` to this base URL.
         Accordingly, this URL may not have a trailing '/' character.
       type: string
-      example: 'https://uss.com/utm'
+      example: 'https://utm_uss.com/utm'
 
     OperationState:
       description: |-
@@ -613,7 +627,7 @@ components:
         all relevant Entities.
 
         'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST
-        contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityid}/telemetry'
+        contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityuuid}/telemetry'
         USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request
         for this Operation may omit a Key in this case because the Operation is being adjusted as flown and
         cannot necessarily deconflict.
@@ -621,7 +635,7 @@ components:
         'Contingent': This Operation is executing a contingency action, either because it has been
         NonConforming for a certain period of time, or because of operator initiation.  This state must
         transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.
-        In this state, the `/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if available,
+        In this state, the `/v1/operations/{entityuuid}/telemetry' USS-USS endpoint should respond, if available,
         to queries from USS peers.  The create or update request for this Operation may omit a Key in this
         case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
@@ -709,6 +723,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
+          minItems: 1
         old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
@@ -718,6 +733,7 @@ components:
           format: int32
           minimum: 0
           exclusiveMinimum: false
+          default: 0
         key:
           description: |-
             Proof that the USS creating or mutating this Operation was aware of the current state of the
@@ -762,7 +778,9 @@ components:
           - $ref: '#/components/schemas/UssBaseURL'
         notify_for_constraints:
           description: |-
-            True if this Operation's Subscription should trigger notifications when Constraints change.
+            True if this Operation's Subscription should trigger notifications when Constraints change.  Otherwise, changes in Constraints should not trigger notifications.
+          type: boolean
+          default: false
 
     GetOperationReferenceResponse:
       description: |-
@@ -780,17 +798,19 @@ components:
         in the DSS.
       required:
       - subscribers
+      - operation_reference
       type: object
       properties:
         subscribers:
           description: |-
             DSS subscribers that this client now has the obligation to
             notify of the Operation changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/v1/operations/{entityid}`
+            for each provided URL according to the USS-USS `/v1/operations/{entityuuid}`
             path API.  The client's own Subscriptions will also be included in this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
+          default: []
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
@@ -813,6 +833,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationReference'
+          default: []
 
     ConstraintReference:
       description: A ConstraintReference (area in which a Constraint is present, along
@@ -873,6 +894,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
+          minItems: 1
         old_version:
           description: |-
             To ensure consistency in read-modify-write operations and distributed systems, the client must
@@ -882,6 +904,7 @@ components:
           format: int32
           minimum: 0
           exclusiveMinimum: false
+          default: 0
         uss_base_url:
           $ref: '#/components/schemas/ConstraintUssBaseURL'
 
@@ -905,11 +928,12 @@ components:
         subscribers:
           description: DSS subscribers that this client now has the obligation to
             notify of the Constraint changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/v1/constraints/{entityid}`
+            for each provided URL according to the USS-USS `/v1/constraints/{entityuuid}`
             path API.  The client's own Subscriptions will also be included in this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
+          default: []
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
@@ -932,6 +956,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
+          default: []
 
     EntityReference:
       description: Reference to a generic Entity known to the DSS.
@@ -959,6 +984,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EntityReference'
+          default: []
 
     MakeReportParameters:
       description: Parameters of a message informing a server of a problem communicating with a server.
@@ -976,6 +1002,7 @@ components:
           type: array
           items:
             type: string
+          default: []
         body:
           description: Base64-encoded body content sent in request that resulted in an error.
           type: string
@@ -1048,6 +1075,7 @@ components:
           description: Subscription(s) prompting this notification.
           items:
             $ref: '#/components/schemas/SubscriptionState'
+          minItems: 1
 
     GetOperationDetailsResponse:
       description: Response to peer request for the details of Operation with the given ID.
@@ -1110,6 +1138,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionState'
+          minItems: 1
 
     GetConstraintDetailsResponse:
       description: |-
@@ -1294,10 +1323,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /dss/v1/operation_references/{entityid}:
+  /dss/v1/operation_references/{entityuuid}:
     summary: CRUD endpoint for a specified Operation reference in the DSS.
     parameters:
-    - name: entityid
+    - name: entityuuid
       description: EntityUUID of the Operation.
       schema:
         $ref: '#/components/schemas/EntityUUID'
@@ -1510,9 +1539,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
 
-  /dss/v1/constraints/{entityid}:
+  /dss/v1/constraints/{entityuuid}:
     parameters:
-    - name: entityid
+    - name: entityuuid
       description: EntityUUID of the Constraint.
       schema:
         $ref: '#/components/schemas/EntityUUID'
@@ -1965,10 +1994,10 @@ paths:
   # USS Endpoint: OPERATIONS
   #
 
-  /uss/v1/operations/{entityid}:
+  /uss/v1/operations/{entityuuid}:
     summary: Query detailed information of an Operation.
     parameters:
-    - name: entityid
+    - name: entityuuid
       description: EntityUUID for this Operation.
       schema:
         $ref: '#/components/schemas/EntityUUID'
@@ -2066,10 +2095,10 @@ paths:
             a previously-received notification, or identical to a previously-received
             notification and the Entity is different.
 
-  /uss/v1/operations/{entityid}/telemetry:
+  /uss/v1/operations/{entityuuid}/telemetry:
     summary: Query detailed information on the position of an off-nominal Operation.
     parameters:
-    - name: entityid
+    - name: entityuuid
       description: EntityUUID for this Operation.
       schema:
         $ref: '#/components/schemas/EntityUUID'
@@ -2125,10 +2154,10 @@ paths:
   # USS Endpoint: CONSTRAINTS
   #
 
-  /uss/v1/constraints/{entityid}:
+  /uss/v1/constraints/{entityuuid}:
     summary: Query detailed information of a Constraint.
     parameters:
-    - name: entityid
+    - name: entityuuid
       description: EntityUUID of the Constraint.
       schema:
         $ref: '#/components/schemas/EntityUUID'
