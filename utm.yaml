@@ -506,7 +506,7 @@ components:
         Parameters for a request to find Subscriptions matching the provided criteria.
       type: object
       properties:
-        volume:
+        area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
     SearchSubscriptionsResponse:
@@ -819,7 +819,7 @@ components:
         Parameters for a request to find OperationReferences matching the provided criteria.
       type: object
       properties:
-        volume:
+        area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
     SearchOperationReferenceResponse:
@@ -942,7 +942,7 @@ components:
         Parameters for a request to find ConstraintReferences matching the provided criteria.
       type: object
       properties:
-        volume:
+        area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
     SearchConstraintReferencesResponse:
