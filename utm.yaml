@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.2
+  version: 0.2.3
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -506,7 +506,7 @@ components:
         Parameters for a request to find Subscriptions matching the provided criteria.
       type: object
       properties:
-        volume:
+        area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
     SearchSubscriptionsResponse:
@@ -819,7 +819,7 @@ components:
         Parameters for a request to find OperationReferences matching the provided criteria.
       type: object
       properties:
-        volume:
+        area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
     SearchOperationReferenceResponse:
@@ -942,7 +942,7 @@ components:
         Parameters for a request to find ConstraintReferences matching the provided criteria.
       type: object
       properties:
-        volume:
+        area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
     SearchConstraintReferencesResponse:
@@ -1322,6 +1322,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   /dss/v1/operation_references/{entityuuid}:
     summary: CRUD endpoint for a specified Operation reference in the DSS.
@@ -1373,6 +1379,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     put:
       requestBody:
@@ -1431,6 +1443,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The area of the Operation is too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     delete:
       tags:
@@ -1481,6 +1499,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
               * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   #
   # DSS Enpoint: CONSTRAINTS
@@ -1538,6 +1562,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   /dss/v1/constraints/{entityuuid}:
     parameters:
@@ -1591,6 +1621,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     put:
       requestBody:
@@ -1648,6 +1684,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The area of the Operation is too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     delete:
       tags:
@@ -1698,6 +1740,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
               * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   #
   # DSS Endpoint: SUBSCRIPTIONS
@@ -1766,6 +1814,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested area was too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   /dss/v1/subscriptions/{subscriptionid}:
     summary: Create/Update a specific Subscription in the DSS.
@@ -1820,6 +1874,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: A Subscription with the specified ID was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     put:
       security:
@@ -1891,6 +1951,9 @@ paths:
             is necessary to bound performance requirements for DSS instances and would
             likely be hit by, e.g., a large remote ID display provider that created
             a Subscription for each of their display client users' views.
+            
+            Alternately, the client may have issued too many requests within a small
+            period of time.
 
     delete:
       tags:
@@ -1933,6 +1996,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: A Subscription with the specified ID was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
 #
 # DSS Endpoint: REPORT
@@ -1989,6 +2058,12 @@ paths:
           description: |-
             * A Report with the specified ID already exists.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   #
   # USS Endpoint: OPERATIONS
@@ -2044,6 +2119,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     post:
       tags:
@@ -2094,6 +2175,12 @@ paths:
             The Entity version specified in this message is lower than
             a previously-received notification, or identical to a previously-received
             notification and the Entity is different.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   /uss/v1/operations/{entityuuid}/telemetry:
     summary: Query detailed information on the position of an off-nominal Operation.
@@ -2149,6 +2236,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: UAS is non-conforming and no telemetry data is available.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   #
   # USS Endpoint: CONSTRAINTS
@@ -2206,6 +2299,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
     post:
       tags:
@@ -2256,6 +2355,12 @@ paths:
           description: The Entity version specified in this message is lower than
             a previously-received notification, or identical to a previously-received
             notification and the Entity is different.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
 
   #
   # USS Endpoint: (OTHER)
@@ -2319,3 +2424,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * A report with the provided ID already exists
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
