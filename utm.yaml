@@ -655,6 +655,7 @@ components:
         created the Operation but NEVER to other USS instances.
       required:
       - id
+      - owner
       - version
       - time_start
       - time_end
@@ -664,6 +665,14 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/EntityUUID'
+        owner:
+          type: string
+          example: 'uss1'
+          description: |-
+            Created by the DSS based on creating client's ID (via access token).  Used internal
+            to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
+            to reject Operation update notifications originating from a USS that does not own
+            the Operation.
         version:
           description: |-
             Sequential version that the DSS increments every time the Operation changes.  A USS
@@ -842,6 +851,7 @@ components:
         peer-to-peer.
       required:
       - id
+      - owner
       - version
       - time_start
       - time_end
@@ -850,6 +860,14 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/EntityUUID'
+        owner:
+          type: string
+          example: 'uss1'
+          description: |-
+            Created by the DSS based on creating client's ID (via access token).  Used internal
+            to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
+            to reject Constraint update notifications originating from a USS that does not own
+            the Constraint.
         version:
           description: |-
             Sequential version that the DSS increments every time the Constraint changes.  A USS
