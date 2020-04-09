@@ -1040,6 +1040,9 @@ components:
             $ref: '#/components/schemas/Volume4D'
         state:
           $ref: '#/components/schemas/OperationState'
+        vlos:
+          description: If true, this Operation is ensuring deconfliction visually and volumes of other Operations may overlap the volumes of this Operation.
+
 
     Operation:
       description: Full description of a UTM Operation.
