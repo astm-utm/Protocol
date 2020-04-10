@@ -440,7 +440,7 @@ components:
         airspace.
       required:
       - subscriptions
-      - base_url
+      - uss_base_url
       type: object
       properties:
         subscriptions:
@@ -449,8 +449,8 @@ components:
           items:
             $ref: '#/components/schemas/SubscriptionState'
           minItems: 1
-        base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+        uss_base_url:
+          $ref: '#/components/schemas/SubscriptionUssBaseURL'
 
     Subscription:
       description: |-
@@ -628,7 +628,7 @@ components:
     UssBaseURL:
       description: |-
         The base URL of a USS implementation of part or all of the USS-USS API. Per the USS-USS API, the full URL
-        of a particular resource can be constructed by appending, e.g., `/v1/{resource}/{id}` to this base URL.
+        of a particular resource can be constructed by appending, e.g., `/uss/v1/{resource}/{id}` to this base URL.
         Accordingly, this URL may not have a trailing '/' character.
       type: string
       example: 'https://utm_uss.com/utm'
@@ -795,15 +795,15 @@ components:
         Information necessary to create a Subscription to serve a single Operation's notification needs.
       type: object
       required:
-      - base_url
+      - uss_base_url
       properties:
-        base_url:
+        uss_base_url:
           description: |-
             The base URL of a USS implementation of the parts of the USS-USS API necessary for
             receiving the notifications that the Operation must be aware of.  This includes, at least,
             notifications for relevant changes in Operations.
           allOf:
-          - $ref: '#/components/schemas/UssBaseURL'
+          - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
           description: |-
             True if this Operation's Subscription should trigger notifications when Constraints change.  Otherwise, changes in Constraints should not trigger notifications.
