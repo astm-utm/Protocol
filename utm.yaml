@@ -1059,6 +1059,8 @@ components:
           $ref: '#/components/schemas/Time'
         report_id:
           description: ID assigned by the server receiving the report.  Not populated when submitting a report.
+          type: string
+          maxLength: 128
 
 #
 # USS-USS schema components
