@@ -94,8 +94,9 @@ components:
         provided to mutate the airspace.  The EntityOVN is also provided by
         the client whenever that client transmits the full information of the Entity
         (either via GET, or via a subscription notification).
-      allOf:
-      - $ref: '#/components/schemas/UUIDv4'
+      type: string
+      minLength: 16
+      maxLength: 128
       example: '9d158f59-80b7-4c11-9c0c-8a2b4d936b2d'
 
     SubscriptionUUID:
