@@ -1081,6 +1081,8 @@ components:
           $ref: '#/components/schemas/OperationState'
         vlos:
           description: If true, this Operation is ensuring deconfliction visually and volumes of other Operations may overlap the volumes of this Operation.
+          type: boolean
+          default: false
 
 
     Operation:
