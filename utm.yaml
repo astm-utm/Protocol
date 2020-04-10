@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.4
+  version: 0.2.6
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -18,12 +18,18 @@ security:
   - utm.constraint_consumption
 
 tags:
-- name: "Operations"
+- name: "Operation references"
   description: |-
-    Endpoints exposed by the DSS for interaction with Operation entities.
-- name: "Constraints"
+    Endpoints exposed by the DSS for interaction with references to Operations.
+- name: "Operation details"
   description: |-
-    Endpoints exposed by the DSS for interaction with Constraint entities.
+    Endpoints exposed by USSs for interaction with details of Operations.
+- name: "Constraint references"
+  description: |-
+    Endpoints exposed by the DSS for interaction with references to Constraints.
+- name: "Constraint details"
+  description: |-
+    Endpoints exposed by USSs for interaction with details of Constraints.
 - name: "Subscriptions"
   description: |-
     Endpoints exposed by the DSS for interaction with Subscription entities.
@@ -94,8 +100,9 @@ components:
         provided to mutate the airspace.  The EntityOVN is also provided by
         the client whenever that client transmits the full information of the Entity
         (either via GET, or via a subscription notification).
-      allOf:
-      - $ref: '#/components/schemas/UUIDv4'
+      type: string
+      minLength: 16
+      maxLength: 128
       example: '9d158f59-80b7-4c11-9c0c-8a2b4d936b2d'
 
     SubscriptionUUID:
@@ -129,6 +136,14 @@ components:
           type: string
           enum:
           - RFC3339
+
+    CircleProperties:
+      required:
+      - radius
+      type: object
+      properties:
+        radius:
+          $ref: '#/components/schemas/Radius'
 
     Radius:
       required:
@@ -312,7 +327,9 @@ components:
 
     Circle:
       description: |-
-        Local extension of the GeoJSON specification to add a circular area defined by a Point/Radius pair. We extend the Properties object to include a 'radius' and 'radius_units' value (see Radius for details).
+        Local extension of the GeoJSON specification to add a circular area defined by a
+        Point/Radius pair. We extend the Properties object to include a 'radius' value (see
+        CircleProperties for details).
       required:
         - type
         - geometry
@@ -335,7 +352,7 @@ components:
             coordinates:
               $ref: '#/components/schemas/Point'
         properties:
-          $ref: '#/components/schemas/Radius'
+          $ref: '#/components/schemas/CircleProperties'
 
 #
 # End of GeoJSON definitions
@@ -358,8 +375,9 @@ components:
           example:
             type: 'Feature'
             properties:
-              value: 300.0
-              units: 'M'
+              radius:
+                value: 300.0
+                units: 'M'
             geometry:
               type: 'Point'
               coordinates: [-121.0123, 56.789]
@@ -399,6 +417,7 @@ components:
           description: |-
             Human-readable message indicating what error occurred and/or why.
           type: string
+          example: 'The error occurred because [...]'
 
     SubscriptionState:
       description: |-
@@ -801,7 +820,7 @@ components:
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
-    UpdateOperationReferenceResponse:
+    ChangeOperationReferenceResponse:
       description: |-
         Response to a request to create, update, or delete an OperationReference
         in the DSS.
@@ -1080,9 +1099,14 @@ components:
         Pushed (by a client, not the DSS) directly to clients with subscriptions when
         another client makes a change to airspace within a cell with a subscription.
       required:
+      - operation_id
       - subscriptions
       type: object
       properties:
+        operation_id:
+          description: ID of Operation that has changed.
+          allOf:
+          - $ref: '#/components/schemas/EntityUUID'
         operation:
           description: |-
             Full information about the Operation that has changed.  If this field is omitted,
@@ -1143,9 +1167,14 @@ components:
         Constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
         when another client makes a change to airspace within a cell with a subscription.
       required:
+      - constraint_id
       - subscriptions
       type: object
       properties:
+        constraint_id:
+          description: ID of Constraint that has changed.
+          allOf:
+          - $ref: '#/components/schemas/EntityUUID'
         constraint:
           description: |-
             Full information about the Constraint that has changed.  If this field is omitted,
@@ -1305,7 +1334,7 @@ paths:
               $ref: '#/components/schemas/SearchOperationReferenceParameters'
         required: true
       tags:
-      - "Operations"
+      - "Operation references"
       security:
       - Authority:
         - utm.strategic_coordination
@@ -1362,7 +1391,7 @@ paths:
 
     get:
       tags:
-      - "Operations"
+      - "Operation references"
       security:
       - Authority:
         - utm.strategic_coordination
@@ -1415,7 +1444,7 @@ paths:
               $ref: '#/components/schemas/PutOperationReferenceParameters'
         required: true
       tags:
-      - "Operations"
+      - "Operation references"
       security:
       - Authority:
         - utm.strategic_coordination
@@ -1425,8 +1454,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateOperationReferenceResponse'
-          description: An Operation was created successfully in the DSS.
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+          description: An Operation reference was updated successfully in the DSS.
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+          description: An Operation reference was created successfully in the DSS.
         "400":
           content:
             application/json:
@@ -1473,7 +1508,7 @@ paths:
 
     delete:
       tags:
-        - "Operations"
+        - "Operation references"
       security:
         - Authority:
           - utm.strategic_coordination
@@ -1483,7 +1518,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateOperationReferenceResponse'
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
           description: The specified Operation was successfully removed from the DSS.
         "400":
           content:
@@ -1543,7 +1578,7 @@ paths:
               $ref: '#/components/schemas/SearchConstraintReferenceParameters'
         required: true
       tags:
-      - "Constraints"
+      - "Constraint references"
       security:
       - Authority:
         - utm.constraint_management
@@ -1590,7 +1625,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /dss/v1/constraints/{entityuuid}:
+  /dss/v1/constraint_references/{entityuuid}:
     parameters:
     - name: entityuuid
       description: EntityUUID of the Constraint.
@@ -1602,7 +1637,7 @@ paths:
 
     get:
       tags:
-      - "Constraints"
+      - "Constraint references"
       security:
       - Authority:
         - utm.constraint_management
@@ -1657,7 +1692,7 @@ paths:
               $ref: '#/components/schemas/PutConstraintReferenceParameters'
         required: true
       tags:
-      - "Constraints"
+      - "Constraint references"
       security:
       - Authority:
         - utm.constraint_management
@@ -1668,7 +1703,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A Constraint was created successfully in the DSS.
+          description: A Constraint reference was updated successfully in the DSS.
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
+          description: A Constraint reference was created successfully in the DSS.
         "400":
           content:
             application/json:
@@ -1714,7 +1755,7 @@ paths:
 
     delete:
       tags:
-      - "Constraints"
+      - "Constraint references"
       security:
         - Authority:
           - utm.constraint_management
@@ -2091,7 +2132,7 @@ paths:
   #
 
   /uss/v1/operations/{entityuuid}:
-    summary: Query detailed information of an Operation.
+    summary: Query detailed information of an Operation from a USS.
     parameters:
     - name: entityuuid
       description: EntityUUID for this Operation.
@@ -2102,11 +2143,11 @@ paths:
 
     get:
       tags:
-      - "Operations"
+      - "Operation details"
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Retrieve the specified Operation details.
+      summary: Retrieve the specified Operation details from a USS.
       responses:
         "200":
           content:
@@ -2147,9 +2188,73 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
+  /uss/v1/operations/{entityuuid}/telemetry:
+    summary: Detailed information on the position of an off-nominal Operation.
+    parameters:
+    - name: entityuuid
+      description: EntityUUID for this Operation.
+      schema:
+        $ref: '#/components/schemas/EntityUUID'
+      in: path
+      required: true
+
+    get:
+      tags:
+      - "Operation details"
+      security:
+      - Authority:
+        - utm.strategic_coordination
+      summary: Query detailed information on the position of an off-nominal Operation from a USS.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOperationTelemetryResponse'
+          description: Operation telemetry details were retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: One or more input parameters were missing or invalid.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The access token was decoded successfully but did not include a scope appropriate to this endpoint.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The requested Entity could not be found.
+        "412":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: UAS is non-conforming and no telemetry data is available.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
+
+  /uss/v1/operations:
+    summary: A USS's representation of detailed information about Operations.
+    
     post:
       tags:
-      - "Operations"
+      - "Operation details"
       security:
       - Authority:
         - utm.strategic_coordination
@@ -2203,73 +2308,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /uss/v1/operations/{entityuuid}/telemetry:
-    summary: Query detailed information on the position of an off-nominal Operation.
-    parameters:
-    - name: entityuuid
-      description: EntityUUID for this Operation.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
-
-    get:
-      tags:
-      - "Operations"
-      security:
-      - Authority:
-        - utm.strategic_coordination
-      summary: Query detailed information on the position of an off-nominal Operation.
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetOperationTelemetryResponse'
-          description: Operation telemetry details were retrieved successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: One or more input parameters were missing or invalid.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The requested Entity could not be found.
-        "412":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: UAS is non-conforming and no telemetry data is available.
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
   #
   # USS Endpoint: CONSTRAINTS
   #
 
   /uss/v1/constraints/{entityuuid}:
-    summary: Query detailed information of a Constraint.
+    summary: Query detailed information of a Constraint from a USS.
     parameters:
     - name: entityuuid
       description: EntityUUID of the Constraint.
@@ -2280,12 +2324,12 @@ paths:
 
     get:
       tags:
-      - "Constraints"
+      - "Constraint details"
       security:
       - Authority:
         - utm.strategic_coordination
         - utm.constraint_consumption
-      summary: Retrieve the specified Constraint details.
+      summary: Retrieve the specified Constraint details from a USS.
       description: Retrieve the details of the specified Constraint.
       responses:
         "200":
@@ -2327,9 +2371,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
+  /uss/v1/constraints:
+    summary: A USS's representation of detailed information about Constraints.
+
     post:
       tags:
-      - "Constraints"
+      - "Constraint details"
       security:
       - Authority:
         - utm.strategic_coordination
