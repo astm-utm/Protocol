@@ -705,8 +705,8 @@ components:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
             is owned by the USS retrieving or providing it.  Not populated when the
-            OperationReference is not owned by the USS retrieving it (instead, the USS must obtain
-            the OVN from the details retrieved from the owning USS).
+            OperationReference is not owned by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -900,8 +900,8 @@ components:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
             is owned by the USS retrieving or providing it.  Not populated when the
-            ConstraintReference is not owned by the USS retrieving it (instead, the USS must obtain
-            the OVN from the details retrieved from the owning USS).
+            ConstraintReference is not owned by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
