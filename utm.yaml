@@ -802,7 +802,7 @@ components:
         operation_reference:
           $ref: '#/components/schemas/OperationReference'
 
-    UpdateOperationReferenceResponse:
+    ChangeOperationReferenceResponse:
       description: |-
         Response to a request to create, update, or delete an OperationReference
         in the DSS.
@@ -1436,8 +1436,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateOperationReferenceResponse'
-          description: An Operation was created successfully in the DSS.
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+          description: An Operation reference was updated successfully in the DSS.
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+          description: An Operation reference was created successfully in the DSS.
         "400":
           content:
             application/json:
@@ -1494,7 +1500,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateOperationReferenceResponse'
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
           description: The specified Operation was successfully removed from the DSS.
         "400":
           content:
@@ -1679,7 +1685,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A Constraint was created successfully in the DSS.
+          description: A Constraint reference was updated successfully in the DSS.
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
+          description: A Constraint reference was created successfully in the DSS.
         "400":
           content:
             application/json:
