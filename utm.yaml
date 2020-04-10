@@ -2436,6 +2436,7 @@ paths:
         - Authority:
           - utm.strategic_coordination
           - utm.constraint_consumption
+          - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       description: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.  This endpoint is used for all feedback related to Operations and Constraints.
       requestBody:
