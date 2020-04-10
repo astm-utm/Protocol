@@ -137,6 +137,14 @@ components:
           enum:
           - RFC3339
 
+    CircleProperties:
+      required:
+      - radius
+      type: object
+      properties:
+        radius:
+          $ref: '#/components/schemas/Radius'
+
     Radius:
       required:
       - value
@@ -319,7 +327,9 @@ components:
 
     Circle:
       description: |-
-        Local extension of the GeoJSON specification to add a circular area defined by a Point/Radius pair. We extend the Properties object to include a 'radius' and 'radius_units' value (see Radius for details).
+        Local extension of the GeoJSON specification to add a circular area defined by a
+        Point/Radius pair. We extend the Properties object to include a 'radius' value (see
+        CircleProperties for details).
       required:
         - type
         - geometry
@@ -342,7 +352,7 @@ components:
             coordinates:
               $ref: '#/components/schemas/Point'
         properties:
-          $ref: '#/components/schemas/Radius'
+          $ref: '#/components/schemas/CircleProperties'
 
 #
 # End of GeoJSON definitions
@@ -365,8 +375,9 @@ components:
           example:
             type: 'Feature'
             properties:
-              value: 300.0
-              units: 'M'
+              radius:
+                value: 300.0
+                units: 'M'
             geometry:
               type: 'Point'
               coordinates: [-121.0123, 56.789]
