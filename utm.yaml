@@ -1080,9 +1080,14 @@ components:
         Pushed (by a client, not the DSS) directly to clients with subscriptions when
         another client makes a change to airspace within a cell with a subscription.
       required:
+      - operation_id
       - subscriptions
       type: object
       properties:
+        operation_id:
+          description: ID of Operation that has changed.
+          allOf:
+          - $ref: '#/components/schemas/EntityUUID'
         operation:
           description: |-
             Full information about the Operation that has changed.  If this field is omitted,
@@ -1143,9 +1148,14 @@ components:
         Constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
         when another client makes a change to airspace within a cell with a subscription.
       required:
+      - constraint_id
       - subscriptions
       type: object
       properties:
+        constraint_id:
+          description: ID of Constraint that has changed.
+          allOf:
+          - $ref: '#/components/schemas/EntityUUID'
         constraint:
           description: |-
             Full information about the Constraint that has changed.  If this field is omitted,
@@ -2147,62 +2157,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-    post:
-      tags:
-      - "Operations"
-      security:
-      - Authority:
-        - utm.strategic_coordination
-      summary: Notify a peer USS of changed Operation details.
-      description: Notify a peer USS directly of changed Operation details (usually as a requirement of previous interactions with the DSS).
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PutOperationDetailsParameters'
-        required: true
-      responses:
-        "204":
-          description: New or updated full Operation information received successfully.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * One or more parameters were missing or invalid.
-            * The Entity could not be parsed, or contains illegal data.
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the owner of this Entity according to the receiving client's records.
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            The Entity version specified in this message is lower than
-            a previously-received notification, or identical to a previously-received
-            notification and the Entity is different.
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
   /uss/v1/operations/{entityuuid}/telemetry:
     summary: Query detailed information on the position of an off-nominal Operation.
     parameters:
@@ -2257,6 +2211,65 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: UAS is non-conforming and no telemetry data is available.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
+
+  /uss/v1/operations:
+    summary: A USS's representation of detailed information about Operations.
+    
+    post:
+      tags:
+      - "Operations"
+      security:
+      - Authority:
+        - utm.strategic_coordination
+      summary: Notify a peer USS of changed Operation details.
+      description: Notify a peer USS directly of changed Operation details (usually as a requirement of previous interactions with the DSS).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutOperationDetailsParameters'
+        required: true
+      responses:
+        "204":
+          description: New or updated full Operation information received successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * One or more parameters were missing or invalid.
+            * The Entity could not be parsed, or contains illegal data.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
+            * The client identified in the access token is not the owner of this Entity according to the receiving client's records.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            The Entity version specified in this message is lower than
+            a previously-received notification, or identical to a previously-received
+            notification and the Entity is different.
         "429":
           content:
             application/json:
@@ -2326,6 +2339,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
+
+  /uss/v1/constraints:
+    summary: A USS's representation of detailed information about Constraints.
 
     post:
       tags:
