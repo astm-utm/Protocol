@@ -1217,8 +1217,6 @@ components:
       description: Vehicle position, altitude, and velocity.
       required:
       - id
-      - position
-      - velocity
       - time_measured
       type: object
       properties:
@@ -1272,12 +1270,6 @@ components:
         Location of the vehicle (UAS) as reported for UTM.
         Note: 'accuracy' values are required when extrapolated field is true
         and always in the entry for the current state.
-      required:
-      - longitude
-      - latitude
-      - accuracy_h
-      - accuracy_v
-      - altitude
       type: object
       properties:
         longitude:
@@ -1300,7 +1292,6 @@ components:
       required:
       - speed
       - units_speed
-      - track
       type: object
       properties:
         speed:
