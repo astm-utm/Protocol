@@ -400,6 +400,7 @@ components:
           description: |-
             Human-readable message indicating what error occurred and/or why.
           type: string
+          example: 'The error occurred because [...]'
 
     SubscriptionState:
       description: |-
