@@ -1054,9 +1054,13 @@ components:
           type: string
           description: Human-readable description of the problem with the response.
         time_request:
-          $ref: '#/components/schemas/Time'
+          description: The time at which the problematic request was initiated.
+          allOf:
+          - $ref: '#/components/schemas/Time'
         time_response:
-          $ref: '#/components/schemas/Time'
+          description: The time at which the problematic response was received.
+          allOf:
+          - $ref: '#/components/schemas/Time'
         report_id:
           description: ID assigned by the server receiving the report.  Not populated when submitting a report.
           type: string
