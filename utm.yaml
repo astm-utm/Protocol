@@ -50,7 +50,7 @@ components:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
             utm.strategic_coordination: |-
-              Client may perform planning, strategic conflict detection, and conformance monitoring activities.
+              Client may perform planning, strategic conflict detection, and conformance monitoring activities, including reading information about Constraints.
             utm.constraint_management: |-
               Client may manage (create, edit, and delete) Constraints they own.
             utm.constraint_consumption: |-
