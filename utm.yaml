@@ -498,7 +498,7 @@ components:
           description: If true, trigger notifications when Constraints are created, updated, or deleted.  Otherwise, changes in Constraints should not trigger notifications.
           type: boolean
           default: false
-        created_by_operation:
+        implicit_subscription:
           description: |-
             True if this Subscription was implicitly created by the DSS via the creation of an
             Operation, and should therefore be deleted by the DSS when that Operation is deleted.
