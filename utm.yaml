@@ -789,7 +789,9 @@ components:
         new_subscription:
           description: |-
             If an existing Subscription is not specified in `subscription_id`, then this field must be
-            populated.
+            populated.  When this field is populated, an implicit Subscription will be created and
+            associated with this Operation, and will generally be deleted automatically upon the
+            deletion of this Operation.
           allOf:
           - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
 
