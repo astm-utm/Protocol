@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.7
+  version: 0.2.8
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -50,7 +50,7 @@ components:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
             utm.strategic_coordination: |-
-              Client may perform planning, strategic conflict detection, and conformance monitoring activities.
+              Client may perform planning, strategic conflict detection, and conformance monitoring activities, including reading information about Constraints.
             utm.constraint_management: |-
               Client may manage (create, edit, and delete) Constraints they own.
             utm.constraint_consumption: |-
@@ -440,7 +440,7 @@ components:
         airspace.
       required:
       - subscriptions
-      - base_url
+      - uss_base_url
       type: object
       properties:
         subscriptions:
@@ -449,8 +449,8 @@ components:
           items:
             $ref: '#/components/schemas/SubscriptionState'
           minItems: 1
-        base_url:
-          $ref: '#/components/schemas/UssBaseURL'
+        uss_base_url:
+          $ref: '#/components/schemas/SubscriptionUssBaseURL'
 
     Subscription:
       description: |-
@@ -498,7 +498,7 @@ components:
           description: If true, trigger notifications when Constraints are created, updated, or deleted.  Otherwise, changes in Constraints should not trigger notifications.
           type: boolean
           default: false
-        created_by_operation:
+        implicit_subscription:
           description: |-
             True if this Subscription was implicitly created by the DSS via the creation of an
             Operation, and should therefore be deleted by the DSS when that Operation is deleted.
@@ -628,7 +628,7 @@ components:
     UssBaseURL:
       description: |-
         The base URL of a USS implementation of part or all of the USS-USS API. Per the USS-USS API, the full URL
-        of a particular resource can be constructed by appending, e.g., `/v1/{resource}/{id}` to this base URL.
+        of a particular resource can be constructed by appending, e.g., `/uss/v1/{resource}/{id}` to this base URL.
         Accordingly, this URL may not have a trailing '/' character.
       type: string
       example: 'https://utm_uss.com/utm'
@@ -705,8 +705,8 @@ components:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
             is owned by the USS retrieving or providing it.  Not populated when the
-            OperationReference is not owned by the USS retrieving it (instead, the USS must obtain
-            the OVN from the details retrieved from the owning USS).
+            OperationReference is not owned by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -768,6 +768,9 @@ components:
             airspace, with the expectation that this Operation is therefore deconflicted from all relevant
             features in the airspce.  This field is not required when declaring an Operation NonConforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
+            OVNs for Constraints are required if and only if the USS owning this Operation is considering
+            Constraints, which is determined by whether the Subscription associated with this Operation
+            triggers notifications for Constraints.
           allOf:
           - $ref: '#/components/schemas/Key'
         state:
@@ -786,7 +789,9 @@ components:
         new_subscription:
           description: |-
             If an existing Subscription is not specified in `subscription_id`, then this field must be
-            populated.
+            populated.  When this field is populated, an implicit Subscription will be created and
+            associated with this Operation, and will generally be deleted automatically upon the
+            deletion of this Operation.
           allOf:
           - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
 
@@ -795,15 +800,15 @@ components:
         Information necessary to create a Subscription to serve a single Operation's notification needs.
       type: object
       required:
-      - base_url
+      - uss_base_url
       properties:
-        base_url:
+        uss_base_url:
           description: |-
             The base URL of a USS implementation of the parts of the USS-USS API necessary for
             receiving the notifications that the Operation must be aware of.  This includes, at least,
             notifications for relevant changes in Operations.
           allOf:
-          - $ref: '#/components/schemas/UssBaseURL'
+          - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
           description: |-
             True if this Operation's Subscription should trigger notifications when Constraints change.  Otherwise, changes in Constraints should not trigger notifications.
@@ -900,8 +905,8 @@ components:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
             is owned by the USS retrieving or providing it.  Not populated when the
-            ConstraintReference is not owned by the USS retrieving it (instead, the USS must obtain
-            the OVN from the details retrieved from the owning USS).
+            ConstraintReference is not owned by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the owning USS).
           allOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -1054,11 +1059,17 @@ components:
           type: string
           description: Human-readable description of the problem with the response.
         time_request:
-          $ref: '#/components/schemas/Time'
+          description: The time at which the problematic request was initiated.
+          allOf:
+          - $ref: '#/components/schemas/Time'
         time_response:
-          $ref: '#/components/schemas/Time'
+          description: The time at which the problematic response was received.
+          allOf:
+          - $ref: '#/components/schemas/Time'
         report_id:
           description: ID assigned by the server receiving the report.  Not populated when submitting a report.
+          type: string
+          maxLength: 128
 
 #
 # USS-USS schema components
@@ -1081,6 +1092,8 @@ components:
           $ref: '#/components/schemas/OperationState'
         vlos:
           description: If true, this Operation is ensuring deconfliction visually and volumes of other Operations may overlap the volumes of this Operation.
+          type: boolean
+          default: false
 
 
     Operation:
@@ -1215,8 +1228,6 @@ components:
       description: Vehicle position, altitude, and velocity.
       required:
       - id
-      - position
-      - velocity
       - time_measured
       type: object
       properties:
@@ -1270,12 +1281,6 @@ components:
         Location of the vehicle (UAS) as reported for UTM.
         Note: 'accuracy' values are required when extrapolated field is true
         and always in the entry for the current state.
-      required:
-      - longitude
-      - latitude
-      - accuracy_h
-      - accuracy_v
-      - altitude
       type: object
       properties:
         longitude:
@@ -1298,7 +1303,6 @@ components:
       required:
       - speed
       - units_speed
-      - track
       type: object
       properties:
         speed:
@@ -2443,6 +2447,7 @@ paths:
         - Authority:
           - utm.strategic_coordination
           - utm.constraint_consumption
+          - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       description: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.  This endpoint is used for all feedback related to Operations and Constraints.
       requestBody:
