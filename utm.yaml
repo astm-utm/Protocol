@@ -768,6 +768,9 @@ components:
             airspace, with the expectation that this Operation is therefore deconflicted from all relevant
             features in the airspce.  This field is not required when declaring an Operation NonConforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
+            OVNs for Constraints are required if and only if the USS owning this Operation is considering
+            Constraints, which is determined by whether the Subscription associated with this Operation
+            triggers notifications for Constraints.
           allOf:
           - $ref: '#/components/schemas/Key'
         state:
