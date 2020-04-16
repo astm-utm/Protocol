@@ -12,30 +12,35 @@ info:
     Note: Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
 
 security:
-- Authority:
-  - utm.strategic_coordination
-  - utm.constraint_management
-  - utm.constraint_consumption
+  - Authority:
+      - utm.strategic_coordination
+      - utm.constraint_management
+      - utm.constraint_consumption
 
 tags:
-- name: "Operation references"
-  description: |-
-    Endpoints exposed by the DSS for interaction with references to Operations.
-- name: "Operation details"
-  description: |-
-    Endpoints exposed by USSs for interaction with details of Operations.
-- name: "Constraint references"
-  description: |-
-    Endpoints exposed by the DSS for interaction with references to Constraints.
-- name: "Constraint details"
-  description: |-
-    Endpoints exposed by USSs for interaction with details of Constraints.
-- name: "Subscriptions"
-  description: |-
-    Endpoints exposed by the DSS for interaction with Subscription entities.
-- name: "Reports"
-  description: |-
-    Endpoints exposed by the DSS for reporting peer DSS issues.
+  - name: "Operation references"
+    description: |-
+      Endpoints exposed by the DSS for interaction with references to Operations.
+  - name: "Operation details"
+    description: |-
+      Endpoints exposed by USSs for interaction with details of Operations.
+  - name: "Constraint references"
+    description: |-
+      Endpoints exposed by the DSS for interaction with references to Constraints.
+  - name: "Constraint details"
+    description: |-
+      Endpoints exposed by USSs for interaction with details of Constraints.
+  - name: "Subscriptions"
+    description: |-
+      Endpoints exposed by the DSS for interaction with Subscription entities.
+  - name: "Reports"
+    description: |-
+      Endpoints exposed by the DSS for reporting peer DSS issues.
+  - name: dss
+    description: Endpoints exposed by the DSS server.
+  - name: p2p_utm
+    description: Endpoints exposed by UTM USSs for peer-peer communication.
+
 
 #
 #
@@ -86,8 +91,8 @@ components:
       description: |-
         Universally-unique identifier for an Entity communicated through
         the DSS.  Formatted as UUIDv4.
-      allOf:
-      - $ref: '#/components/schemas/UUIDv4'
+      anyOf:
+        - $ref: '#/components/schemas/UUIDv4'
       example: '2f8343be-6482-4d1b-a474-16847e01af1e'
 
     EntityOVN:
@@ -109,8 +114,8 @@ components:
       description: |-
         Universally-unique identifier for a Subscription communicated through
         the DSS.  Formatted as UUIDv4.
-      allOf:
-      - $ref: '#/components/schemas/UUIDv4'
+      anyOf:
+        - $ref: '#/components/schemas/UUIDv4'
       example: '78ea3fe8-71c2-4f5c-9b44-9c02f5563c6f'
 
     Key:
@@ -123,8 +128,8 @@ components:
 
     Time:
       required:
-      - value
-      - format
+        - value
+        - format
       type: object
       properties:
         value:
@@ -135,11 +140,11 @@ components:
         format:
           type: string
           enum:
-          - RFC3339
+            - RFC3339
 
     CircleProperties:
       required:
-      - radius
+        - radius
       type: object
       properties:
         radius:
@@ -147,8 +152,8 @@ components:
 
     Radius:
       required:
-      - value
-      - units
+        - value
+        - units
       type: object
       properties:
         value:
@@ -160,14 +165,14 @@ components:
           type: string
           description: FIXM-compatible units.  Only meters ("M") are acceptable for UTM.
           enum:
-          - M
+            - M
 
     Altitude:
       type: object
       required:
-      - value
-      - reference
-      - units
+        - value
+        - reference
+        - units
       properties:
         value:
           description: |-
@@ -177,9 +182,9 @@ components:
             these bounds should be re-evaluated.
           type: number
           format: double
-          minimum: -8000.0
+          minimum: -8000
           exclusiveMinimum: false
-          maximum: 100000.0
+          maximum: 100000
           exclusiveMaximum: false
         reference:
           description: |-
@@ -189,7 +194,7 @@ components:
             equivalent to AGL.
           type: string
           enum:
-          - W84
+            - W84
         units:
           description: |-
             The reference quantities used to express the value of altitude. See
@@ -197,7 +202,7 @@ components:
             to allow other options.
           type: string
           enum:
-          - M
+            - M
 
     Latitude:
       description: Degrees of latitude north of the equator, with reference to the WGS84 ellipsoid.
@@ -211,13 +216,25 @@ components:
 
     Longitude:
       description: Degrees of longitude east of the Prime Meridian, with reference to the WGS84 ellipsoid.
-      maximum: -180
+      minimum: -180
       exclusiveMaximum: false
-      minimum: 180
+      maximum: 180
       exclusiveMinimum: false
       type: number
       format: double
       example: -118.456
+
+    LongitudeOrLatitude:
+      description: |-
+        Degrees of longitude east of the Prime Meridian or degrees of latitude north of the equator, with reference to
+        the WGS84 ellipsoid.
+      minimum: -180
+      exclusiveMinimum: false
+      maximum: 180
+      exclusiveMaximum: false
+      type: number
+      format: double
+      example: 12.34
 
     LonLatPair:
       description: Longitude/Latitude pair (in that order) used for specifying geographical vertex. Specified as an array. Order is important!
@@ -225,9 +242,7 @@ components:
       maxItems: 2
       minItems: 2
       items:
-        oneOf:
-          - $ref: '#/components/schemas/Longitude'
-          - $ref: '#/components/schemas/Latitude'
+        $ref: '#/components/schemas/LongitudeOrLatitude'
       example: [-122.106325, 47.660898]
 
 #
@@ -268,7 +283,7 @@ components:
           description: The type of Geometry. In this case, must be 'Point' per GeoJSON spec.
           type: string
           enum:
-          - Point
+            - Point
         coordinates:
           $ref: '#/components/schemas/LonLatPair'
 
@@ -289,7 +304,7 @@ components:
             currently.
           type: string
           enum:
-          - Polygon
+            - Polygon
         coordinates:
           type: array
           description: >-
@@ -340,7 +355,7 @@ components:
           description: The type of Geometry. In this case, must be 'Feature' per GeoJSON spec.
           type: string
           enum:
-          - Feature
+            - Feature
         geometry:
           type: object
           properties:
@@ -348,7 +363,7 @@ components:
               description: The type of Geometry. Must be Point.
               type: string
               enum:
-              - Point
+                - Point
             coordinates:
               $ref: '#/components/schemas/Point'
         properties:
@@ -360,52 +375,46 @@ components:
 
     Volume3D:
       description: |-
-        A three-dimensional geographic volume consisting of a vertically-extruded shape.
+        A three-dimensional geographic volume consisting of a vertically-extruded shape.  Exactly one of
+        `outline_polygon` or `outline_circle` must be specified.
       required:
-      - area
-      - altitude_lower
-      - altitude_upper
+        - altitude_lower
+        - altitude_upper
       type: object
       properties:
-        area:
-          oneOf:
-          - $ref: '#/components/schemas/Polygon'
-          - $ref: '#/components/schemas/Circle'
-          description: A geographic shape on the surface of the earth.
-          example:
-            type: 'Feature'
-            properties:
-              radius:
-                value: 300.0
-                units: 'M'
-            geometry:
-              type: 'Point'
-              coordinates: [-121.0123, 56.789]
+        outline_circle:
+          anyOf:
+            - $ref: '#/components/schemas/Circle'
+          description: A circular geographic shape on the surface of the earth.
+        outline_polygon:
+          anyOf:
+            - $ref: '#/components/schemas/Polygon'
+          description: A polygonal geographic shape on the surface of the earth.
         altitude_lower:
           description: Minimum bounding altitude of this volume.
-          allOf:
-          - $ref: '#/components/schemas/Altitude'
+          anyOf:
+            - $ref: '#/components/schemas/Altitude'
         altitude_upper:
           description: Maximum bounding altitude of this volume.
-          allOf:
-          - $ref: '#/components/schemas/Altitude'
+          anyOf:
+            - $ref: '#/components/schemas/Altitude'
 
     Volume4D:
       description: Contiguous block of geographic spacetime.
       required:
-      - volume
+        - volume
       type: object
       properties:
         volume:
           $ref: '#/components/schemas/Volume3D'
         time_start:
           description: Beginning time of this volume.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         time_end:
           description: End time of this volume.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
 
     ErrorResponse:
       description: |-
@@ -423,8 +432,8 @@ components:
       description: |-
         State of Subscription which is causing a notification to be sent.
       required:
-      - subscription_id
-      - notification_index
+        - subscription_id
+        - notification_index
       type: object
       properties:
         subscription_id:
@@ -439,8 +448,8 @@ components:
         to send a notification to the specified USS according to the change made to the
         airspace.
       required:
-      - subscriptions
-      - uss_base_url
+        - subscriptions
+        - uss_base_url
       type: object
       properties:
         subscriptions:
@@ -457,10 +466,10 @@ components:
         Specification of a geographic area that a client is interested
         in on an ongoing basis (e.g., "planning area").
       required:
-      - id
-      - version
-      - notification_index
-      - uss_base_url
+        - id
+        - version
+        - notification_index
+        - uss_base_url
       type: object
       properties:
         id:
@@ -480,14 +489,14 @@ components:
           description: |-
             If set, this subscription will not receive notifications involving airspace changes
             entirely before this time.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         time_end:
           description: |-
             If set, this subscription will not receive notifications involving airspace changes
             entirely after this time.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
@@ -531,7 +540,7 @@ components:
     SearchSubscriptionsResponse:
       description: Response to DSS query for subscriptions in a particular geographic area.
       required:
-      - subscriptions
+        - subscriptions
       type: object
       properties:
         subscriptions:
@@ -544,7 +553,7 @@ components:
     GetSubscriptionResponse:
       description: Response to DSS request for the subscription with the given id.
       required:
-      - subscription
+        - subscription
       type: object
       properties:
         subscription:
@@ -554,9 +563,9 @@ components:
       description: |-
         Parameters for a request to create/update a subscription in the DSS.
       required:
-      - extents
-      - old_version
-      - uss_base_url
+        - extents
+        - old_version
+        - uss_base_url
       type: object
       properties:
         extents:
@@ -586,14 +595,14 @@ components:
       description: |-
         The base URL of a USS implementation of the parts of the USS-USS API necessary for
         receiving the notifications requested by this Subscription.
-      allOf:
-      - $ref: '#/components/schemas/UssBaseURL'
+      anyOf:
+        - $ref: '#/components/schemas/UssBaseURL'
 
     PutSubscriptionResponse:
       description: |-
         Response for a request to create or update a subscription.
       required:
-      - subscription
+        - subscription
       type: object
       properties:
         subscription:
@@ -619,7 +628,7 @@ components:
     DeleteSubscriptionResponse:
       description: Response for a successful request to delete an Subscription.
       required:
-      - subscription
+        - subscription
       type: object
       properties:
         subscription:
@@ -673,13 +682,13 @@ components:
         of a USS to query for details.  Note: 'OVN' is returned ONLY to the USS that
         created the Operation but NEVER to other USS instances.
       required:
-      - id
-      - owner
-      - version
-      - time_start
-      - time_end
-      - uss_base_url
-      - subscription_id
+        - id
+        - owner
+        - version
+        - time_start
+        - time_end
+        - uss_base_url
+        - subscription_id
       type: object
       properties:
         id:
@@ -707,32 +716,32 @@ components:
             is owned by the USS retrieving or providing it.  Not populated when the
             OperationReference is not owned by the USS retrieving or providing it (instead, the
             USS must obtain the OVN from the details retrieved from the owning USS).
-          allOf:
-          - $ref: '#/components/schemas/EntityOVN'
+          anyOf:
+            - $ref: '#/components/schemas/EntityOVN'
         time_start:
           description: Beginning time of Operation.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         time_end:
           description: End time of Operation.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         uss_base_url:
           $ref: '#/components/schemas/OperationUssBaseURL'
         subscription_id:
           description: |-
             The ID of the Subscription that is ensuring the Operation owner receives relevant
             airspace updates.
-          allOf:
-          - $ref: '#/components/schemas/SubscriptionUUID'
+          anyOf:
+            - $ref: '#/components/schemas/SubscriptionUUID'
 
     OperationUssBaseURL:
       description: |-
         The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
         providing the details of this Operation, and telemetry during non-conformance or contingency,
         if applicable.
-      allOf:
-      - $ref: '#/components/schemas/UssBaseURL'
+      anyOf:
+        - $ref: '#/components/schemas/UssBaseURL'
 
     PutOperationReferenceParameters:
       description: |-
@@ -741,10 +750,10 @@ components:
         this can be overridden by providing the (optional) 'subscription_id' to use.
         Note: The implicit subscription is managed by the DSS, not the USS.
       required:
-      - extents
-      - old_version
-      - state
-      - uss_base_url
+        - extents
+        - old_version
+        - state
+        - uss_base_url
       type: object
       properties:
         extents:
@@ -771,8 +780,8 @@ components:
             OVNs for Constraints are required if and only if the USS owning this Operation is considering
             Constraints, which is determined by whether the Subscription associated with this Operation
             triggers notifications for Constraints.
-          allOf:
-          - $ref: '#/components/schemas/Key'
+          anyOf:
+            - $ref: '#/components/schemas/Key'
         state:
           $ref: '#/components/schemas/OperationState'
         uss_base_url:
@@ -784,31 +793,31 @@ components:
             `new_subscription` field must be provided in order to provide notification capability
             for the Operation.  The Subscription specified by this ID must cover at least the area over
             which this Operation is conducted, and it must provide notifications for Operations.
-          allOf:
-          - $ref: '#/components/schemas/EntityUUID'
+          anyOf:
+            - $ref: '#/components/schemas/EntityUUID'
         new_subscription:
           description: |-
             If an existing Subscription is not specified in `subscription_id`, then this field must be
             populated.  When this field is populated, an implicit Subscription will be created and
             associated with this Operation, and will generally be deleted automatically upon the
             deletion of this Operation.
-          allOf:
-          - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
+          anyOf:
+            - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
 
     ImplicitSubscriptionParameters:
       description: |-
         Information necessary to create a Subscription to serve a single Operation's notification needs.
       type: object
       required:
-      - uss_base_url
+        - uss_base_url
       properties:
         uss_base_url:
           description: |-
             The base URL of a USS implementation of the parts of the USS-USS API necessary for
             receiving the notifications that the Operation must be aware of.  This includes, at least,
             notifications for relevant changes in Operations.
-          allOf:
-          - $ref: '#/components/schemas/SubscriptionUssBaseURL'
+          anyOf:
+            - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
           description: |-
             True if this Operation's Subscription should trigger notifications when Constraints change.  Otherwise, changes in Constraints should not trigger notifications.
@@ -819,7 +828,7 @@ components:
       description: |-
         Response to DSS request for the OperationReference with the given ID.
       required:
-      - operation_reference
+        - operation_reference
       type: object
       properties:
         operation_reference:
@@ -830,8 +839,8 @@ components:
         Response to a request to create, update, or delete an OperationReference
         in the DSS.
       required:
-      - subscribers
-      - operation_reference
+        - subscribers
+        - operation_reference
       type: object
       properties:
         subscribers:
@@ -858,7 +867,7 @@ components:
     SearchOperationReferenceResponse:
       description: Response to DSS query for OperationReferences in an area of interest.
       required:
-      - operation_references
+        - operation_references
       type: object
       properties:
         operation_references:
@@ -874,12 +883,12 @@ components:
         these references and clients must exchange details and additional information
         peer-to-peer.
       required:
-      - id
-      - owner
-      - version
-      - time_start
-      - time_end
-      - uss_base_url
+        - id
+        - owner
+        - version
+        - time_start
+        - time_end
+        - uss_base_url
       type: object
       properties:
         id:
@@ -907,8 +916,8 @@ components:
             is owned by the USS retrieving or providing it.  Not populated when the
             ConstraintReference is not owned by the USS retrieving or providing it (instead, the
             USS must obtain the OVN from the details retrieved from the owning USS).
-          allOf:
-          - $ref: '#/components/schemas/EntityOVN'
+          anyOf:
+            - $ref: '#/components/schemas/EntityOVN'
         time_start:
           $ref: '#/components/schemas/Time'
         time_end:
@@ -920,16 +929,16 @@ components:
       description: |-
         The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
         providing the details of this Constraint.
-      allOf:
-      - $ref: '#/components/schemas/UssBaseURL'
+      anyOf:
+        - $ref: '#/components/schemas/UssBaseURL'
 
     PutConstraintReferenceParameters:
       description: Parameters for a request to create/update a ConstraintReference in the
         DSS.
       required:
-      - extents
-      - old_version
-      - uss_base_url
+        - extents
+        - old_version
+        - uss_base_url
       type: object
       properties:
         extents:
@@ -954,7 +963,7 @@ components:
       description: Response to DSS request for the ConstraintReference with the given
         ID.
       required:
-      - constraint_reference
+        - constraint_reference
       type: object
       properties:
         constraint_reference:
@@ -964,7 +973,7 @@ components:
       description: Response to a request to create, update, or delete a ConstraintReference.
         in the DSS.
       required:
-      - subscribers
+        - subscribers
       type: object
       properties:
         subscribers:
@@ -990,7 +999,7 @@ components:
     SearchConstraintReferencesResponse:
       description: Response to DSS query for ConstraintReferences in an area of interest.
       required:
-      - constraint_references
+        - constraint_references
       type: object
       properties:
         constraint_references:
@@ -1060,25 +1069,25 @@ components:
           description: Human-readable description of the problem with the response.
         time_request:
           description: The time at which the problematic request was initiated.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         time_response:
           description: The time at which the problematic response was received.
-          allOf:
-          - $ref: '#/components/schemas/Time'
+          anyOf:
+            - $ref: '#/components/schemas/Time'
         report_id:
           description: ID assigned by the server receiving the report.  Not populated when submitting a report.
           type: string
           maxLength: 128
 
-#
-# USS-USS schema components
-#
+    #
+    # USS-USS schema components
+    #
     OperationDetails:
       description: |-
         Details of a UTM Operation. Note that this data is not stored in the DSS; only with the clients.
       required:
-      - volumes
+        - volumes
       type: object
       properties:
         volumes:
@@ -1099,8 +1108,8 @@ components:
     Operation:
       description: Full description of a UTM Operation.
       required:
-      - reference
-      - details
+        - reference
+        - details
       type: object
       properties:
         reference:
@@ -1114,22 +1123,22 @@ components:
         Pushed (by a client, not the DSS) directly to clients with subscriptions when
         another client makes a change to airspace within a cell with a subscription.
       required:
-      - operation_id
-      - subscriptions
+        - operation_id
+        - subscriptions
       type: object
       properties:
         operation_id:
           description: ID of Operation that has changed.
-          allOf:
-          - $ref: '#/components/schemas/EntityUUID'
+          anyOf:
+            - $ref: '#/components/schemas/EntityUUID'
         operation:
           description: |-
             Full information about the Operation that has changed.  If this field is omitted,
             the Operation was deleted.  A newly-created Operation can be differentiated from
             an updated Operation by examining the `version` field.  The `ovn` field in the
             nested `reference` must be populated.
-          allOf:
-          - $ref: '#/components/schemas/Operation'
+          anyOf:
+            - $ref: '#/components/schemas/Operation'
         subscriptions:
           type: array
           description: Subscription(s) prompting this notification.
@@ -1140,7 +1149,7 @@ components:
     GetOperationDetailsResponse:
       description: Response to peer request for the details of Operation with the given ID.
       required:
-      - operation
+        - operation
       type: object
       properties:
         operation:
@@ -1150,7 +1159,7 @@ components:
       description: Details of a UTM Constraint. Note that this data is
         not stored in the DSS; only with the clients.
       required:
-      - volumes
+        - volumes
       type: object
       properties:
         volumes:
@@ -1168,8 +1177,8 @@ components:
     Constraint:
       description: Full specification of a UTM Constraint.
       required:
-      - reference
-      - details
+        - reference
+        - details
       type: object
       properties:
         reference:
@@ -1182,22 +1191,22 @@ components:
         Constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
         when another client makes a change to airspace within a cell with a subscription.
       required:
-      - constraint_id
-      - subscriptions
+        - constraint_id
+        - subscriptions
       type: object
       properties:
         constraint_id:
           description: ID of Constraint that has changed.
-          allOf:
-          - $ref: '#/components/schemas/EntityUUID'
+          anyOf:
+            - $ref: '#/components/schemas/EntityUUID'
         constraint:
           description: |-
             Full information about the Constraint that has changed.  If this field is omitted,
             the Constraint was deleted.  A newly-created Constraint can be differentiated from
             an updated Constraint by examining the `version` field.  The `ovn` field in the
             nested `reference` must be populated.
-          allOf:
-          - $ref: '#/components/schemas/Constraint'
+          anyOf:
+            - $ref: '#/components/schemas/Constraint'
         subscriptions:
           description: Subscription(s) prompting this notification.
           type: array
@@ -1209,7 +1218,7 @@ components:
       description: |-
         Response to peer request for the details of Operation with the given ID.
       required:
-      - constraint
+        - constraint
       type: object
       properties:
         constraint:
@@ -1218,7 +1227,7 @@ components:
     GetOperationTelemetryResponse:
       description: Response to a peer request for telemetry of an off-nominal Operation.
       required:
-      - telemetry
+        - telemetry
       type: object
       properties:
         telemetry:
@@ -1227,8 +1236,8 @@ components:
     VehicleTelemetry:
       description: Vehicle position, altitude, and velocity.
       required:
-      - id
-      - time_measured
+        - id
+        - time_measured
       type: object
       properties:
         id:
@@ -1246,14 +1255,14 @@ components:
         This is the GVA enumeration from ADS-B, plus some finer values for UAS.
       type: string
       enum:
-      - VAUnknown
-      - VA150mPlus
-      - VA150m
-      - VA45m
-      - VA25m
-      - VA10m
-      - VA3m
-      - VA1m
+        - VAUnknown
+        - VA150mPlus
+        - VA150m
+        - VA45m
+        - VA25m
+        - VA10m
+        - VA3m
+        - VA1m
 
     PositionAccuracyHorizontal:
       description: |-
@@ -1261,20 +1270,20 @@ components:
         This is the NACp enumeration from ADS-B, plus 1m for a more complete range for UAS.
       type: string
       enum:
-      - HAUnknown
-      - HA10NMPlus
-      - HA10NM
-      - HA4NM
-      - HA2NM
-      - HA1NM
-      - HA05NM
-      - HA03NM
-      - HA01NM
-      - HA005NM
-      - HA30m
-      - HA10m
-      - HA3m
-      - HA1m
+        - HAUnknown
+        - HA10NMPlus
+        - HA10NM
+        - HA4NM
+        - HA2NM
+        - HA1NM
+        - HA05NM
+        - HA03NM
+        - HA01NM
+        - HA005NM
+        - HA30m
+        - HA10m
+        - HA3m
+        - HA1m
 
     Position:
       description: |-
@@ -1296,13 +1305,15 @@ components:
             True if this position was generated primarily by computation
             rather than primarily from a direct instrument measurement.
             Assumed false if not specified.
+          type: boolean
+          default: false
         altitude:
           $ref: '#/components/schemas/Altitude'
 
     Velocity:
       required:
-      - speed
-      - units_speed
+        - speed
+        - units_speed
       type: object
       properties:
         speed:
@@ -1314,7 +1325,7 @@ components:
         units_speed:
           type: string
           enum:
-          - MetersSecond
+            - MetersSecond
         track:
           format: float
           type: number
@@ -1340,10 +1351,11 @@ paths:
               $ref: '#/components/schemas/SearchOperationReferenceParameters'
         required: true
       tags:
-      - "Operation references"
+        - "Operation references"
+        - dss
       security:
-      - Authority:
-        - utm.strategic_coordination
+        - Authority:
+            - utm.strategic_coordination
       summary: Retrieve all Operation references in the specified area/volume/time from the DSS.
       responses:
         "200":
@@ -1388,19 +1400,20 @@ paths:
   /dss/v1/operation_references/{entityuuid}:
     summary: CRUD endpoint for a specified Operation reference in the DSS.
     parameters:
-    - name: entityuuid
-      description: EntityUUID of the Operation.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
+      - name: entityuuid
+        description: EntityUUID of the Operation.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
 
     get:
       tags:
-      - "Operation references"
+        - "Operation references"
+        - dss
       security:
-      - Authority:
-        - utm.strategic_coordination
+        - Authority:
+            - utm.strategic_coordination
       summary: Retrieve the specified Operation reference from the DSS.
       responses:
         "200":
@@ -1450,10 +1463,11 @@ paths:
               $ref: '#/components/schemas/PutOperationReferenceParameters'
         required: true
       tags:
-      - "Operation references"
+        - "Operation references"
+        - dss
       security:
-      - Authority:
-        - utm.strategic_coordination
+        - Authority:
+            - utm.strategic_coordination
       summary: Create/Update the specified Operation reference in the DSS.
       responses:
         "200":
@@ -1515,9 +1529,10 @@ paths:
     delete:
       tags:
         - "Operation references"
+        - dss
       security:
         - Authority:
-          - utm.strategic_coordination
+            - utm.strategic_coordination
       summary: Remove the specified Operation reference from the DSS.
       responses:
         "200":
@@ -1532,22 +1547,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-              * One or more input parameters were missing or invalid.
-              * The request attempted to mutate the Operation in a disallowed way.
+            * One or more input parameters were missing or invalid.
+            * The request attempted to mutate the Operation in a disallowed way.
         "401":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Bearer access token was not provided in Authorization header,
-              token could not be decoded, or token was invalid.
+            token could not be decoded, or token was invalid.
         "403":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The access token was decoded successfully but did not include
-              a scope appropriate to this endpoint.
+            a scope appropriate to this endpoint.
         "404":
           content:
             application/json:
@@ -1560,7 +1575,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-              * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "429":
           content:
             application/json:
@@ -1584,12 +1599,13 @@ paths:
               $ref: '#/components/schemas/SearchConstraintReferenceParameters'
         required: true
       tags:
-      - "Constraint references"
+        - "Constraint references"
+        - dss
       security:
-      - Authority:
-        - utm.constraint_management
-        - utm.constraint_consumption
-        - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_management
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       summary: Retrieve all Constraints references in the specified area/volume from the DSS.
       responses:
         "200":
@@ -1633,22 +1649,23 @@ paths:
 
   /dss/v1/constraint_references/{entityuuid}:
     parameters:
-    - name: entityuuid
-      description: EntityUUID of the Constraint.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
+      - name: entityuuid
+        description: EntityUUID of the Constraint.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
     summary: CRUD endpoint for a specified Constraint reference in the DSS.
 
     get:
       tags:
-      - "Constraint references"
+        - "Constraint references"
+        - dss
       security:
-      - Authority:
-        - utm.constraint_management
-        - utm.constraint_consumption
-        - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_management
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       summary: Retrieve the specified Constraint reference from the DSS.
       responses:
         "200":
@@ -1698,10 +1715,11 @@ paths:
               $ref: '#/components/schemas/PutConstraintReferenceParameters'
         required: true
       tags:
-      - "Constraint references"
+        - "Constraint references"
+        - dss
       security:
-      - Authority:
-        - utm.constraint_management
+        - Authority:
+            - utm.constraint_management
       summary: Create/Update the specified Constraint reference in the DSS.
       responses:
         "200":
@@ -1761,10 +1779,11 @@ paths:
 
     delete:
       tags:
-      - "Constraint references"
+        - "Constraint references"
+        - dss
       security:
         - Authority:
-          - utm.constraint_management
+            - utm.constraint_management
       summary: Delete the specified Constraint reference from the DSS.
       responses:
         "200":
@@ -1779,22 +1798,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-              * One or more input parameters were missing or invalid.
-              * The request attempted to mutate the Constraint in a disallowed way.
+            * One or more input parameters were missing or invalid.
+            * The request attempted to mutate the Constraint in a disallowed way.
         "401":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Bearer access token was not provided in Authorization header,
-              token could not be decoded, or token was invalid.
+            token could not be decoded, or token was invalid.
         "403":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The access token was decoded successfully but did not include
-              a scope appropriate to this endpoint.
+            a scope appropriate to this endpoint.
         "404":
           content:
             application/json:
@@ -1807,7 +1826,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-              * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "429":
           content:
             application/json:
@@ -1830,11 +1849,12 @@ paths:
               $ref: '#/components/schemas/SearchSubscriptionParameters'
         required: true
       tags:
-      - "Subscriptions"
+        - "Subscriptions"
+        - dss
       security:
-      - Authority:
-        - utm.constraint_consumption
-        - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       description: |-
         Retrieve Subscriptions intersecting an area of interest.  Subscription
         notifications are only triggered by (and contain full information of) changes to,
@@ -1892,20 +1912,21 @@ paths:
   /dss/v1/subscriptions/{subscriptionid}:
     summary: Create/Update a specific Subscription in the DSS.
     parameters:
-    - name: subscriptionid
-      description: SubscriptionUUID of the subscription of interest.
-      schema:
-        $ref: '#/components/schemas/SubscriptionUUID'
-      in: path
-      required: true
+      - name: subscriptionid
+        description: SubscriptionUUID of the subscription of interest.
+        schema:
+          $ref: '#/components/schemas/SubscriptionUUID'
+        in: path
+        required: true
 
     get:
       tags:
-      - "Subscriptions"
+        - "Subscriptions"
+        - dss
       security:
-      - Authority:
-        - utm.constraint_consumption
-        - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       summary: Retrieve the specified Subscription from the DSS.
       description: |-
         Retrieve a specific subscription.
@@ -1951,9 +1972,9 @@ paths:
 
     put:
       security:
-      - Authority:
-        - utm.constraint_consumption
-        - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       summary: Create/Update the specified Subscription in the DSS.
       description: |-
         Create or update a subscription.
@@ -1966,7 +1987,8 @@ paths:
               $ref: '#/components/schemas/PutSubscriptionParameters'
         required: true
       tags:
-      - "Subscriptions"
+        - "Subscriptions"
+        - dss
       responses:
         "200":
           content:
@@ -2019,17 +2041,18 @@ paths:
             is necessary to bound performance requirements for DSS instances and would
             likely be hit by, e.g., a large remote ID display provider that created
             a Subscription for each of their display client users' views.
-            
+
             Alternately, the client may have issued too many requests within a small
             period of time.
 
     delete:
       tags:
-      - "Subscriptions"
+        - "Subscriptions"
+        - dss
       security:
         - Authority:
-          - utm.constraint_consumption
-          - utm.strategic_coordination
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
       responses:
         "200":
@@ -2050,14 +2073,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Bearer access token was not provided in Authorization header,
-              token could not be decoded, or token was invalid.
+            token could not be decoded, or token was invalid.
         "403":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The access token was decoded successfully but did not include
-              a scope appropriate to this endpoint.
+            a scope appropriate to this endpoint.
         "404":
           content:
             application/json:
@@ -2071,19 +2094,19 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-#
-# DSS Endpoint: REPORT
-#
+  #
+  # DSS Endpoint: REPORT
+  #
 
   /dss/v1/reports:
     summary: Error reports of potential operational issues relevant to DSSs.
 
     post:
       security:
-      - Authority:
-        - utm.constraint_management
-        - utm.constraint_consumption
-        - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_management
+            - utm.constraint_consumption
+            - utm.strategic_coordination
       summary: Report information about communication issues to a DSS.
       description: Report issues to a DSS. Data sent to this endpoint is archived.
       requestBody:
@@ -2093,7 +2116,8 @@ paths:
               $ref: '#/components/schemas/ErrorReport'
         required: true
       tags:
-      - "Reports"
+        - "Reports"
+        - dss
       responses:
         "201":
           description: A new Report was created successfully (and archived).
@@ -2137,19 +2161,20 @@ paths:
   /uss/v1/operations/{entityuuid}:
     summary: Query detailed information of an Operation from a USS.
     parameters:
-    - name: entityuuid
-      description: EntityUUID for this Operation.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
+      - name: entityuuid
+        description: EntityUUID for this Operation.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
 
     get:
       tags:
-      - "Operation details"
+        - "Operation details"
+        - p2p_utm
       security:
-      - Authority:
-        - utm.strategic_coordination
+        - Authority:
+            - utm.strategic_coordination
       summary: Retrieve the specified Operation details from a USS.
       responses:
         "200":
@@ -2194,19 +2219,20 @@ paths:
   /uss/v1/operations/{entityuuid}/telemetry:
     summary: Detailed information on the position of an off-nominal Operation.
     parameters:
-    - name: entityuuid
-      description: EntityUUID for this Operation.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
+      - name: entityuuid
+        description: EntityUUID for this Operation.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
 
     get:
       tags:
-      - "Operation details"
+        - "Operation details"
+        - p2p_utm
       security:
-      - Authority:
-        - utm.strategic_coordination
+        - Authority:
+            - utm.strategic_coordination
       summary: Query detailed information on the position of an off-nominal Operation from a USS.
       responses:
         "200":
@@ -2254,13 +2280,14 @@ paths:
 
   /uss/v1/operations:
     summary: A USS's representation of detailed information about Operations.
-    
+
     post:
       tags:
-      - "Operation details"
+        - "Operation details"
+        - p2p_utm
       security:
-      - Authority:
-        - utm.strategic_coordination
+        - Authority:
+            - utm.strategic_coordination
       summary: Notify a peer USS of changed Operation details.
       description: Notify a peer USS directly of changed Operation details (usually as a requirement of previous interactions with the DSS).
       requestBody:
@@ -2318,20 +2345,21 @@ paths:
   /uss/v1/constraints/{entityuuid}:
     summary: Query detailed information of a Constraint from a USS.
     parameters:
-    - name: entityuuid
-      description: EntityUUID of the Constraint.
-      schema:
-        $ref: '#/components/schemas/EntityUUID'
-      in: path
-      required: true
+      - name: entityuuid
+        description: EntityUUID of the Constraint.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
 
     get:
       tags:
-      - "Constraint details"
+        - "Constraint details"
+        - p2p_utm
       security:
-      - Authority:
-        - utm.strategic_coordination
-        - utm.constraint_consumption
+        - Authority:
+            - utm.strategic_coordination
+            - utm.constraint_consumption
       summary: Retrieve the specified Constraint details from a USS.
       description: Retrieve the details of the specified Constraint.
       responses:
@@ -2379,11 +2407,12 @@ paths:
 
     post:
       tags:
-      - "Constraint details"
+        - "Constraint details"
+        - p2p_utm
       security:
-      - Authority:
-        - utm.strategic_coordination
-        - utm.constraint_consumption
+        - Authority:
+            - utm.strategic_coordination
+            - utm.constraint_consumption
       summary: Notify a peer USS of changed Constraint details.
       description: Notify a peer USS directly of changed Constraint details (usually as a requirement of previous interactions with the DSS).
       requestBody:
@@ -2443,11 +2472,12 @@ paths:
     post:
       tags:
         - "Reports"
+        - p2p_utm
       security:
         - Authority:
-          - utm.strategic_coordination
-          - utm.constraint_consumption
-          - utm.constraint_management
+            - utm.strategic_coordination
+            - utm.constraint_consumption
+            - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       description: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.  This endpoint is used for all feedback related to Operations and Constraints.
       requestBody:
