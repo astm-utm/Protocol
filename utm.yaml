@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.2.8
+  version: 0.2.9
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -226,8 +226,8 @@ components:
 
     LongitudeOrLatitude:
       description: |-
-        Degrees of longitude east of the Prime Meridian or degrees of latitude north of the equator, with reference to
-        the WGS84 ellipsoid.
+        Longitude (degrees east of the Prime Meridian or degrees of latitude north of the equator, with reference to
+        the WGS84 ellipsoid) or Latitude (degrees north of the equator, with reference to the WGS84 ellipsoid).
       minimum: -180
       exclusiveMinimum: false
       maximum: 180
