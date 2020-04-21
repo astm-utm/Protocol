@@ -2285,7 +2285,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: UAS is non-conforming and no telemetry data is available.
+          description: No telemetry data is available.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Operation is not in a state that provides telemetry.
         "429":
           content:
             application/json:
