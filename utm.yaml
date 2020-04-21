@@ -1357,6 +1357,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Retrieve all Operation references in the specified area/volume/time from the DSS.
+      operationId: searchOperationReferences
       responses:
         "200":
           content:
@@ -1415,6 +1416,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Retrieve the specified Operation reference from the DSS.
+      operationId: getOperationReference
       responses:
         "200":
           content:
@@ -1469,6 +1471,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Create/Update the specified Operation reference in the DSS.
+      operationId: putOperationReference
       responses:
         "200":
           content:
@@ -1534,6 +1537,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Remove the specified Operation reference from the DSS.
+      operationId: deleteOperationReference
       responses:
         "200":
           content:
@@ -1607,6 +1611,7 @@ paths:
             - utm.constraint_consumption
             - utm.strategic_coordination
       summary: Retrieve all Constraints references in the specified area/volume from the DSS.
+      operationId: queryConstraintReferences
       responses:
         "200":
           content:
@@ -1667,6 +1672,7 @@ paths:
             - utm.constraint_consumption
             - utm.strategic_coordination
       summary: Retrieve the specified Constraint reference from the DSS.
+      operationId: getConstraintReference
       responses:
         "200":
           content:
@@ -1721,6 +1727,7 @@ paths:
         - Authority:
             - utm.constraint_management
       summary: Create/Update the specified Constraint reference in the DSS.
+      operationId: putConstraintReference
       responses:
         "200":
           content:
@@ -1785,6 +1792,7 @@ paths:
         - Authority:
             - utm.constraint_management
       summary: Delete the specified Constraint reference from the DSS.
+      operationId: deleteConstraintReference
       responses:
         "200":
           content:
@@ -1869,6 +1877,7 @@ paths:
         used if a USS lost track of Subscriptions they had created and/or wanted to resolve
         an error indicating that they had too many existing Subscriptions in an area.
       summary: Retrieve all Subscriptions in the specified area/volume from the DSS.
+      operationId: querySubscriptions
       responses:
         "200":
           content:
@@ -1928,6 +1937,7 @@ paths:
             - utm.constraint_consumption
             - utm.strategic_coordination
       summary: Retrieve the specified Subscription from the DSS.
+      operationId: getSubscription
       description: |-
         Retrieve a specific subscription.
       responses:
@@ -1976,6 +1986,7 @@ paths:
             - utm.constraint_consumption
             - utm.strategic_coordination
       summary: Create/Update the specified Subscription in the DSS.
+      operationId: putSubscription
       description: |-
         Create or update a subscription.
 
@@ -2054,6 +2065,7 @@ paths:
             - utm.constraint_consumption
             - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
+      operationId: deleteSubscription
       responses:
         "200":
           content:
@@ -2108,6 +2120,7 @@ paths:
             - utm.constraint_consumption
             - utm.strategic_coordination
       summary: Report information about communication issues to a DSS.
+      operationId: makeDssReport
       description: Report issues to a DSS. Data sent to this endpoint is archived.
       requestBody:
         content:
@@ -2176,6 +2189,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Retrieve the specified Operation details from a USS.
+      operationId: getOperationDetails
       responses:
         "200":
           content:
@@ -2234,6 +2248,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Query detailed information on the position of an off-nominal Operation from a USS.
+      operationId: getOperationTelemetry
       responses:
         "200":
           content:
@@ -2270,7 +2285,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: UAS is non-conforming and no telemetry data is available.
+          description: No telemetry data is available.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Operation is not in a state that provides telemetry.
         "429":
           content:
             application/json:
@@ -2289,6 +2310,7 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Notify a peer USS of changed Operation details.
+      operationId: notifyOperationDetailsChanged
       description: Notify a peer USS directly of changed Operation details (usually as a requirement of previous interactions with the DSS).
       requestBody:
         content:
@@ -2361,6 +2383,7 @@ paths:
             - utm.strategic_coordination
             - utm.constraint_consumption
       summary: Retrieve the specified Constraint details from a USS.
+      operationId: getConstraintDetails
       description: Retrieve the details of the specified Constraint.
       responses:
         "200":
@@ -2414,6 +2437,7 @@ paths:
             - utm.strategic_coordination
             - utm.constraint_consumption
       summary: Notify a peer USS of changed Constraint details.
+      operationId: notifyConstraintDetailsChanged
       description: Notify a peer USS directly of changed Constraint details (usually as a requirement of previous interactions with the DSS).
       requestBody:
         content:
@@ -2479,6 +2503,7 @@ paths:
             - utm.constraint_consumption
             - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
+      operationId: makeUssReport
       description: Endpoint to provide feedback (errors, etc.) that might otherwise go unnoticed by this USS.  This endpoint is used for all feedback related to Operations and Constraints.
       requestBody:
         content:
