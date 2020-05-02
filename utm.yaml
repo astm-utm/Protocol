@@ -1591,7 +1591,7 @@ paths:
   # DSS Enpoint: CONSTRAINTS
   #
 
-  /dss/v1/constraints/query:
+  /dss/v1/constraint_references/query:
     summary: Query all Constraint references in the DSS that intersect with a specified area/volume/time.
     description: ""
 
