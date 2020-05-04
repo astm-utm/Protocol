@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.3
+  version: 0.3.4
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -366,7 +366,7 @@ components:
               enum:
                 - Point
             coordinates:
-              $ref: '#/components/schemas/Point'
+              $ref: '#/components/schemas/LonLatPair'
         properties:
           $ref: '#/components/schemas/CircleProperties'
 
