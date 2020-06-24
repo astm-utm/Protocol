@@ -2644,8 +2644,7 @@ paths:
         - p2p_utm
       security:
         - Authority:
-            - utm.strategic_coordination
-            - utm.constraint_consumption
+            - utm.constraint_management
       summary: Notify a peer USS of changed Constraint details.
       operationId: notifyConstraintDetailsChanged
       description: Notify a peer USS directly of changed Constraint details (usually as a requirement of previous interactions with the DSS).
