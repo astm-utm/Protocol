@@ -381,11 +381,8 @@ components:
 
     Volume3D:
       description: |-
-        A three-dimensional geographic volume consisting of a vertically-extruded shape.  Exactly one of
-        `outline_polygon` or `outline_circle` must be specified.
-      required:
-        - altitude_lower
-        - altitude_upper
+        A three-dimensional geographic volume consisting of a vertically-extruded shape.  Exactly
+        one outline must be specified.
       type: object
       properties:
         outline_circle:
@@ -397,11 +394,13 @@ components:
             - $ref: '#/components/schemas/Polygon'
           description: A polygonal geographic shape on the surface of the earth.
         altitude_lower:
-          description: Minimum bounding altitude of this volume.
+          description: Minimum bounding altitude of this volume. Must be less than
+            altitude_upper, if specified.
           anyOf:
             - $ref: '#/components/schemas/Altitude'
         altitude_upper:
-          description: Maximum bounding altitude of this volume.
+          description: Maximum bounding altitude of this volume. Must be greater than
+            altitude_lower, if specified.
           anyOf:
             - $ref: '#/components/schemas/Altitude'
 
@@ -414,11 +413,11 @@ components:
         volume:
           $ref: '#/components/schemas/Volume3D'
         time_start:
-          description: Beginning time of this volume.
+          description: Beginning time of this volume. Must be before time_end.
           anyOf:
             - $ref: '#/components/schemas/Time'
         time_end:
-          description: End time of this volume.
+          description: End time of this volume. Must be after time_start.
           anyOf:
             - $ref: '#/components/schemas/Time'
 
@@ -574,7 +573,18 @@ components:
       type: object
       properties:
         extents:
-          $ref: '#/components/schemas/Volume4D'
+          description: |-
+            Spacetime extents of the volume to subscribe to.
+
+            This subscription will automatically be deleted after its end time if it has not been
+            refreshed by then. If end time is not specified, the value will be chosen automatically
+            by the DSS. If start time is not specified, it will default to the time the request is
+            processed. The end time may not be in the past.
+
+            Note that some Entities triggering notifications may lie entirely outside the requested
+            area.
+          anyOf:
+            - $ref: '#/components/schemas/Volume4D'
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
@@ -740,6 +750,11 @@ components:
       type: object
       properties:
         extents:
+          description: |-
+            Spacetime extents that bound this Operation.
+
+            Start and end times, as well as lower and upper altitudes, are required for each
+            volume. The end time may not be in the past.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
@@ -905,6 +920,10 @@ components:
       type: object
       properties:
         extents:
+          description: |-
+            Spacetime extents that bound this Constraint.
+
+            The end time may not be in the past.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
@@ -1045,8 +1064,11 @@ components:
       type: object
       properties:
         volumes:
-          description: Volumes that wholly contain the Operation while being as small
-            as practical.
+          description: |-
+            Volumes that wholly contain the Operation while being as small as practical.
+
+            Start and end times, as well as lower and upper altitudes, are required for each
+            volume. The end time may not be in the past.
           minItems: 1
           type: array
           items:
@@ -1116,8 +1138,10 @@ components:
       type: object
       properties:
         volumes:
-          description: Volumes that wholly contain the Constraint while being as small
-            as practical.
+          description: |-
+            Volumes that wholly contain the Constraint while being as small as practical.
+
+            The end time may not be in the past.
           minItems: 1
           type: array
           items:
