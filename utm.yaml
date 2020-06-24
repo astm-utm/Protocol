@@ -566,7 +566,8 @@ components:
 
     PutSubscriptionParameters:
       description: |-
-        Parameters for a request to create/update a subscription in the DSS.
+        Parameters for a request to create/update a subscription in the DSS.  At least one form of
+        notifications must be requested.
       required:
         - extents
         - uss_base_url
