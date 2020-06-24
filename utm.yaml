@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.4
+  version: 0.3.6
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -1400,7 +1400,7 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   /dss/v1/operation_references/{entityuuid}:
-    summary: CRUD endpoint for a specified Operation reference in the DSS.
+    summary: Create/read endpoint for a specified Operation reference in the DSS.
     parameters:
       - name: entityuuid
         description: EntityUUID of the Operation.
@@ -1471,15 +1471,9 @@ paths:
       security:
         - Authority:
             - utm.strategic_coordination
-      summary: Create/Update the specified Operation reference in the DSS.
-      operationId: putOperationReference
+      summary: Create the specified Operation reference in the DSS.
+      operationId: createOperationReference
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
-          description: An Operation reference was updated successfully in the DSS.
         "201":
           content:
             application/json:
@@ -1515,7 +1509,88 @@ paths:
                 $ref: '#/components/schemas/AirspaceConflictResponse'
           description: |-
             * The provided key did not prove knowledge of all current and relevant airspace Entities
-            * The provided `old_version` does not match the current version of the existing Operation.
+            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The area of the Operation is too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
+
+  /dss/v1/operation_references/{entityuuid}/{ovn}:
+    summary: Update endpoint for a specified Operation reference in the DSS.
+    parameters:
+      - name: entityuuid
+        description: EntityUUID of the Operation.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
+      - name: ovn
+        description: Opaque version number of the existing Operation reference.
+        schema:
+          $ref: '#/components/schemas/EntityOVN'
+        in: path
+        required: true
+
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutOperationReferenceParameters'
+        required: true
+      tags:
+        - "Operation references"
+        - dss
+      security:
+        - Authority:
+            - utm.strategic_coordination
+      summary: Update the specified Operation reference in the DSS.
+      operationId: updateOperationReference
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeOperationReferenceResponse'
+          description: An Operation reference was updated successfully in the DSS.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * One or more input parameters were missing or invalid.
+            * The request attempted to mutate the Operation in a disallowed way.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header,
+            token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The access token was decoded successfully but did not include
+            a scope appropriate to this endpoint.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirspaceConflictResponse'
+          description: |-
+            * The provided key did not prove knowledge of all current and relevant airspace Entities
+            * The provided `ovn` does not match the current version of the existing Operation.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "413":
           content:
@@ -1580,6 +1655,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
+            * The provided `ovn` does not match the current version of the existing Operation.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "429":
           content:
@@ -1661,7 +1737,7 @@ paths:
           $ref: '#/components/schemas/EntityUUID'
         in: path
         required: true
-    summary: CRUD endpoint for a specified Constraint reference in the DSS.
+    summary: Create/read endpoint for a specified Constraint reference in the DSS.
 
     get:
       tags:
@@ -1727,15 +1803,9 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-      summary: Create/Update the specified Constraint reference in the DSS.
-      operationId: putConstraintReference
+      summary: Create the specified Constraint reference in the DSS.
+      operationId: createConstraintReference
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A Constraint reference was updated successfully in the DSS.
         "201":
           content:
             application/json:
@@ -1770,7 +1840,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * The provided `old_version` does not match the current version of the existing Constraint.
+            * The provided `ovn` does not match the current version of the existing Operation.
+            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The area of the Constraint is too large.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
+
+  /dss/v1/constraint_references/{entityuuid}/{ovn}:
+    parameters:
+      - name: entityuuid
+        description: EntityUUID of the Constraint.
+        schema:
+          $ref: '#/components/schemas/EntityUUID'
+        in: path
+        required: true
+      - name: ovn
+        description: Opaque version number of the existing Operation reference.
+        schema:
+          $ref: '#/components/schemas/EntityOVN'
+        in: path
+        required: true
+    summary: Update/delete endpoint for a specified Constraint reference in the DSS.
+
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutConstraintReferenceParameters'
+        required: true
+      tags:
+        - "Constraint references"
+        - dss
+      security:
+        - Authority:
+            - utm.constraint_management
+      summary: Update the specified Constraint reference in the DSS.
+      operationId: putConstraintReference
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
+          description: A Constraint reference was updated successfully in the DSS.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * One or more input parameters were missing or invalid.
+            * The request attempted to mutate the Constraint in a disallowed way.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header,
+            token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The access token was decoded successfully but did not include
+            a scope appropriate to this endpoint.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * The provided `ovn` does not match the current version of the existing Constraint.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "413":
           content:
@@ -1835,6 +1986,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
+            * The provided `ovn` does not match the current version of the existing Constraint.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "429":
           content:
@@ -1920,7 +2072,7 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   /dss/v1/subscriptions/{subscriptionid}:
-    summary: Create/Update a specific Subscription in the DSS.
+    summary: Create/read endpoint for a specific Subscription in the DSS.
     parameters:
       - name: subscriptionid
         description: SubscriptionUUID of the subscription of interest.
@@ -1986,10 +2138,10 @@ paths:
         - Authority:
             - utm.constraint_consumption
             - utm.strategic_coordination
-      summary: Create/Update the specified Subscription in the DSS.
-      operationId: putSubscription
+      summary: Create the specified Subscription in the DSS.
+      operationId: createSubscription
       description: |-
-        Create or update a subscription.
+        Create a subscription.
 
         Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
       requestBody:
@@ -2037,24 +2189,97 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Subscription with the specified ID already exists and is owned by a different client.
+            * A Subscription with the specified ID already exists.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         "429":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Client already has too many Subscriptions in the area where
-            a new Subscription was requested.  To correct this problem, the client
-            may query GET /subscriptions to see which Subscriptions are counting against
-            their limit.  This problem should not generally be encountered because
-            the Subscription limit should be above what any consumer that reasonably
-            aggregates their Subscriptions should request.  But, a Subscription limit
-            is necessary to bound performance requirements for DSS instances and would
-            likely be hit by, e.g., a large remote ID display provider that created
-            a Subscription for each of their display client users' views.
+          description: The client may have issued too many requests within a small
+            period of time.
 
-            Alternately, the client may have issued too many requests within a small
+  /dss/v1/subscriptions/{subscriptionid}/{version}:
+    summary: Update/delete a specific Subscription in the DSS.
+    parameters:
+      - name: subscriptionid
+        description: SubscriptionUUID of the subscription of interest.
+        schema:
+          $ref: '#/components/schemas/SubscriptionUUID'
+        in: path
+        required: true
+      - name: version
+        description: Version of the Subscription to be modified.
+        schema:
+          type: string
+        in: path
+        required: true
+
+    put:
+      security:
+        - Authority:
+            - utm.constraint_consumption
+            - utm.strategic_coordination
+      summary: Update the specified Subscription in the DSS.
+      operationId: updateSubscription
+      description: |-
+        Create or update a subscription.
+
+        Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutSubscriptionParameters'
+        required: true
+      tags:
+        - "Subscriptions"
+        - dss
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutSubscriptionResponse'
+          description: A Subscription was updated successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * One or more input parameters were missing or invalid.
+            * The request attempted to mutate the Subscription in a disallowed way.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header,
+            token could not be decoded, or token was invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+            * Client attempted to request notifications for an Entity type to which the scopes included in the access token do not provide access.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * A Subscription with the specified ID already exists and is owned by a different client.
+            * The provided `version` does not match the current Subscription.
+            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client may have issued too many requests within a small
             period of time.
 
     delete:
@@ -2100,6 +2325,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: A Subscription with the specified ID was not found.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * A Subscription with the specified ID is owned by a different client.
+            * The provided `version` does not match the current Subscription.
+            * Despite repeated attempts, the DSS was unable to complete the deletion because of other simultaneous changes.
         "429":
           content:
             application/json:
