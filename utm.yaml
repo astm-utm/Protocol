@@ -1041,6 +1041,7 @@ components:
         Details of a UTM Operation. Note that this data is not stored in the DSS; only with the clients.
       required:
         - volumes
+        - state
       type: object
       properties:
         volumes:
