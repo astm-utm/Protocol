@@ -1086,9 +1086,8 @@ components:
         operation:
           description: |-
             Full information about the Operation that has changed.  If this field is omitted,
-            the Operation was deleted.  A newly-created Operation can be differentiated from
-            an updated Operation by examining the `version` field.  The `ovn` field in the
-            nested `reference` must be populated.
+            the Operation was deleted.  The `ovn` field in the nested `reference` must be
+            populated.
           anyOf:
             - $ref: '#/components/schemas/Operation'
         subscriptions:
@@ -1154,9 +1153,8 @@ components:
         constraint:
           description: |-
             Full information about the Constraint that has changed.  If this field is omitted,
-            the Constraint was deleted.  A newly-created Constraint can be differentiated from
-            an updated Constraint by examining the `version` field.  The `ovn` field in the
-            nested `reference` must be populated.
+            the Constraint was deleted.  The `ovn` field in the nested `reference` must be
+            populated.
           anyOf:
             - $ref: '#/components/schemas/Constraint'
         subscriptions:
