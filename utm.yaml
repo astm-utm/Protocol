@@ -652,11 +652,11 @@ components:
 
         'Accepted': This Operation was fully deconflicted from other Entities at the time it changed to this
         state, but no aircraft associated with it are active yet.  The create or update request for this
-        Operation must include a Key containing all OVNs for all relevant Entities.
+        Operation reference must include a Key containing all OVNs for all relevant Entities.
 
         'Activated': One or more aircraft associated with this Operation are, or will imminently be, in
-        flight.  The create or update request for this Operation must include a Key containing all OVNs for
-        all relevant Entities.
+        flight.  The create or update request for this Operation reference must include a Key containing
+        all OVNs for all relevant Entities.
 
         'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST
         contain the actual position of the aircraft.  In this state, the `/v1/operations/{entityuuid}/telemetry'
@@ -672,6 +672,8 @@ components:
         case because the Operation is being adjusted as flown and cannot necessarily deconflict.
 
         'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
+        Note that an Operation may not be updated to this state in the DSS; instead, the USS should DELETE
+        the Operation reference to indicated that the Operation has ended.
       type: string
       enum:
         - Accepted
