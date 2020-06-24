@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.6
+  version: 0.3.7
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -477,13 +477,12 @@ components:
           $ref: '#/components/schemas/SubscriptionUUID'
         version:
           description: |-
-            Sequential version that the DSS increments every time the Subscription changes.  A USS
-            must specify this version when modifying an existing Subscription to ensure consistency
-            in read-modify-write operations and distributed systems.
-          type: integer
-          format: int32
-          minimum: 1
-          exclusiveMinimum: false
+            Version that the DSS changes every time a USS changes the Subscription.  The DSS
+            incrementing the notification_index does not constitute a change that triggers a
+            new version.  A USS must specify this version when modifying an existing
+            Subscription to ensure consistency in read-modify-write operations and distributed
+            systems.
+          type: string
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
@@ -565,22 +564,11 @@ components:
         Parameters for a request to create/update a subscription in the DSS.
       required:
         - extents
-        - old_version
         - uss_base_url
       type: object
       properties:
         extents:
           $ref: '#/components/schemas/Volume4D'
-        old_version:
-          description: |-
-            To ensure consistency in read-modify-write operations and distributed systems, the client must
-            specify the version of this Subscription in the DSS that it is attempting to modify.  If a new
-            Subscription is being created, this version should be set to 0.
-          type: integer
-          format: int32
-          minimum: 0
-          exclusiveMinimum: false
-          default: 0
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operations:
@@ -685,7 +673,6 @@ components:
       required:
         - id
         - owner
-        - version
         - time_start
         - time_end
         - uss_base_url
@@ -702,15 +689,6 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Operation update notifications originating from a USS that does not own
             the Operation.
-        version:
-          description: |-
-            Sequential version that the DSS increments every time the Operation changes.  A USS
-            may use this version to determine which Operation references have new details that
-            must be retrieved.
-          type: integer
-          format: int32
-          minimum: 1
-          exclusiveMinimum: false
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
@@ -752,7 +730,6 @@ components:
         Note: The implicit subscription is managed by the DSS, not the USS.
       required:
         - extents
-        - old_version
         - state
         - uss_base_url
       type: object
@@ -762,25 +739,16 @@ components:
           items:
             $ref: '#/components/schemas/Volume4D'
           minItems: 1
-        old_version:
-          description: |-
-            To ensure consistency in read-modify-write operations and distributed systems, the client must
-            specify the version of this Operation in the DSS that it is attempting to modify.  If a new
-            Operation is being created, this version should be set to 0.
-          type: integer
-          format: int32
-          minimum: 0
-          exclusiveMinimum: false
-          default: 0
         key:
           description: |-
             Proof that the USS creating or mutating this Operation was aware of the current state of the
             airspace, with the expectation that this Operation is therefore deconflicted from all relevant
-            features in the airspce.  This field is not required when declaring an Operation NonConforming
+            features in the airspace.  This field is not required when declaring an Operation NonConforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
             OVNs for Constraints are required if and only if the USS owning this Operation is considering
             Constraints, which is determined by whether the Subscription associated with this Operation
-            triggers notifications for Constraints.
+            triggers notifications for Constraints.  The key does not need to contain the OVN for an
+            Operation being updated.
           anyOf:
             - $ref: '#/components/schemas/Key'
         state:
@@ -886,7 +854,6 @@ components:
       required:
         - id
         - owner
-        - version
         - time_start
         - time_end
         - uss_base_url
@@ -902,15 +869,6 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Constraint update notifications originating from a USS that does not own
             the Constraint.
-        version:
-          description: |-
-            Sequential version that the DSS increments every time the Constraint changes.  A USS
-            may use this version to determine which Constraint references have new details that
-            must be retrieved.
-          type: integer
-          format: int32
-          minimum: 1
-          exclusiveMinimum: false
         ovn:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
@@ -938,7 +896,6 @@ components:
         DSS.
       required:
         - extents
-        - old_version
         - uss_base_url
       type: object
       properties:
@@ -947,16 +904,6 @@ components:
           items:
             $ref: '#/components/schemas/Volume4D'
           minItems: 1
-        old_version:
-          description: |-
-            To ensure consistency in read-modify-write operations and distributed systems, the client must
-            specify the version of this Constraint in the DSS that it is attempting to modify.  If a new
-            Constraint is being created, this version should be set to 0.
-          type: integer
-          format: int32
-          minimum: 0
-          exclusiveMinimum: false
-          default: 0
         uss_base_url:
           $ref: '#/components/schemas/ConstraintUssBaseURL'
 
