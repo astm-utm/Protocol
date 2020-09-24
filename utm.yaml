@@ -690,6 +690,7 @@ components:
       required:
         - id
         - owner
+        - version
         - time_start
         - time_end
         - uss_base_url
@@ -706,6 +707,15 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Operation update notifications originating from a USS that does not own
             the Operation.
+        version:
+          type: integer
+          format: int32
+          example: 1
+          description: |-
+            Numeric version of this Operation which increments upon each change in the Operation,
+            regardless of whether any field of the Operation reference changes.  A USS with the
+            details of this Operation when it was at a particular version does not need to retrieve
+            the details again until the version changes.
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
@@ -876,6 +886,7 @@ components:
       required:
         - id
         - owner
+        - version
         - time_start
         - time_end
         - uss_base_url
@@ -891,6 +902,15 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Constraint update notifications originating from a USS that does not own
             the Constraint.
+        version:
+          type: integer
+          format: int32
+          example: 1
+          description: |-
+            Numeric version of this Constraint which increments upon each change in the Constraint,
+            regardless of whether any field of the Constraint reference changes.  A USS with the
+            details of this Constraint when it was at a particular version does not need to retrieve
+            the details again until the version changes.
         ovn:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
