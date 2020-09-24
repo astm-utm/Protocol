@@ -670,17 +670,12 @@ components:
         In this state, the `/uss/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if available,
         to queries from USS peers.  The create or update request for this Operation may omit a Key in this
         case because the Operation is being adjusted as flown and cannot necessarily deconflict.
-
-        'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
-        Note that an Operation may not be updated to this state in the DSS; instead, the USS should DELETE
-        the Operation reference to indicated that the Operation has ended.
       type: string
       enum:
         - Accepted
         - Activated
         - NonConforming
         - Contingent
-        - Ended
 
     OperationReference:
       description: |-
