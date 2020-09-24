@@ -15,7 +15,7 @@ security:
   - Authority:
       - utm.strategic_coordination
       - utm.constraint_management
-      - utm.constraint_consumption
+      - utm.constraint_ingestion
 
 tags:
   - name: "Operation references"
@@ -55,11 +55,11 @@ components:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
             utm.strategic_coordination: |-
-              Client may perform planning, strategic conflict detection, and conformance monitoring activities, including reading information about Constraints.
+              Client may perform planning, strategic conflict detection, and conformance monitoring activities.
             utm.constraint_management: |-
               Client may manage (create, edit, and delete) Constraints they own.
-            utm.constraint_consumption: |-
-              Client may read Constraints from the DSS (references) and partner USSs (details).
+            utm.constraint_ingestion: |-
+              Client may read Constraint references from the DSS and details from the partner USSs.
       description: |-
         Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
 
@@ -1660,8 +1660,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-            - utm.constraint_consumption
-            - utm.strategic_coordination
+            - utm.constraint_ingestion
       summary: Retrieve all Constraints references in the specified area/volume from the DSS.
       operationId: queryConstraintReferences
       responses:
@@ -1721,8 +1720,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-            - utm.constraint_consumption
-            - utm.strategic_coordination
+            - utm.constraint_ingestion
       summary: Retrieve the specified Constraint reference from the DSS.
       operationId: getConstraintReference
       responses:
@@ -1989,7 +1987,7 @@ paths:
         - dss
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.strategic_coordination
       description: |-
         Retrieve Subscriptions intersecting an area of interest.  Subscription
@@ -2062,7 +2060,7 @@ paths:
         - dss
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.strategic_coordination
       summary: Retrieve the specified Subscription from the DSS.
       operationId: getSubscription
@@ -2111,7 +2109,7 @@ paths:
     put:
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.strategic_coordination
       summary: Create the specified Subscription in the DSS.
       operationId: createSubscription
@@ -2193,7 +2191,7 @@ paths:
     put:
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.strategic_coordination
       summary: Update the specified Subscription in the DSS.
       operationId: updateSubscription
@@ -2263,7 +2261,7 @@ paths:
         - dss
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
       operationId: deleteSubscription
@@ -2327,7 +2325,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.strategic_coordination
       summary: Report information about communication issues to a DSS.
       operationId: makeDssReport
@@ -2590,8 +2588,7 @@ paths:
         - p2p_utm
       security:
         - Authority:
-            - utm.strategic_coordination
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
       summary: Retrieve the specified Constraint details from a USS.
       operationId: getConstraintDetails
       description: Retrieve the details of the specified Constraint.
@@ -2709,7 +2706,7 @@ paths:
       security:
         - Authority:
             - utm.strategic_coordination
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
             - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       operationId: makeUssReport
