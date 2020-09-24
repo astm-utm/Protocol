@@ -983,15 +983,6 @@ components:
             $ref: '#/components/schemas/ConstraintReference'
           default: []
 
-    EntityReference:
-      description: Reference to a generic Entity known to the DSS.
-      type: object
-      properties:
-        operation_reference:
-          $ref: '#/components/schemas/OperationReference'
-        constraint_reference:
-          $ref: '#/components/schemas/ConstraintReference'
-
     AirspaceConflictResponse:
       description: Data provided when an airspace conflict was encountered.
       type: object
@@ -1000,15 +991,25 @@ components:
           description: Human-readable message indicating what error occurred and/or
             why.
           type: string
-        entity_conflicts:
-          description: List of Entity references for which current proof of knowledge
+        missing_operations:
+          description: List of Operation references for which current proof of knowledge
             was not provided.  If this field is present and contains elements, the
-            calling USS should query the details URLs for these Entities to obtain
+            calling USS should query the details URLs for these Operations to obtain
             their details and correct OVNs.  The OVNs can be used to update
             the key, at which point the USS may retry this call.
           type: array
           items:
-            $ref: '#/components/schemas/EntityReference'
+            $ref: '#/components/schemas/OperationReference'
+          default: []
+        missing_constraints:
+          description: List of Constraint references for which current proof of knowledge
+            was not provided.  If this field is present and contains elements, the
+            calling USS should query the details URLs for these Constraints to obtain
+            their details and correct OVNs.  The OVNs can be used to update
+            the key, at which point the USS may retry this call.
+          type: array
+          items:
+            $ref: '#/components/schemas/ConstraintReference'
           default: []
 
     ErrorReport:
