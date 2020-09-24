@@ -1660,6 +1660,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
+        - Authority:
             - utm.constraint_ingestion
       summary: Retrieve all Constraints references in the specified area/volume from the DSS.
       operationId: queryConstraintReferences
@@ -1720,6 +1721,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
+        - Authority:
             - utm.constraint_ingestion
       summary: Retrieve the specified Constraint reference from the DSS.
       operationId: getConstraintReference
@@ -1988,6 +1990,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       description: |-
         Retrieve Subscriptions intersecting an area of interest.  Subscription
@@ -2061,6 +2064,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Retrieve the specified Subscription from the DSS.
       operationId: getSubscription
@@ -2110,6 +2114,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Create the specified Subscription in the DSS.
       operationId: createSubscription
@@ -2192,6 +2197,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Update the specified Subscription in the DSS.
       operationId: updateSubscription
@@ -2262,6 +2268,7 @@ paths:
       security:
         - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
       operationId: deleteSubscription
@@ -2325,7 +2332,9 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
+        - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Report information about communication issues to a DSS.
       operationId: makeDssReport
@@ -2706,7 +2715,9 @@ paths:
       security:
         - Authority:
             - utm.strategic_coordination
+        - Authority:
             - utm.constraint_ingestion
+        - Authority:
             - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       operationId: makeUssReport
