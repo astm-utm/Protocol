@@ -2421,6 +2421,13 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Retrieve the specified Operation details from a USS.
+      description: |-
+        The USS hosting this endpoint returns the details (and reference) of an
+        Operation it owns.  While the USS has a pending request to change the
+        Operation in the DSS, the USS should report the most recent version the
+        USS knows was accepted by the DSS.  So, before a USS receives a response
+        to create an Operation reference in the DSS, it should return 404 if
+        queried for that Operation at this endpoint.
       operationId: getOperationDetails
       responses:
         "200":
@@ -2615,7 +2622,13 @@ paths:
             - utm.constraint_ingestion
       summary: Retrieve the specified Constraint details from a USS.
       operationId: getConstraintDetails
-      description: Retrieve the details of the specified Constraint.
+      description: |-
+        The USS hosting this endpoint returns the details (and reference) of a
+        Constraint it owns.  While the USS has a pending request to change the
+        Constraint in the DSS, the USS should report the most recent version the
+        USS knows was accepted by the DSS.  So, before a USS receives a response
+        to create a Constraint reference in the DSS, it should return 404 if
+        queried for that Constraint at this endpoint.
       responses:
         "200":
           content:
