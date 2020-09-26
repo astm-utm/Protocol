@@ -2217,9 +2217,11 @@ paths:
       summary: Update the specified Subscription in the DSS.
       operationId: updateSubscription
       description: |-
-        Create or update a subscription.
+        Update a subscription.
 
         Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
+
+        The standard requires each Operation to have a Subscription that cover the 4D volume of the Operation.  If a USS attempts to update a Subscription upon which an Operation depends, and this update would cause the Operation to lose Subscription coverage, the update will be rejected by the DSS as a bad request.
       requestBody:
         content:
           application/json:
@@ -2287,6 +2289,8 @@ paths:
             - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
       operationId: deleteSubscription
+      description: |-
+        The standard requires each Operation to have a Subscription that cover the 4D volume of the Operation.  If a USS attempts to delete a Subscription upon which an Operation depends, the deletion will be rejected by the DSS as a bad request.
       responses:
         "200":
           content:
