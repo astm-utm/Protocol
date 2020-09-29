@@ -2,7 +2,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.7
+  version: 0.3.8
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -15,7 +15,7 @@ security:
   - Authority:
       - utm.strategic_coordination
       - utm.constraint_management
-      - utm.constraint_consumption
+      - utm.constraint_ingestion
 
 tags:
   - name: "Operation references"
@@ -55,11 +55,11 @@ components:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
             utm.strategic_coordination: |-
-              Client may perform planning, strategic conflict detection, and conformance monitoring activities, including reading information about Constraints.
+              Client may perform planning, strategic conflict detection, and conformance monitoring activities.
             utm.constraint_management: |-
               Client may manage (create, edit, and delete) Constraints they own.
-            utm.constraint_consumption: |-
-              Client may read Constraints from the DSS (references) and partner USSs (details).
+            utm.constraint_ingestion: |-
+              Client may read Constraint references from the DSS and details from the partner USSs.
       description: |-
         Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
 
@@ -76,9 +76,9 @@ components:
 
 
   schemas:
-    UUIDv4:
+    UUIDv4Format:
       description: |-
-        Universally-unique identifier (version 4).
+        String whose format matches a version-4 UUID according to RFC 4122.
       maxLength: 36
       minLength: 36
       type: string
@@ -87,12 +87,12 @@ components:
         '^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$'
       example: '03e5572a-f733-49af-bc14-8a18bd53ee39'
 
-    EntityUUID:
+    EntityID:
       description: |-
-        Universally-unique identifier for an Entity communicated through
-        the DSS.  Formatted as UUIDv4.
+        Identifier for an Entity communicated through the DSS.  Formatted as
+        a UUIDv4.
       anyOf:
-        - $ref: '#/components/schemas/UUIDv4'
+        - $ref: '#/components/schemas/UUIDv4Format'
       example: '2f8343be-6482-4d1b-a474-16847e01af1e'
 
     EntityOVN:
@@ -110,12 +110,12 @@ components:
       maxLength: 128
       example: '9d158f59-80b7-4c11-9c0c-8a2b4d936b2d'
 
-    SubscriptionUUID:
+    SubscriptionID:
       description: |-
-        Universally-unique identifier for a Subscription communicated through
-        the DSS.  Formatted as UUIDv4.
+        Udentifier for a Subscription communicated through the DSS.  Formatted
+        as a UUIDv4.
       anyOf:
-        - $ref: '#/components/schemas/UUIDv4'
+        - $ref: '#/components/schemas/UUIDv4Format'
       example: '78ea3fe8-71c2-4f5c-9b44-9c02f5563c6f'
 
     Key:
@@ -442,7 +442,7 @@ components:
       type: object
       properties:
         subscription_id:
-          $ref: '#/components/schemas/SubscriptionUUID'
+          $ref: '#/components/schemas/SubscriptionID'
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
 
@@ -478,7 +478,7 @@ components:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/SubscriptionUUID'
+          $ref: '#/components/schemas/SubscriptionID'
         version:
           description: |-
             Version that the DSS changes every time a USS changes the Subscription.  The DSS
@@ -518,10 +518,10 @@ components:
           type: boolean
           default: false
         dependent_operations:
-          description: List of Operations (UUIDs) that are dependent on this Subscription.
+          description: List of IDs for Operations that are dependent on this Subscription.
           type: array
           items:
-            $ref: '#/components/schemas/EntityUUID'
+            $ref: '#/components/schemas/EntityID'
           default: []
 
     SubscriptionNotificationIndex:
@@ -659,7 +659,7 @@ components:
         all OVNs for all relevant Entities.
 
         'NonConforming': This Operation is outside of the planned volume.  The new or updated volumes MUST
-        contain the actual position of the aircraft.  In this state, the `/uss/v1/operations/{entityuuid}/telemetry'
+        contain the actual position of the aircraft.  In this state, the `/uss/v1/operations/{entityid}/telemetry'
         USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request
         for this Operation may omit a Key in this case because the Operation is being adjusted as flown and
         cannot necessarily deconflict.
@@ -667,20 +667,15 @@ components:
         'Contingent': This Operation is executing a contingency action, either because it has been
         NonConforming for a certain period of time, or because of operator initiation.  This state must
         transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.
-        In this state, the `/uss/v1/operations/{entityuuid}/telemetry' USS-USS endpoint should respond, if available,
+        In this state, the `/uss/v1/operations/{entityid}/telemetry' USS-USS endpoint should respond, if available,
         to queries from USS peers.  The create or update request for this Operation may omit a Key in this
         case because the Operation is being adjusted as flown and cannot necessarily deconflict.
-
-        'Ended': This Operation has ended (due to either an Operator-induced change or flight completion).
-        Note that an Operation may not be updated to this state in the DSS; instead, the USS should DELETE
-        the Operation reference to indicated that the Operation has ended.
       type: string
       enum:
         - Accepted
         - Activated
         - NonConforming
         - Contingent
-        - Ended
 
     OperationReference:
       description: |-
@@ -690,6 +685,7 @@ components:
       required:
         - id
         - owner
+        - version
         - time_start
         - time_end
         - uss_base_url
@@ -697,7 +693,7 @@ components:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         owner:
           type: string
           example: 'uss1'
@@ -706,6 +702,15 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Operation update notifications originating from a USS that does not own
             the Operation.
+        version:
+          type: integer
+          format: int32
+          example: 1
+          description: |-
+            Numeric version of this Operation which increments upon each change in the Operation,
+            regardless of whether any field of the Operation reference changes.  A USS with the
+            details of this Operation when it was at a particular version does not need to retrieve
+            the details again until the version changes.
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
@@ -729,7 +734,7 @@ components:
             The ID of the Subscription that is ensuring the Operation owner receives relevant
             airspace updates.
           anyOf:
-            - $ref: '#/components/schemas/SubscriptionUUID'
+            - $ref: '#/components/schemas/SubscriptionID'
 
     OperationUssBaseURL:
       description: |-
@@ -785,7 +790,7 @@ components:
             for the Operation.  The Subscription specified by this ID must cover at least the area over
             which this Operation is conducted, and it must provide notifications for Operations.
           anyOf:
-            - $ref: '#/components/schemas/EntityUUID'
+            - $ref: '#/components/schemas/EntityID'
         new_subscription:
           description: |-
             If an existing Subscription is not specified in `subscription_id`, then this field must be
@@ -838,7 +843,7 @@ components:
           description: |-
             DSS subscribers that this client now has the obligation to
             notify of the Operation changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/uss/v1/operations/{entityuuid}`
+            for each provided URL according to the USS-USS `/uss/v1/operations/{entityid}`
             path API.  The client's own Subscriptions will also be included in this list.
           type: array
           items:
@@ -876,13 +881,14 @@ components:
       required:
         - id
         - owner
+        - version
         - time_start
         - time_end
         - uss_base_url
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         owner:
           type: string
           example: 'uss1'
@@ -891,6 +897,15 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Constraint update notifications originating from a USS that does not own
             the Constraint.
+        version:
+          type: integer
+          format: int32
+          example: 1
+          description: |-
+            Numeric version of this Constraint which increments upon each change in the Constraint,
+            regardless of whether any field of the Constraint reference changes.  A USS with the
+            details of this Constraint when it was at a particular version does not need to retrieve
+            the details again until the version changes.
         ovn:
           description: |-
             Opaque version number of this Constraint.  Populated only when the ConstraintReference
@@ -953,7 +968,7 @@ components:
         subscribers:
           description: DSS subscribers that this client now has the obligation to
             notify of the Constraint changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/uss/v1/constraints/{entityuuid}`
+            for each provided URL according to the USS-USS `/uss/v1/constraints/{entityid}`
             path API.  The client's own Subscriptions will also be included in this list.
           type: array
           items:
@@ -983,15 +998,6 @@ components:
             $ref: '#/components/schemas/ConstraintReference'
           default: []
 
-    EntityReference:
-      description: Reference to a generic Entity known to the DSS.
-      type: object
-      properties:
-        operation_reference:
-          $ref: '#/components/schemas/OperationReference'
-        constraint_reference:
-          $ref: '#/components/schemas/ConstraintReference'
-
     AirspaceConflictResponse:
       description: Data provided when an airspace conflict was encountered.
       type: object
@@ -1000,15 +1006,25 @@ components:
           description: Human-readable message indicating what error occurred and/or
             why.
           type: string
-        entity_conflicts:
-          description: List of Entity references for which current proof of knowledge
+        missing_operations:
+          description: List of Operation references for which current proof of knowledge
             was not provided.  If this field is present and contains elements, the
-            calling USS should query the details URLs for these Entities to obtain
+            calling USS should query the details URLs for these Operations to obtain
             their details and correct OVNs.  The OVNs can be used to update
             the key, at which point the USS may retry this call.
           type: array
           items:
-            $ref: '#/components/schemas/EntityReference'
+            $ref: '#/components/schemas/OperationReference'
+          default: []
+        missing_constraints:
+          description: List of Constraint references for which current proof of knowledge
+            was not provided.  If this field is present and contains elements, the
+            calling USS should query the details URLs for these Constraints to obtain
+            their details and correct OVNs.  The OVNs can be used to update
+            the key, at which point the USS may retry this call.
+          type: array
+          items:
+            $ref: '#/components/schemas/ConstraintReference'
           default: []
 
     ErrorReport:
@@ -1108,7 +1124,7 @@ components:
         operation_id:
           description: ID of Operation that has changed.
           anyOf:
-            - $ref: '#/components/schemas/EntityUUID'
+            - $ref: '#/components/schemas/EntityID'
         operation:
           description: |-
             Full information about the Operation that has changed.  If this field is omitted,
@@ -1177,7 +1193,7 @@ components:
         constraint_id:
           description: ID of Constraint that has changed.
           anyOf:
-            - $ref: '#/components/schemas/EntityUUID'
+            - $ref: '#/components/schemas/EntityID'
         constraint:
           description: |-
             Full information about the Constraint that has changed.  If this field is omitted,
@@ -1214,18 +1230,15 @@ components:
     VehicleTelemetry:
       description: Vehicle position, altitude, and velocity.
       required:
-        - id
         - time_measured
       type: object
       properties:
-        id:
-          $ref: '#/components/schemas/EntityUUID'
+        time_measured:
+          $ref: '#/components/schemas/Time'
         position:
           $ref: '#/components/schemas/Position'
         velocity:
           $ref: '#/components/schemas/Velocity'
-        time_measured:
-          $ref: '#/components/schemas/Time'
 
     PositionAccuracyVertical:
       description: |-
@@ -1376,13 +1389,13 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /dss/v1/operation_references/{entityuuid}:
+  /dss/v1/operation_references/{entityid}:
     summary: Create/read endpoint for a specified Operation reference in the DSS.
     parameters:
-      - name: entityuuid
-        description: EntityUUID of the Operation.
+      - name: entityid
+        description: EntityID of the Operation.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
 
@@ -1500,13 +1513,13 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /dss/v1/operation_references/{entityuuid}/{ovn}:
+  /dss/v1/operation_references/{entityid}/{ovn}:
     summary: Update endpoint for a specified Operation reference in the DSS.
     parameters:
-      - name: entityuuid
-        description: EntityUUID of the Operation.
+      - name: entityid
+        description: EntityID of the Operation.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
       - name: ovn
@@ -1662,8 +1675,8 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-            - utm.constraint_consumption
-            - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_ingestion
       summary: Retrieve all Constraints references in the specified area/volume from the DSS.
       operationId: queryConstraintReferences
       responses:
@@ -1706,12 +1719,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /dss/v1/constraint_references/{entityuuid}:
+  /dss/v1/constraint_references/{entityid}:
     parameters:
-      - name: entityuuid
-        description: EntityUUID of the Constraint.
+      - name: entityid
+        description: EntityID of the Constraint.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
     summary: Create/read endpoint for a specified Constraint reference in the DSS.
@@ -1723,8 +1736,8 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-            - utm.constraint_consumption
-            - utm.strategic_coordination
+        - Authority:
+            - utm.constraint_ingestion
       summary: Retrieve the specified Constraint reference from the DSS.
       operationId: getConstraintReference
       responses:
@@ -1832,12 +1845,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /dss/v1/constraint_references/{entityuuid}/{ovn}:
+  /dss/v1/constraint_references/{entityid}/{ovn}:
     parameters:
-      - name: entityuuid
-        description: EntityUUID of the Constraint.
+      - name: entityid
+        description: EntityID of the Constraint.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
       - name: ovn
@@ -1991,7 +2004,8 @@ paths:
         - dss
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       description: |-
         Retrieve Subscriptions intersecting an area of interest.  Subscription
@@ -2052,9 +2066,9 @@ paths:
     summary: Create/read endpoint for a specific Subscription in the DSS.
     parameters:
       - name: subscriptionid
-        description: SubscriptionUUID of the subscription of interest.
+        description: SubscriptionID of the subscription of interest.
         schema:
-          $ref: '#/components/schemas/SubscriptionUUID'
+          $ref: '#/components/schemas/SubscriptionID'
         in: path
         required: true
 
@@ -2064,7 +2078,8 @@ paths:
         - dss
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Retrieve the specified Subscription from the DSS.
       operationId: getSubscription
@@ -2113,7 +2128,8 @@ paths:
     put:
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Create the specified Subscription in the DSS.
       operationId: createSubscription
@@ -2180,9 +2196,9 @@ paths:
     summary: Update/delete a specific Subscription in the DSS.
     parameters:
       - name: subscriptionid
-        description: SubscriptionUUID of the subscription of interest.
+        description: SubscriptionID of the subscription of interest.
         schema:
-          $ref: '#/components/schemas/SubscriptionUUID'
+          $ref: '#/components/schemas/SubscriptionID'
         in: path
         required: true
       - name: version
@@ -2195,14 +2211,17 @@ paths:
     put:
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Update the specified Subscription in the DSS.
       operationId: updateSubscription
       description: |-
-        Create or update a subscription.
+        Update a subscription.
 
         Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
+
+        The standard requires each Operation to have a Subscription that cover the 4D volume of the Operation.  If a USS attempts to update a Subscription upon which an Operation depends, and this update would cause the Operation to lose Subscription coverage, the update will be rejected by the DSS as a bad request.
       requestBody:
         content:
           application/json:
@@ -2265,10 +2284,13 @@ paths:
         - dss
       security:
         - Authority:
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Remove the specified Subscription from the DSS.
       operationId: deleteSubscription
+      description: |-
+        The standard requires each Operation to have a Subscription that cover the 4D volume of the Operation.  If a USS attempts to delete a Subscription upon which an Operation depends, the deletion will be rejected by the DSS as a bad request.
       responses:
         "200":
           content:
@@ -2329,7 +2351,9 @@ paths:
       security:
         - Authority:
             - utm.constraint_management
-            - utm.constraint_consumption
+        - Authority:
+            - utm.constraint_ingestion
+        - Authority:
             - utm.strategic_coordination
       summary: Report information about communication issues to a DSS.
       operationId: makeDssReport
@@ -2383,13 +2407,13 @@ paths:
   # USS Endpoint: OPERATIONS
   #
 
-  /uss/v1/operations/{entityuuid}:
+  /uss/v1/operations/{entityid}:
     summary: Query detailed information of an Operation from a USS.
     parameters:
-      - name: entityuuid
-        description: EntityUUID for this Operation.
+      - name: entityid
+        description: EntityID for this Operation.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
 
@@ -2401,6 +2425,13 @@ paths:
         - Authority:
             - utm.strategic_coordination
       summary: Retrieve the specified Operation details from a USS.
+      description: |-
+        The USS hosting this endpoint returns the details (and reference) of an
+        Operation it owns.  While the USS has a pending request to change the
+        Operation in the DSS, the USS should report the most recent version the
+        USS knows was accepted by the DSS.  So, before a USS receives a response
+        to create an Operation reference in the DSS, it should return 404 if
+        queried for that Operation at this endpoint.
       operationId: getOperationDetails
       responses:
         "200":
@@ -2442,13 +2473,13 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
 
-  /uss/v1/operations/{entityuuid}/telemetry:
+  /uss/v1/operations/{entityid}/telemetry:
     summary: Detailed information on the position of an off-nominal Operation.
     parameters:
-      - name: entityuuid
-        description: EntityUUID for this Operation.
+      - name: entityid
+        description: EntityID for this Operation.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
 
@@ -2576,13 +2607,13 @@ paths:
   # USS Endpoint: CONSTRAINTS
   #
 
-  /uss/v1/constraints/{entityuuid}:
+  /uss/v1/constraints/{entityid}:
     summary: Query detailed information of a Constraint from a USS.
     parameters:
-      - name: entityuuid
-        description: EntityUUID of the Constraint.
+      - name: entityid
+        description: EntityID of the Constraint.
         schema:
-          $ref: '#/components/schemas/EntityUUID'
+          $ref: '#/components/schemas/EntityID'
         in: path
         required: true
 
@@ -2592,11 +2623,16 @@ paths:
         - p2p_utm
       security:
         - Authority:
-            - utm.strategic_coordination
-            - utm.constraint_consumption
+            - utm.constraint_ingestion
       summary: Retrieve the specified Constraint details from a USS.
       operationId: getConstraintDetails
-      description: Retrieve the details of the specified Constraint.
+      description: |-
+        The USS hosting this endpoint returns the details (and reference) of a
+        Constraint it owns.  While the USS has a pending request to change the
+        Constraint in the DSS, the USS should report the most recent version the
+        USS knows was accepted by the DSS.  So, before a USS receives a response
+        to create a Constraint reference in the DSS, it should return 404 if
+        queried for that Constraint at this endpoint.
       responses:
         "200":
           content:
@@ -2711,7 +2747,9 @@ paths:
       security:
         - Authority:
             - utm.strategic_coordination
-            - utm.constraint_consumption
+        - Authority:
+            - utm.constraint_ingestion
+        - Authority:
             - utm.constraint_management
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       operationId: makeUssReport
