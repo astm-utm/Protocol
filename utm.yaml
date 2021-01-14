@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.9
+  version: 0.3.10
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -15,6 +15,7 @@ security:
   - utm.strategic_coordination
   - utm.constraint_management
   - utm.constraint_ingestion
+  - utm.availability_arbitration
 
 tags:
 - name: Operation references
@@ -59,6 +60,8 @@ components:
               Client may manage (create, edit, and delete) Constraints they own.
             utm.constraint_ingestion: |-
               Client may read Constraint references from the DSS and details from the partner USSs.
+            utm.availability_arbitration: |-
+              Client may set the availability state of USSs in the DSS.
       description: |-
         Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
 
@@ -701,6 +704,7 @@ components:
       required:
       - id
       - owner
+      - uss_availability
       - version
       - time_start
       - time_end
@@ -718,6 +722,8 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Operation update notifications originating from a USS that does not own
             the Operation.
+        uss_availability:
+          $ref: '#/components/schemas/UssAvailabilityState'
         version:
           type: integer
           format: int32
@@ -897,6 +903,7 @@ components:
       required:
       - id
       - owner
+      - uss_availability
       - version
       - time_start
       - time_end
@@ -913,6 +920,8 @@ components:
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
             to reject Constraint update notifications originating from a USS that does not own
             the Constraint.
+        uss_availability:
+          $ref: '#/components/schemas/UssAvailabilityState'
         version:
           type: integer
           format: int32
@@ -1347,6 +1356,55 @@ components:
             This value is provided in degrees East of North with a minimum resolution of 1 degree.
           example: 120
 
+    UssAvailabilityStatus:
+      type: object
+      required:
+      - uss
+      - availability
+      properties:
+        uss:
+          type: string
+          description: |-
+            Client ID (matching their `sub` in access tokens) of the USS to which this availability applies.
+        availability:
+          $ref: '#/components/schemas/UssAvailabilityState'
+
+    UssAvailabilityState:
+      type: string
+      enum:
+        - Normal
+        - Down
+      description: |-
+        A USS is presumed to be in the Normal state.  Upon determination via availability
+        arbitration, a USS is Down when it does not respond appropriately.
+
+    SetUssAvailabilityStatusParameters:
+      type: object
+      required:
+        - old_version
+        - availability
+      properties:
+        old_version:
+          type: string
+          default: ''
+          description: |-
+            Version of USS's availability to change, for consistent read-modify-write operations and consistent retry behavior.
+        availability:
+          $ref: '#/components/schemas/UssAvailabilityState'
+
+    UssAvailabilityStatusResponse:
+      type: object
+      required:
+      - availability
+      - version
+      properties:
+        version:
+          type: string
+          description: |-
+            New version of USS's availability.  Used to change USS's availability.
+        availability:
+          $ref: '#/components/schemas/UssAvailabilityStatus'
+
 paths:
   #
   # DSS Endpoint: OPERATIONS
@@ -1524,6 +1582,13 @@ paths:
           description: |-
             * The provided key did not prove knowledge of all current and relevant airspace Entities
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        '412':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            The client attempted to transition the Operation to Accepted or Activated while marked as Down in the DSS.
         '413':
           content:
             application/json:
@@ -1606,6 +1671,13 @@ paths:
             * The provided key did not prove knowledge of all current and relevant airspace Entities
             * The provided `ovn` does not match the current version of the existing Operation.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        '412':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            The client attempted to transition the Operation to Accepted or Activated while marked as Down in the DSS.
         '413':
           content:
             application/json:
@@ -1679,7 +1751,7 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   #
-  # DSS Enpoint: CONSTRAINTS
+  # DSS Endpoint: CONSTRAINTS
   #
 
   /dss/v1/constraint_references/query:
@@ -2430,6 +2502,111 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   #
+  # DSS Endpoint: USS AVAILABILITY
+  #
+
+  /dss/v1/uss_availability/{uss_id}:
+    summary: Availability status of a USS
+
+    put:
+      security:
+        - Authority:
+            - utm.availability_arbitration
+      summary: Set availability status of a USS.
+      operationId: setUssAvailability
+      description: Set availability status of a USS.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetUssAvailabilityStatusParameters'
+        required: true
+      tags:
+        - Availability
+        - dss
+      responses:
+        '200':
+          description: Availability status of specified USS was successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UssAvailabilityStatusResponse'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * One or more parameters were missing or invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header,
+            token could not be decoded, or token was invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
+
+    get:
+      security:
+        - Authority:
+            - utm.availability_arbitration
+        - Authority:
+            - utm.strategic_coordination
+      summary: Get availability status of a USS.
+      operationId: getUssAvailability
+      description: Get availability status of a USS.
+      tags:
+        - Availability
+        - dss
+      responses:
+        '200':
+          description: Availability status of specified USS was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UssAvailabilityStatusResponse'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * One or more parameters were missing or invalid.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bearer access token was not provided in Authorization header,
+            token could not be decoded, or token was invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The client issued too many requests in a short period of time.
+
+  #
   # USS Endpoint: OPERATIONS
   #
 
@@ -2765,7 +2942,7 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   #
-  # USS Endpoint: (OTHER)
+  # USS Endpoint: REPORT
   #
 
   /uss/v1/reports:

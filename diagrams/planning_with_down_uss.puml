@@ -1,0 +1,46 @@
+Title: Planning in the presence of a down USS
+
+participant USS1\nUnreliable USS as USS1
+participant DSS
+participant USS2\nPlanning USS as USS2
+participant USS3\nAvailability arbiter as USS3
+
+USS1->DSS: Op1 Accepted
+DSS-->USS1: Ok; Op1 OVN1a
+Note right of USS1: USS1 goes down
+
+USS2->DSS: Relevant ops?
+DSS-->USS2: Op1
+USS2->USS1: Get Op1 details
+USS1-->USS2: No response [color="red"]
+USS2->USS3: USS1 is down [color="cyan"]
+Note left of USS3: Cyan line indicates that\nstandard does not specify\nUSS3's method of\navailability arbitration
+USS3-->USS2: Ok, USS1 under investigation [color="cyan"]
+Note left of USS2: USS2 waits for\ninvestigation to\ncomplete
+USS3->USS1: Get Op1 details [color="blue"]
+Note left of USS3: Blue line indicates that\nstandard does not prescribe\ninvestigation method
+USS1-->USS3: No response [color="red"]
+USS3->DSS: USS1 availability = Down
+DSS-->USS3: Ok
+USS2->USS3: USS1 status? [color="cyan"]
+USS3-->USS2: USS1 Down [color="cyan"]
+Note left of USS2: USS2 retries planning
+USS2->DSS: Relevant ops?
+DSS-->USS2: Op1 (USS1 is Down)
+USS2->DSS: Op2 Accepted\n(OVN1a not included)
+DSS-->USS2: Ok; Op2 OVN2a
+Note right of USS1: USS1 recovers
+USS1->DSS: Op1 Activated\n(OVN1a)
+DSS-->USS1: Rejected; you are down
+USS1->USS3: I am up [color="cyan"]
+USS3->USS1: Get Op1 details [color="blue"]
+USS1-->USS3: Op1, OVN1a
+USS3->DSS: USS1 availability = Normal
+DSS-->USS3: Ok
+USS3-->USS1: Ok, USS1 Normal [color="cyan"]
+USS1->DSS: Op1 Activated\n(OVN1a)
+DSS-->USS1: Rejected; missing OVN2a
+USS1->USS2: Get Op2 details
+USS2-->USS1: Op2, OVN2a
+USS1->DSS: Op1 Activated\n(OVN1a, OVN2a)
+DSS-->USS1: Ok; Op1 OVN1b
