@@ -1143,6 +1143,11 @@ components:
       - telemetry
       type: object
       properties:
+        operation_id:
+          description:
+            ID of the Operation which the vehicle reporting telemetry is flying.
+          anyOf:
+          - $ref: '#/components/schemas/EntityID'
         telemetry:
           $ref: '#/components/schemas/VehicleTelemetry'
 
