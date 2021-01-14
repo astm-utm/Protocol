@@ -1082,7 +1082,9 @@ components:
           items:
             $ref: '#/components/schemas/Volume4D'
         type:
-          description: Type of airspace feature this Constraint represents.
+          description: |-
+            Type of airspace feature this Constraint represents. A no-fly Constraint is represented
+            with "NoFly".
           type: string
           example: NonUTMAircraftOperations
 
