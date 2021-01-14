@@ -38,6 +38,9 @@ tags:
 - name: Reports
   description: |-
     Endpoints exposed by the DSS for reporting peer DSS issues.
+- name: Availability
+  description: |-
+    Endpoints exposed by the DSS for declaring USS availability.
 - name: dss
   description: Endpoints exposed by the DSS server.
 - name: p2p_utm
@@ -1294,8 +1297,8 @@ components:
         version:
           type: string
           description: |-
-            New version of USS's availability.  Used to change USS's availability.
-        availability:
+            Current version of USS's availability.  Used to change USS's availability.
+        status:
           $ref: '#/components/schemas/UssAvailabilityStatus'
 
 paths:
