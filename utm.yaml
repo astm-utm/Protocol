@@ -150,14 +150,6 @@ components:
           enum:
           - RFC3339
 
-    CircleProperties:
-      required:
-      - radius
-      type: object
-      properties:
-        radius:
-          $ref: '#/components/schemas/Radius'
-
     Radius:
       required:
       - value
@@ -236,158 +228,45 @@ components:
       format: double
       example: -118.456
 
-    LongitudeOrLatitude:
-      description: |-
-        Longitude (degrees east of the Prime Meridian or degrees, with reference to the WGS84 ellipsoid) or Latitude
-        (degrees north of the equator, with reference to the WGS84 ellipsoid).
-      minimum: -180
-      exclusiveMinimum: false
-      maximum: 180
-      exclusiveMaximum: false
-      type: number
-      format: double
-      example: 12.34
-
-    LonLatPair:
-      description: Longitude/Latitude pair (in that order) used for specifying geographical
-        vertex. Specified as an array. Order is important!
-      type: array
-      maxItems: 2
-      minItems: 2
-      items:
-        $ref: '#/components/schemas/LongitudeOrLatitude'
-      example: [-122.106325, 47.660898]
-
-#
-# GeoJSON definitions
-#
-
-# Original version: https://gist.github.com/bubbobne/fe5f2db65acf039be6a9fd92fc9c7233
-# Edits by joseph.rios@nasa.gov
-
-#MIT License
-#Copyright (c) 2017 Daniele Andreis
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
-#
-#
-#The above copyright notice and this permission notice shall be included in all
-#copies or substantial portions of the Software.
-#
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#SOFTWARE.
-
-    Point:
-      type: object
-      description: GeoJSon Point, limited to 2D.
-      externalDocs:
-        url: https://tools.ietf.org/html/rfc7946#section-3.1.2
-      properties:
-        type:
-          description: The type of Geometry. In this case, must be 'Point' per GeoJSON
-            spec.
-          type: string
-          enum:
-          - Point
-        coordinates:
-          $ref: '#/components/schemas/LonLatPair'
-
     Polygon:
-      type: object
+      description: |-
+        An enclosed area on the earth.
+        The bounding edges of this polygon shall be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude.
+        The winding order shall be interpreted as the order which produces the smaller area.
+        The path between two vertices shall be the shortest possible path between those vertices.
+        Edges may not cross.
+        Vertices may not be duplicated.  In particular, the final polygon vertex shall not be identical to the first vertex.
       required:
-      - type
-      - coordinates
-      description: GeoJSon Polygon. Positions all 2D.
-      externalDocs:
-        url: https://tools.ietf.org/html/rfc7946#section-3.1.6
+      - vertices
+      type: object
       properties:
-        type:
-          description: |
-            The type of Geometry. In this case, must be 'Polygon' per GeoJSON
-            spec.  Note that the "coordinates" member is validated to be be an
-            array of size one. This implies there are no interior rings allowed
-            currently.
-          type: string
-          enum:
-          - Polygon
-        coordinates:
+        vertices:
+          minItems: 3
           type: array
-          description: >-
-            The number of polygons allowed.  Currently 1, implying no interior
-            rings.  If this number is changes, the maxItems should be considered.
-            From RFC7946:
-            o  For type "Polygon", the "coordinates" member MUST be an array of
-            linear ring coordinate arrays.
-            o  For Polygons with more than one of these rings, the first MUST be
-            the exterior ring, and any others MUST be interior rings.  The
-            exterior ring bounds the surface, and the interior rings (if
-            present) bound holes within the surface.
-            Again, note we only allow a single set of coordinates, implying no
-            interior rings.
-          minItems: 1
-          maxItems: 1
           items:
-            type: array
-            description: >-
-              The number of vertices in this polygon. From RFC7946:
-                o  A linear ring is a closed LineString with four or more positions.
-                o  The first and last positions are equivalent, and they MUST contain
-                identical values; their representation SHOULD also be identical.
-                o  A linear ring is the boundary of a surface or the boundary of a
-                hole in a surface.
-                o  A linear ring MUST follow the right-hand rule with respect to the
-                area it bounds, i.e., exterior rings are counterclockwise, and
-                holes are clockwise.  (also in the spec:  parsers SHOULD NOT reject
-                Polygons that do not follow the right-hand rule.)
-                https://tools.ietf.org/html/rfc7946#section-3.1.6
-            minItems: 4
-            maxItems: 100
-            items:
-              $ref: '#/components/schemas/LonLatPair'
+            $ref: '#/components/schemas/LatLngPoint'
 
+    LatLngPoint:
+      description: Point on the earth's surface.
+      required:
+      - lat
+      - lng
+      type: object
+      properties:
+        lng:
+          $ref: '#/components/schemas/Longitude'
+        lat:
+          $ref: '#/components/schemas/Latitude'
 
     Circle:
       description: |-
-        Local extension of the GeoJSON specification to add a circular area defined by a
-        Point/Radius pair. We extend the Properties object to include a 'radius' value (see
-        CircleProperties for details).
-      required:
-      - type
-      - geometry
-      - properties
+        A circular area on the surface of the earth.
       type: object
       properties:
-        type:
-          description: The type of Geometry. In this case, must be 'Feature' per GeoJSON
-            spec.
-          type: string
-          enum:
-          - Feature
-        geometry:
-          type: object
-          properties:
-            type:
-              description: The type of Geometry. Must be Point.
-              type: string
-              enum:
-              - Point
-            coordinates:
-              $ref: '#/components/schemas/LonLatPair'
-        properties:
-          $ref: '#/components/schemas/CircleProperties'
-
-#
-# End of GeoJSON definitions
-#
+        center:
+          $ref: '#/components/schemas/LatLngPoint'
+        radius:
+          $ref: '#/components/schemas/Radius'
 
     Volume3D:
       description: |-
