@@ -587,6 +587,7 @@ components:
       - owner
       - uss_availability
       - version
+      - state
       - time_start
       - time_end
       - uss_base_url
@@ -614,6 +615,8 @@ components:
             regardless of whether any field of the Operation reference changes.  A USS with the
             details of this Operation when it was at a particular version does not need to retrieve
             the details again until the version changes.
+        state:
+          $ref: '#/components/schemas/OperationState'
         ovn:
           description: |-
             Opaque version number of this Operation.  Populated only when the OperationReference
@@ -988,7 +991,6 @@ components:
         Details of a UTM Operation. Note that this data is not stored in the DSS; only with the clients.
       required:
       - volumes
-      - state
       type: object
       properties:
         volumes:
@@ -1001,8 +1003,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
-        state:
-          $ref: '#/components/schemas/OperationState'
         priority:
           $ref: '#/components/schemas/Priority'
 
