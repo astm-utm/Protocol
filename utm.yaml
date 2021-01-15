@@ -166,6 +166,8 @@ components:
           description: Distance from the centerpoint of a circular area, along the
             WGS84 ellipsoid.
           type: number
+          minimum: 0
+          exclusiveMinimum: true
           example: 300.183
         units:
           type: string
@@ -1011,10 +1013,11 @@ components:
 
     Priority:
       description: |-
-        Ordinal priority of the Operation, as defined by the regulator.  A lower-priority Operation
-        may not have any conflicts with a higher-priority Operation.  A higher-priority Operation
-        may have conflicts with a lower-priority Operation.  The regulator specifies whether
-        Operations of the same priority may have conflicts.
+        Ordinal priority of the Operation, as defined by the regulator.  Operations with lesser
+        values are lower priority than all Operations with greater values.  A lower-priority
+        Operation may not create a conflict with a higher-priority Operation.  A higher-priority
+        Operation may create a conflict with a lower-priority Operation.  The regulator specifies
+        whether an Operation may create a conflict with other Operations of the same priority.
       type: integer
       default: 0
 
