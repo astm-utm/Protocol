@@ -1834,7 +1834,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * The provided `ovn` does not match the current version of the existing Operation.
+            * A Constraint with the provided ID already exists.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '413':
           content:
