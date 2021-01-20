@@ -1642,6 +1642,13 @@ paths:
           description: |-
             * The provided `ovn` does not match the current version of the existing Operation.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+        '412':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |-
+            The client attempted to delete the Operation while marked as Down in the DSS.
         '429':
           content:
             application/json:
