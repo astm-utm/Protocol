@@ -2413,6 +2413,13 @@ paths:
 
   /dss/v1/uss_availability/{uss_id}:
     summary: Availability status of a USS
+    parameters:
+      - name: uss_id
+        description: Client ID (matching their `sub` in access tokens) of the USS to which this availability applies.
+        schema:
+          type: string
+        in: path
+        required: true
 
     put:
       security:
