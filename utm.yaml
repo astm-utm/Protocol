@@ -1271,11 +1271,19 @@ components:
     UssAvailabilityState:
       type: string
       enum:
+      - Unknown
       - Normal
       - Down
       description: |-
-        A USS is presumed to be in the Normal state.  Upon determination via availability
-        arbitration, a USS is Down when it does not respond appropriately.
+        A USS is presumed to be in the Unknown state absent indication otherwise by a USS with
+        availability arbitration scope.  Upon determination via availability arbitration, a USS is
+        Down when it does not respond appropriately, and a Down USS may not perform the following
+        operations in the DSS:
+          * Create an Operation in the Accepted or Activated states
+          * Modify an Operation whose new or unchanged state is Accepted or Activated
+          * Delete an Operation
+        A USS in the Unknown state possesses all the capabilities, within the DSS, of a USS in the
+        Normal state.
 
     SetUssAvailabilityStatusParameters:
       type: object
