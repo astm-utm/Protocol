@@ -11,3 +11,6 @@ docker run -it --rm -p 8080:8080 \
 ```
 
 ...then visit [http://localhost:8080/](http://localhost:8080/) in a browser.
+
+## Sequence diagrams
+* [Planning in the presence of a down USS](diagrams/planning_with_down_uss.md)
