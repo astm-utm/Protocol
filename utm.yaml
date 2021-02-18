@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.10
+  version: 0.3.11
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -1093,6 +1093,11 @@ components:
             with "NoFly".
           type: string
           example: NonUTMAircraftOperations
+        geozone:
+          description: If this Constraint is an ED-269 compliant geo zone, the details
+            about that geo zone.
+          allOf:
+          - $ref: '#/components/schemas/GeoZone'
 
     Constraint:
       description: Full specification of a UTM Constraint.
@@ -1311,6 +1316,335 @@ components:
             Current version of USS's availability.  Used to change USS's availability.
         status:
           $ref: '#/components/schemas/UssAvailabilityStatus'
+
+    GeoZone:
+      type: object
+      description: |-
+        An airspace of defined dimensions, above the land areas or territorial waters of a
+        State, within which a particular restriction or condition for UAS flights applies.
+      required:
+      - identifier
+      - country
+      - type
+      - restriction
+      - zone_authority
+      properties:
+        identifier:
+          allOf:
+          - $ref: '#/components/schemas/CodeZoneIdentifierType'
+          description: |-
+            A string of characters that uniquely identifies the UAS Zone within the State/Territory identified by the
+            country attribute.
+
+            Note - The UAS Zone is uniquely identified worldwide by the combination of the country and the
+            identifier attributes
+        country:
+          allOf:
+          - $ref: '#/components/schemas/CodeCountryISOType'
+          description: |-
+            The State that has the authority to declare the zone.
+
+            Note - There will be no Zone belonging to two States. Not necessary to code the information that two
+            zones are "in neighboring States" or "related".
+        zone_authority:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Authority'
+        name:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: A free text name by which the zone may be known by the public
+            or by the UAS community.
+        type:
+          allOf:
+          - $ref: '#/components/schemas/CodeZoneType'
+          description: |-
+            An indication whether the Zone is provided with its common definition or with a customised definition,
+            for a particular user.
+        restriction:
+          allOf:
+          - $ref: '#/components/schemas/CodeRestrictionType'
+          description: |-
+            An indication if flying in the zone is conditional, forbidden or unrestricted.
+        restriction_conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionExpressionType'
+          description: |-
+            An indication of the conditions under which the zone can be used
+        region:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 65535
+          description: |-
+            Where applicable, identifies a region inside a State where the UAS Zone is located.
+
+            Note 1) identified with a digit between 0-65535 (16 bit), corresponding to a list of regions pre-defined for
+            each State.
+
+            Note 2) this attribute is intended to facilitate extracting sub-sets of data, for specific regions
+        reason:
+          items:
+            $ref: '#/components/schemas/CodeZoneReasonType'
+          description: |-
+            A coded indication for the reason that led to the establishment of the zone.
+          maxItems: 9
+        other_reason_info:
+          type: string
+          maxLength: 30
+          description: |-
+            A free text description of the reason that led to the establishment of the zone, when not covered by a
+            pre-defined coded value.
+        regulation_exemption:
+          allOf:
+          - $ref: '#/components/schemas/CodeYesNoType'
+          description: |-
+            This is an extension point. It allows adding additional attributes of national interest through this element.
+        u_space_class:
+          allOf:
+          - $ref: '#/components/schemas/CodeUSpaceClassType'
+          description: |-
+            A code that identifies the category or class of the zone applying a "USpace concept".
+
+            Note: Two (draft) classifications exist, one from Eurocontrol and one from CORUS. Therefore, two
+            instances of this attribute are expected, one from each sub-list. This might be later replaced with
+            separate attributes and separate lists of values.
+        message:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            A message to be displayed to the user of the zone, typically on the RPS for the Remote Pilot, to make
+            him/her aware about specific information associated with the zone (typically when it is not only a
+            restriction to fly in the zone, thus not only an alert or an automatic limitation, for example : “image capture
+            prohibited in this zone”, “frequent strong winds in this zone”, “no landing or take-off in this zone”). This
+            message is also used to indicate exemptions from regulation in a zone (see below). Several information
+            can be grouped in a message, separated by a “/”.
+        additional_properties:
+          type: object
+          default:
+          description: |-
+            Indicates that exemptions from the national or European regulations are allowed in the UAS Zone, that
+            will be detailed via the "message" property.
+
+    CodeZoneIdentifierType:
+      type: string
+      maxLength: 7
+      description: |-
+        a string of maximum 7 characters that uniquely identifies the area within
+        a geographical scope.
+
+        NOTE (1): This shall not include the country identifier, which is a separate attribute of
+        the UAS Zone.
+
+        NOTE (2): The length of this data type is limited to 7 characters for compatibility with
+        ARINC 424 and AIXM, where an airspace designator may have maximum
+        10 characters. The 10 characters are the result of concatenating the UAS
+        Zone attributes for country and identifier.
+
+    CodeCountryISOType:
+      type: string
+      minLength: 3
+      maxLength: 3
+      description: |-
+        A 3 letter identifier of a country or territory using the ISO 3166-1 alpha-3 standard.
+
+        NOTE: The ISO 3-letter country codes come with the following advantages:
+              - allow to distinguish between remote territories and mainland
+              - are unique, unlike the ICAO Country codes where the same State
+                could have two or more codes
+              - are also used in military standards, such as NATO STANAG 1059
+                INT, which come with well document additions that might be also
+                useful for UAS areas.
+
+    CodeZoneType:
+      type: string
+      description: |-
+        A coded list of values which allows indicating that the definition of a UAS Zone is
+        specifically customised for a particular UAS or operator.
+      enum:
+      - COMMON
+      - CUSTOMIZED
+      - PROHIBITED
+      - REQ_AUTHORISATION
+      - CONDITIONAL
+      - NO_RESTRICTION
+
+    ConditionExpressionType:
+      type: string
+      maxLength: 10000
+      description: |-
+        A coded expression that provides information about what is authorised / forbidden in a
+        zone that has conditional access.
+
+        By difference with the “Message” field per zone, this coded expression is made to be
+        interopreted by the UAS while the “Message” is to interpreted by the remote pilot.
+
+        NOTE: the maximum field length is 10 000 characters.
+
+        ---------------------- Condition definition language ----------------
+        • A list of relevant characteristics (CHARTYPE) has first to be established per state,
+        and their finite list of acceptable values (CHARVAL)
+        • Each chartype and charval fields are defined by a limited set of characters
+        • A public document shall give the definitions of each, and provide the reference to
+        legal or technical characteristics implied
+        • The Geozone editor per state can use these characteristics, with the dedicated
+        condition language defined below, to define exact conditions per zone
+        • Each UAS Geofencing function shall be loaded with the corresponding
+        chararacteristic status of the UAS for the intended flight, so as to be able to apply
+        the conditions , either to generate alerts or to limit the flight
+        • If the value of a given characteristic of the condition equation is not defined in
+        the UAS, the UAS Geofencing function should inform the pilot in Geoawareness
+        alerting or consider that the zone is forbidden, by default in automatic
+        Geofencing.
+
+        A conditional expression shall be of the following type:
+        • The UAS is PERMITTED XOR PROHIBITED (exclusive choice) to fly in this zone
+        at this time IF (Characteristic1) CHARTYPE1 = (Value1) CHARVAL1 AND
+        CHARTYPE 2 = CHARVAL 2 AND ... AND End IF
+        OR (...)
+        ...
+        End OR
+
+        • Only the fields in bold need to be edited in the character string, separated by”/”.
+        Others are implicit.
+
+        Examples of CHARTYPE and CHARVALUE:
+        • CHARTYPE: operator type; Acceptable CHARVAL values:
+          Military/Police/Firefighting
+        • CHARTYPE: Operator ID (registration number); Acceptable CHARVAL values:
+          as per registration format
+        • CHARTYPE: Operation type: A1 as per EASA Open Types or S1 (National
+          standard Scenario 1), STS01 (EASA Specific standard scenario) or ...
+        • CHARTYPE: UTM operation type: Planned/Unplanned,
+        • CHARTYPE: passengers on board: yes /no
+          Note that it is possible in each national catalog of chartype and charval items, to define
+        complex categories of operation/drone /equipment. Example: In nation A, we may have
+          a type “drone level” with values Low, Medium, High. Each level corresponds to a defined
+          set of required UAS performance/operation features/ operator qualification etc. This
+          avoids to code a complex combination in the geozone database.
+          This conditional expression can also be used to code a prohibition of image capture in
+          a zone.
+        Example: PERMITTED/IMAGE CAPTURE=NO/NOISE
+          CLASS=A/OR/OPERATOR=POLICE
+        Meaning: the fight is permitted in this zone at that time if No image is captured
+          (removed or deactivated) and if noise class = class A (following a known classification)
+          or if the UAS operator is the Police
+
+    CodeRestrictionType:
+      type: string
+      description: |-
+        An indication if flying in the zone is conditional, forbidden or unrestricted.
+
+    CodeZoneReasonType:
+      type: string
+      description: |-
+        A coded indication of a reason that justifies the existence of an UAS Zone
+      enum:
+      - AIR_TRAFFIC
+      - SENSITIVE
+      - PRIVACY
+      - POPULATION
+      - NATURE
+      - NOISE
+      - FOREIGN_TERRITORY
+      - EMERGENCY
+      - OTHER
+
+    CodeUSpaceClassType:
+      type: string
+      maxLength: 100
+      description: |-
+        A coded identifier for a category or class of the zone applying a "USpace concept".
+
+        NOTE: In the current model version, there is no specific list of values. For example,
+        the “X”, “Y”, “Z” types of zones as per SESAR JU Corus project on USpace
+        concept of operation could be used in a future version. Until a precise list
+        of values is defined, this data type will be considered as string of characters
+        of maximum 100 characters.
+
+    CodeYesNoType:
+      type: string
+      description: |-
+        A coded value that indicates a choice between a positive (yes) or a negative (no)
+        applicability.
+      enum:
+      - YES
+      - NO
+
+    Authority:
+      type: object
+      description: |-
+        A relevant authority that is in charge for authorising, being notified or providing
+        information for UAS operations in the UAS zone.
+
+        Rule: at least one of the following shall be specified - siteURL, email, phone.
+      properties:
+        name:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            The official name of a public or private authority
+        service:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            The name of a specific department or service within the organisation
+        contact_name:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            The name or role of a specific person that needs to be contacted within the organisation
+        site_url:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            The URL of the public internet site through which the organisation may be contacted
+
+            Note: in the data coding format, this might be further constrained in order to ensure a valid URL format.
+        email:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            The e-mail address by which the organisation may be contacted.
+
+            Note: in the data coding format, this might be further constrained in order to ensure a valid e-mail
+            format.
+        phone:
+          allOf:
+          - $ref: '#/components/schemas/TextShortType'
+          description: |-
+            A phone number at which the organisation may be contacted
+
+    AuthorityRequirements:
+      type: object
+      properties:
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/CodeAuthorityRole'
+          description: |-
+            The role of the Authority in relation with the zone.
+        interval_before:
+          type: string
+          description: |-
+            The minimal time interval required between notification or authorization request and starting to operate
+            in the zone, in the format PnnDTnnHnnM (ISO 8601).
+
+    CodeAuthorityRole:
+      type: string
+      description: |-
+        A coded list of values indicating the role that an authority has in relation with the UAS
+        zone.
+      enum:
+      - AUTHORIZATION
+      - NOTIFICATION
+      - INFORMATION
+
+    TextShortType:
+      type: string
+      maxLength: 200
+      description: A free text with a maximum length of 200 characters
 
 paths:
   #
@@ -2422,12 +2756,13 @@ paths:
   /dss/v1/uss_availability/{uss_id}:
     summary: Availability status of a USS
     parameters:
-      - name: uss_id
-        description: Client ID (matching their `sub` in access tokens) of the USS to which this availability applies.
-        schema:
-          type: string
-        in: path
-        required: true
+    - name: uss_id
+      description: Client ID (matching their `sub` in access tokens) of the USS to
+        which this availability applies.
+      schema:
+        type: string
+      in: path
+      required: true
 
     put:
       security:
