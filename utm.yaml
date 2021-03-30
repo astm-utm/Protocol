@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.11
+  version: 0.3.12
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -942,52 +942,6 @@ components:
             $ref: '#/components/schemas/ConstraintReference'
           default: []
 
-    ErrorReport:
-      description: A report informing a server of a communication problem.
-      required:
-      - url
-      - response_code
-      - problem
-      type: object
-      properties:
-        url:
-          description: URL of request that resulted in an error.
-          type: string
-        headers:
-          description: Set of headers included in request that resulted in an error.
-          type: array
-          items:
-            type: string
-          default: []
-        body:
-          description: Base64-encoded body content sent in request that resulted in
-            an error.
-          type: string
-        response_code:
-          type: integer
-          format: int32
-          description: HTTP response code encountered in error response.
-        response_body:
-          type: string
-          description: Base64-encoded body content received in response that was in
-            error.
-        problem:
-          type: string
-          description: Human-readable description of the problem with the response.
-        time_request:
-          description: The time at which the problematic request was initiated.
-          anyOf:
-          - $ref: '#/components/schemas/Time'
-        time_response:
-          description: The time at which the problematic response was received.
-          anyOf:
-          - $ref: '#/components/schemas/Time'
-        report_id:
-          description: ID assigned by the server receiving the report.  Not populated
-            when submitting a report.
-          type: string
-          maxLength: 128
-
     #
     # USS-USS schema components
     #
@@ -1316,6 +1270,147 @@ components:
             Current version of USS's availability.  Used to change USS's availability.
         status:
           $ref: '#/components/schemas/UssAvailabilityStatus'
+
+    RequestResponse:
+      type: object
+      description: Details of a request/response data exchange.
+      required:
+      - url
+      - method
+      - request_time
+      - request_body
+      - response_time
+      - response_body
+      - response_code
+      properties:
+        url:
+          type: string
+          description: Full URL of request.
+        method:
+          type: string
+          description: HTTP verb used by requestor (e.g., "PUT").
+        headers:
+          description: Set of headers associated with request or response.
+          type: array
+          items:
+            type: string
+          default: []
+        request_time:
+          description: The time at which the request was sent/received.
+          allOf:
+          - $ref: '#/components/schemas/Time'
+        request_body:
+          description: Base64-encoded body content sent/received as a request.
+          type: string
+        response_time:
+          description: The time at which the response was sent/received.
+          allOf:
+          - $ref: '#/components/schemas/Time'
+        response_body:
+          type: string
+          description: Base64-encoded body content sent/received in response to request.
+        response_code:
+          type: integer
+          format: int32
+          description: HTTP response code sent/received in response to request.
+
+    ErrorReport:
+      type: object
+      description: A report informing a server of a communication problem.
+      required:
+      - exchange
+      - problem
+      properties:
+        report_id:
+          type: string
+          maxLength: 128
+          description: ID assigned by the server receiving the report.  Not populated
+            when submitting a report.
+        exchange:
+          allOf:
+          - $ref: '#/components/schemas/RequestResponse'
+          description: The request (by this USS) and response associated with the error.
+        problem:
+          type: string
+          description: Human-readable description of the problem with the response.
+
+    ExchangeRecord:
+      type: object
+      description: |-
+        A record of data exchange (USS - USS or USS - DSS).
+      required:
+      - request_source
+      - exchange
+      properties:
+        request_source:
+          type: string
+          description: |-
+            A coded value that indicates the requesting USS: 'LOCAL' (this USS) or 'REMOTE' (peer USS)
+          enum:
+          - LOCAL
+          - REMOTE
+        exchange:
+          allOf:
+          - $ref: '#/components/schemas/RequestResponse'
+          description: |-
+            Time that the response was received or sent
+
+    PositionRecord:
+      type: object
+      description: |-
+        A record of vehicle telemetry information received by this USS (typically for conformance monitoring).
+      required:
+      - time
+      - telemetry
+      properties:
+        time:
+          allOf:
+          - $ref: '#/components/schemas/Time'
+          description: |-
+            Time that this position data was received by the (local) USS
+        telemetry:
+          $ref: '#/components/schemas/VehicleTelemetry'
+
+    OperationRecord:
+      type: object
+      description: |-
+        A record of a position data gathered through the course of a complete operation
+      required:
+      - positions
+      - operation_id
+      properties:
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositionRecord'
+          default: []
+        operation_id:
+          description: ID of the Operation associated with 'positions'
+          allOf:
+          - $ref: '#/components/schemas/EntityID'
+
+    PlanningRecord:
+      type: object
+      description: |-
+        A record of a single attempt to (successfully or unsuccessfully) create an Operational Intent.
+      required:
+      - time
+      - ovns
+      - operation_id
+      properties:
+        time:
+          allOf:
+          - $ref: '#/components/schemas/Time'
+          description: Time that this planning event occurred
+        ovns:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/EntityOVN'
+        operation_id:
+          description: ID of the Operation being planned
+          allOf:
+          - $ref: '#/components/schemas/EntityID'
 
     GeoZone:
       type: object
