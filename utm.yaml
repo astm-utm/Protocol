@@ -1288,7 +1288,7 @@ components:
           description: Full URL of request.
         method:
           type: string
-          description: HTTP verb used by requestor (e.g., "PUT").
+          description: HTTP verb used by requestor (e.g., "PUT," "GET," etc.).
         headers:
           description: Set of headers associated with request or response.
           type: array
