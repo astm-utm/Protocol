@@ -1397,6 +1397,7 @@ components:
       - time
       - ovns
       - operation_id
+      - problem
       properties:
         time:
           allOf:
@@ -1411,6 +1412,11 @@ components:
           description: ID of the Operation being planned
           allOf:
           - $ref: '#/components/schemas/EntityID'
+        problem:
+          type: string
+          maxLength: 30
+          description: |-
+            A free text description of the problem(s) encountered during this planning attempt.
 
     GeoZone:
       type: object
