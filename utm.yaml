@@ -1414,9 +1414,69 @@ components:
           - $ref: '#/components/schemas/EntityID'
         problem:
           type: string
-          maxLength: 30
           description: |-
             A free text description of the problem(s) encountered during this planning attempt.
+
+    UserNotificationRecord:
+      type: object
+      description: |-
+        User notification record.
+      required:
+      - triggering_event_time
+      - notification_time
+      - notification_details
+      - notification_triggering_event
+      properties:
+        triggering_event_time:
+          allOf:
+          - $ref: '#/components/schemas/Time'
+          description: Time of the notification triggering event
+        notification_time:
+          allOf:
+          - $ref: '#/components/schemas/Time'
+          description: Time at which the user was notified
+        notification_details:
+          type: string
+          description: |-
+            Description of information that was provided to the user, as per the referenced triggering_event requirement
+        notification_triggering_event:
+          type: string
+          description: |-
+            Requirement ID that pertains to the given notification
+          enum:
+          - GEN0100
+          - GEN0105
+          - OPIN0065
+          - OPIN0070
+          - TEMP_SCD0040
+          - TEMP_SCD0075
+          - TEMP_CNFM0030
+          - TEMP_CONP0020
+          - TEMP_CSTR0035
+
+    UserInputRecord:
+      type: object
+      description: |-
+        User input record
+      required:
+      - triggering_event_time
+      - operation_id
+      - input_triggering_event
+      properties:
+        triggering_event_time:
+          allOf:
+          - $ref: '#/components/schemas/Time'
+          description: Time in which user input was received by the USS
+        operation_id:
+          allOf:
+          - $ref: '#/components/schemas/EntityID'
+          description: ID of the operation ID pertaining to the user input
+        input_triggering_event:
+          type: string
+          description: |-
+            Requirement ID that pertains to the given notification
+          enum:
+          - TEMP_CNFM0085
 
     GeoZone:
       type: object
