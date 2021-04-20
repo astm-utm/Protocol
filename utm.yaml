@@ -1271,17 +1271,15 @@ components:
         status:
           $ref: '#/components/schemas/UssAvailabilityStatus'
 
-    RequestResponse:
+    ExchangeRecord:
       type: object
       description: Details of a request/response data exchange.
       required:
       - url
       - method
+      - headers
+      - request_source
       - request_time
-      - request_body
-      - response_time
-      - response_body
-      - response_code
       properties:
         url:
           type: string
@@ -1290,11 +1288,19 @@ components:
           type: string
           description: HTTP verb used by requestor (e.g., "PUT," "GET," etc.).
         headers:
-          description: Set of headers associated with request or response.
+          description: |-
+            Set of headers associated with request or response. Requires 'Authorization:' field (at a minimum)
           type: array
           items:
             type: string
           default: []
+        recorder_role:
+          type: string
+          description: |-
+            A coded value that indicates the requesting USS: 'LOCAL' (this USS) or 'REMOTE' (peer USS)
+          enum:
+          - Client
+          - Server
         request_time:
           description: The time at which the request was sent/received.
           allOf:
@@ -1302,16 +1308,19 @@ components:
         request_body:
           description: Base64-encoded body content sent/received as a request.
           type: string
+          default: ''
         response_time:
           description: The time at which the response was sent/received.
           allOf:
           - $ref: '#/components/schemas/Time'
         response_body:
           type: string
+          default: ''
           description: Base64-encoded body content sent/received in response to request.
         response_code:
           type: integer
           format: int32
+          default: 0
           description: HTTP response code sent/received in response to request.
 
     ErrorReport:
@@ -1328,42 +1337,21 @@ components:
             when submitting a report.
         exchange:
           allOf:
-          - $ref: '#/components/schemas/RequestResponse'
+          - $ref: '#/components/schemas/ExchangeRecord'
           description: The request (by this USS) and response associated with the error.
         problem:
           type: string
           description: Human-readable description of the problem with the response.
-
-    ExchangeRecord:
-      type: object
-      description: |-
-        A record of data exchange (USS - USS or USS - DSS).
-      required:
-      - request_source
-      - exchange
-      properties:
-        request_source:
-          type: string
-          description: |-
-            A coded value that indicates the requesting USS: 'LOCAL' (this USS) or 'REMOTE' (peer USS)
-          enum:
-          - LOCAL
-          - REMOTE
-        exchange:
-          allOf:
-          - $ref: '#/components/schemas/RequestResponse'
-          description: |-
-            Time that the response was received or sent
 
     PositionRecord:
       type: object
       description: |-
         A record of vehicle telemetry information received by this USS (typically for conformance monitoring).
       required:
-      - time
+      - time_received
       - telemetry
       properties:
-        time:
+        time_received:
           allOf:
           - $ref: '#/components/schemas/Time'
           description: |-
@@ -1374,9 +1362,8 @@ components:
     OperationRecord:
       type: object
       description: |-
-        A record of a position data gathered through the course of a complete operation
+        A record of position data gathered through the course of an operation
       required:
-      - positions
       - operation_id
       properties:
         positions:
@@ -1396,7 +1383,6 @@ components:
       required:
       - time
       - ovns
-      - operation_id
       - problem
       properties:
         time:
@@ -1404,10 +1390,26 @@ components:
           - $ref: '#/components/schemas/Time'
           description: Time that this planning event occurred
         ovns:
+          description: |-
+            OVNs the planning USS was aware of when it was planning the (ultimately unsuccessful) operation
           type: array
-          minItems: 1
+          default: []
           items:
             $ref: '#/components/schemas/EntityOVN'
+        missing_operations:
+          description: |-
+            List of missing Operations (for planning attempts that were denied by the DSS with code 409)
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityID'
+          default: []
+        missing_constraints:
+          description: |-
+            List of missing Constraints (for planning attempts that were denied by the DSS with code 409)
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityID'
+          default: []
         operation_id:
           description: ID of the Operation being planned
           allOf:
@@ -1422,9 +1424,6 @@ components:
       description: |-
         User notification record.
       required:
-      - triggering_event_time
-      - notification_time
-      - notification_details
       - notification_triggering_event
       properties:
         triggering_event_time:
@@ -1446,13 +1445,11 @@ components:
           enum:
           - GEN0100
           - GEN0105
-          - OPIN0065
-          - OPIN0070
           - TEMP_SCD0040
           - TEMP_SCD0075
           - TEMP_CNFM0030
           - TEMP_CONP0020
-          - TEMP_CSTR0035
+          - TEMP_CSTR0025
 
     UserInputRecord:
       type: object
