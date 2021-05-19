@@ -1283,6 +1283,49 @@ components:
     # Data structures for logging
     #
 
+    USSLogSet:
+      type: object
+      description: |-
+        The set of log data fulfilling this standard's Logging requirements.
+      properties:
+        messages:
+          description: Outgoing messages sent to other USSs and the DSS, and incoming
+            messages received from other USSs, including instances where an expected
+            response to a request is not received.
+          type: array
+          items:
+            $ref: '#/components/schemas/ExchangeRecord'
+          default: []
+        operator_notifications:
+          description: Instances of operator notifications as specifically required
+            within this standard.
+          type: array
+          items:
+            $ref: '#/components/schemas/UserNotificationRecord'
+          default: []
+        operator_inputs:
+          description: Instances of operator input as specifically required within
+            this standard.
+          type: array
+          items:
+            $ref: '#/components/schemas/UserInputRecord'
+          default: []
+        planning_attempts:
+          description: For a USS that manages operational intents, instances where
+            an operational intent could not be planned or replanned due to conflicts
+            with other operational intents or constraints.
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanningRecord'
+          default: []
+        operation_positions:
+          description: For a USS performing conformance monitoring, all position data
+            used for conformance monitoring that is ingested from the UA.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationRecord'
+          default: []
+
     ExchangeRecord:
       type: object
       description: Details of a request/response data exchange.
@@ -3438,3 +3481,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The client issued too many requests in a short period of time.
+
+  #
+  # USS pseudo endpoint: LOGGING
+  #
+
+  /uss/v1/log_sets/{log_set_id}:
+    summary: General summary
+
+    parameters:
+    - name: log_set_id
+      description: |-
+        USS-defined identifier for a set of log entries.  For instance, this
+        ID may refer to all logs associated with a particular reportable
+        incident, or over a time range for the purpose of metric computation.
+      schema:
+        type: string
+      in: path
+      required: true
+      example: INCIDENT_20200107_v4
+    get:
+      tags:
+      - logging
+      summary: Get USS logs
+      operationId: getLogSet
+      description: |-
+        A USS will not implement this endpoint directly, but rather will be
+        capable of exporting log data in a format equivalent to the response
+        format of this pseudo-endpoint according to the requirements of the
+        standard.
+      responses:
+        '200':
+          description: Log data successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USSLogSet'
