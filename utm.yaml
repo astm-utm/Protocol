@@ -74,13 +74,14 @@ components:
             * `iss`, with the URL at which the token generation request was received.
             * `exp`, with a time no further than 1 hour in the future.
             * `sub`, with unique ID of the client requesting the access token.
-            * `scope`, with a list of space-separated strings (per RFC 6749) indicating the scopes granted.
+            * `scope`, with a string composed of a space-separated list of strings indicating the scopes granted, per RFC 6749.
             * `jti`, according to RFC 7519.
 
         Following the principle of least privilege, only one of the scopes enumerated in this document shall be granted in a single token (though other scopes may accompany it).  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
 
-        Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
+        When using the `aud` claim to protect against the reuse of received tokens, and absent guidance on behalf of the competent authority to the contrary, the JWT `aud` claim requested by the client shall be included in each access token and shall contain the fully qualified domain name of the URL the access token will be used to access.  For example, if a USS were querying the endpoint at https://dss.example.com:8888/rid/v2/dss/identification_service_areas, the access token included in the request should specify `"aud": "dss.example.com"`.
 
+        Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
 
   schemas:
     UUIDv4Format:
