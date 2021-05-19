@@ -1168,8 +1168,7 @@ components:
     Position:
       description: |-
         Location of the vehicle (UAS) as reported for UTM.
-        Note: 'accuracy' values are required when extrapolated field is true
-        and always in the entry for the current state.
+        Note: 'accuracy' values are required when extrapolated field is true.
       type: object
       properties:
         longitude:
@@ -1184,7 +1183,6 @@ components:
           description: |-
             True if this position was generated primarily by computation
             rather than primarily from a direct instrument measurement.
-            Assumed false if not specified.
           type: boolean
           default: false
         altitude:
