@@ -1050,7 +1050,7 @@ components:
         geozone:
           description: If this Constraint is an ED-269 compliant geo zone, the details
             about that geo zone.
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/GeoZone'
 
     Constraint:
@@ -1310,7 +1310,7 @@ components:
           - Server
         request_time:
           description: The time at which the request was sent/received.
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
         request_body:
           description: Base64-encoded body content sent/received as a request.
@@ -1318,7 +1318,7 @@ components:
           default: ''
         response_time:
           description: The time at which the response was sent/received.
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
         response_body:
           type: string
@@ -1343,7 +1343,7 @@ components:
           description: ID assigned by the server receiving the report.  Not populated
             when submitting a report.
         exchange:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/ExchangeRecord'
           description: The request (by this USS) and response associated with the
             error.
@@ -1360,7 +1360,7 @@ components:
       - telemetry
       properties:
         time_received:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
           description: |-
             Time that this position data was received by the (local) USS
@@ -1381,7 +1381,7 @@ components:
           default: []
         operation_id:
           description: ID of the Operation associated with 'positions'
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/EntityID'
 
     PlanningRecord:
@@ -1394,7 +1394,7 @@ components:
       - problem
       properties:
         time:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
           description: Time that this planning event occurred
         ovns:
@@ -1420,7 +1420,7 @@ components:
           default: []
         operation_id:
           description: ID of the Operation being planned
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/EntityID'
         problem:
           type: string
@@ -1435,11 +1435,11 @@ components:
       - notification_triggering_event
       properties:
         triggering_event_time:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
           description: Time of the notification triggering event
         notification_time:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
           description: Time at which the user was notified
         notification_details:
@@ -1469,11 +1469,11 @@ components:
       - input_triggering_event
       properties:
         triggering_event_time:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/Time'
           description: Time in which user input was received by the USS
         operation_id:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/EntityID'
           description: ID of the operation ID pertaining to the user input
         input_triggering_event:
@@ -1496,7 +1496,7 @@ components:
       - zone_authority
       properties:
         identifier:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeZoneIdentifierType'
           description: |-
             A string of characters that uniquely identifies the UAS Zone within the State/Territory identified by the
@@ -1505,7 +1505,7 @@ components:
             Note - The UAS Zone is uniquely identified worldwide by the combination of the country and the
             identifier attributes
         country:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeCountryISOType'
           description: |-
             The State that has the authority to declare the zone.
@@ -1518,18 +1518,18 @@ components:
           items:
             $ref: '#/components/schemas/Authority'
         name:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: A free text name by which the zone may be known by the public
             or by the UAS community.
         type:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeZoneType'
           description: |-
             An indication whether the Zone is provided with its common definition or with a customised definition,
             for a particular user.
         restriction:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeRestrictionType'
           description: |-
             An indication if flying in the zone is conditional, forbidden or unrestricted.
@@ -1564,12 +1564,12 @@ components:
             A free text description of the reason that led to the establishment of the zone, when not covered by a
             pre-defined coded value.
         regulation_exemption:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeYesNoType'
           description: |-
             This is an extension point. It allows adding additional attributes of national interest through this element.
         u_space_class:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeUSpaceClassType'
           description: |-
             A code that identifies the category or class of the zone applying a "USpace concept".
@@ -1578,7 +1578,7 @@ components:
             instances of this attribute are expected, one from each sub-list. This might be later replaced with
             separate attributes and separate lists of values.
         message:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             A message to be displayed to the user of the zone, typically on the RPS for the Remote Pilot, to make
@@ -1748,29 +1748,29 @@ components:
         Rule: at least one of the following shall be specified - siteURL, email, phone.
       properties:
         name:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             The official name of a public or private authority
         service:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             The name of a specific department or service within the organisation
         contact_name:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             The name or role of a specific person that needs to be contacted within the organisation
         site_url:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             The URL of the public internet site through which the organisation may be contacted
 
             Note: in the data coding format, this might be further constrained in order to ensure a valid URL format.
         email:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             The e-mail address by which the organisation may be contacted.
@@ -1778,7 +1778,7 @@ components:
             Note: in the data coding format, this might be further constrained in order to ensure a valid e-mail
             format.
         phone:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             A phone number at which the organisation may be contacted
@@ -1787,7 +1787,7 @@ components:
       type: object
       properties:
         purpose:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/CodeAuthorityRole'
           description: |-
             The role of the Authority in relation with the zone.
