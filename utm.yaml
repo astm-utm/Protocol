@@ -1393,13 +1393,15 @@ components:
           format: int32
           default: 0
           description: HTTP response code sent/received in response to request.
+        problem:
+          type: string
+          description: Human-readable description of the problem with the exchange, if any.
 
     ErrorReport:
       type: object
       description: A report informing a server of a communication problem.
       required:
       - exchange
-      - problem
       properties:
         report_id:
           type: string
@@ -1411,9 +1413,6 @@ components:
           - $ref: '#/components/schemas/ExchangeRecord'
           description: The request (by this USS) and response associated with the
             error.
-        problem:
-          type: string
-          description: Human-readable description of the problem with the response.
 
     PositionRecord:
       type: object
