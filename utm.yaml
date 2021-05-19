@@ -1338,7 +1338,8 @@ components:
         exchange:
           allOf:
           - $ref: '#/components/schemas/ExchangeRecord'
-          description: The request (by this USS) and response associated with the error.
+          description: The request (by this USS) and response associated with the
+            error.
         problem:
           type: string
           description: Human-readable description of the problem with the response.
