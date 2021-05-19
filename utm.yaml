@@ -71,11 +71,12 @@ components:
         Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
 
         The following fields shall be included in the JWT claim for access tokens issued by this authority:
-            * `iss`, with the URL at which the token generation request was received.
-            * `exp`, with a time no further than 1 hour in the future.
-            * `sub`, with unique ID of the client requesting the access token.
-            * `scope`, with a string composed of a space-separated list of strings indicating the scopes granted, per RFC 6749.
-            * `jti`, according to RFC 7519.
+
+        * `iss`, with the URL at which the token generation request was received.
+        * `exp`, with a time no further than 1 hour in the future.
+        * `sub`, with unique ID of the client requesting the access token.
+        * `scope`, with a string composed of a space-separated list of strings indicating the scopes granted, per RFC 6749.
+        * `jti`, according to RFC 7519.
 
         Following the principle of least privilege, only one of the scopes enumerated in this document shall be granted in a single token (though other scopes may accompany it).  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
 
@@ -120,7 +121,7 @@ components:
 
     SubscriptionID:
       description: |-
-        Udentifier for a Subscription communicated through the DSS.  Formatted
+        Identifier for a Subscription communicated through the DSS.  Formatted
         as a UUIDv4.
       anyOf:
       - $ref: '#/components/schemas/UUIDv4Format'
