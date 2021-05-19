@@ -1310,6 +1310,14 @@ components:
           items:
             $ref: '#/components/schemas/UserInputRecord'
           default: []
+        operator_associations:
+          description: For a USS that manages operational intents, associations of
+            an operator with operational intents that transitioned to the Accepted
+            state.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperatorAssociation'
+          default: []
         planning_attempts:
           description: For a USS that manages operational intents, instances where
             an operational intent could not be planned or replanned due to conflicts
@@ -1324,6 +1332,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationRecord'
+          default: []
+        constraint_provider_associations:
+          description: For a USS that performs constraint management, associations
+            of an authorized constraint provider with all constraints that transition
+            to the valid state.
+          type: array
+          items:
+            $ref: '#/components/schemas/ConstraintProviderAssociation'
           default: []
 
     ExchangeRecord:
@@ -1531,6 +1547,39 @@ components:
             Requirement ID that pertains to the given notification
           enum:
           - TEMP_CNFM0085
+
+    OperatorAssociation:
+      type: object
+      description: |-
+        Association between an Operation and the operator of that Operation
+      required:
+      - operation_id
+      - operator_id
+      properties:
+        operation_id:
+          description: ID of Operation to which this association pertains
+          anyOf:
+          - $ref: '#/components/schemas/EntityID'
+        operator_id:
+          description: Unique identifier of the operator responsible for the Operation
+          type: string
+
+    ConstraintProviderAssociation:
+      type: object
+      description: |-
+        Association between a Constraint and the constraint provider responsible for that Constraint
+      required:
+      - constraint_id
+      - constraint_provider_id
+      properties:
+        constraint_id:
+          description: ID of Constraint to which this association pertains
+          anyOf:
+          - $ref: '#/components/schemas/EntityID'
+        constraint_provider_id:
+          description: Unique identifier of the constraint provider responsible for
+            the Constraint
+          type: string
 
     #
     # ED-269 compliant GeoZone representation
