@@ -1124,7 +1124,7 @@ components:
             until at or after that time.  If this field is omitted, then there
             is no current expectation of new telemetry becoming available.
           anyOf:
-            - $ref: '#/components/schemas/Time'
+          - $ref: '#/components/schemas/Time'
 
     VehicleTelemetry:
       description: Vehicle position, altitude, and velocity.
@@ -1279,15 +1279,19 @@ components:
         status:
           $ref: '#/components/schemas/UssAvailabilityStatus'
 
+    #
+    # Data structures for logging
+    #
+
     ExchangeRecord:
       type: object
       description: Details of a request/response data exchange.
       required:
       - url
       - method
-      - headers
-      - request_source
+      - recorder_role
       - request_time
+      - request_source
       properties:
         url:
           type: string
@@ -1305,7 +1309,7 @@ components:
         recorder_role:
           type: string
           description: |-
-            A coded value that indicates the requesting USS: 'LOCAL' (this USS) or 'REMOTE' (peer USS)
+            A coded value that indicates the role of the logging USS: 'Client' (initiating a request to a remote USS) or 'Server' (handling a request from a remote USS)
           enum:
           - Client
           - Server
@@ -1364,7 +1368,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/Time'
           description: |-
-            Time that this position data was received by the (local) USS
+            Time that this position data was received by the USS
         telemetry:
           $ref: '#/components/schemas/VehicleTelemetry'
 
@@ -1381,18 +1385,17 @@ components:
             $ref: '#/components/schemas/PositionRecord'
           default: []
         operation_id:
-          description: ID of the Operation associated with 'positions'
+          description: ID of the Operation associated with `positions`
           anyOf:
           - $ref: '#/components/schemas/EntityID'
 
     PlanningRecord:
       type: object
       description: |-
-        A record of a single attempt to (successfully or unsuccessfully) create an Operational Intent.
+        A record of a single attempt to (successfully or unsuccessfully) create or modify an Operational Intent.
       required:
       - time
       - ovns
-      - problem
       properties:
         time:
           anyOf:
@@ -1400,7 +1403,7 @@ components:
           description: Time that this planning event occurred
         ovns:
           description: |-
-            OVNs the planning USS was aware of when it was planning the (ultimately unsuccessful) operation
+            OVNs the planning USS was aware of when it was planning the operation
           type: array
           default: []
           items:
@@ -1433,6 +1436,8 @@ components:
       description: |-
         User notification record.
       required:
+      - triggering_event_time
+      - notification_time
       - notification_triggering_event
       properties:
         triggering_event_time:
@@ -1446,7 +1451,7 @@ components:
         notification_details:
           type: string
           description: |-
-            Description of information that was provided to the user, as per the referenced triggering_event requirement
+            Description of information that was provided to the user, as per the referenced notification_triggering_event requirement
         notification_triggering_event:
           type: string
           description: |-
@@ -1483,6 +1488,10 @@ components:
             Requirement ID that pertains to the given notification
           enum:
           - TEMP_CNFM0085
+
+    #
+    # ED-269 compliant GeoZone representation
+    #
 
     GeoZone:
       type: object
