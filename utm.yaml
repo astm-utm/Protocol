@@ -28,10 +28,10 @@ tags:
     Endpoints exposed by USSs for interaction with details of operational intents.
 - name: Constraint references
   description: |-
-    Endpoints exposed by the DSS for interaction with references to Constraints.
+    Endpoints exposed by the DSS for interaction with references to constraints.
 - name: Constraint details
   description: |-
-    Endpoints exposed by USSs for interaction with details of Constraints.
+    Endpoints exposed by USSs for interaction with details of constraints.
 - name: Subscriptions
   description: |-
     Endpoints exposed by the DSS for interaction with Subscription entities.
@@ -62,9 +62,9 @@ components:
             utm.strategic_coordination: |-
               Client may perform planning, strategic conflict detection, and conformance monitoring activities.
             utm.constraint_management: |-
-              Client may manage (create, edit, and delete) Constraints they own.
+              Client may manage (create, edit, and delete) constraints they own.
             utm.constraint_ingestion: |-
-              Client may read Constraint references from the DSS and details from the partner USSs.
+              Client may read constraint references from the DSS and details from the partner USSs.
             utm.availability_arbitration: |-
               Client may set the availability state of USSs in the DSS.
       description: |-
@@ -408,8 +408,8 @@ components:
           type: boolean
           default: false
         notify_for_constraints:
-          description: If true, trigger notifications when Constraints are created,
-            updated, or deleted.  Otherwise, changes in Constraints should not trigger
+          description: If true, trigger notifications when constraints are created,
+            updated, or deleted.  Otherwise, changes in constraints should not trigger
             notifications.
           type: boolean
           default: false
@@ -498,8 +498,8 @@ components:
           type: boolean
           default: false
         notify_for_constraints:
-          description: If true, trigger notifications when Constraints are created,
-            updated, or deleted.  Otherwise, changes in Constraints should not trigger
+          description: If true, trigger notifications when constraints are created,
+            updated, or deleted.  Otherwise, changes in constraints should not trigger
             notifications.
           type: boolean
           default: false
@@ -686,9 +686,9 @@ components:
             airspace, with the expectation that this operational intent is therefore deconflicted from all relevant
             features in the airspace.  This field is not required when declaring an operational intent NonConforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
-            OVNs for Constraints are required if and only if the USS owning this operational intent is considering
-            Constraints, which is determined by whether the Subscription associated with this operational intent
-            triggers notifications for Constraints.  The key does not need to contain the OVN for an
+            OVNs for constraints are required if and only if the USS owning this operational intent is considering
+            constraints, which is determined by whether the Subscription associated with this operational intent
+            triggers notifications for constraints.  The key does not need to contain the OVN for an
             operational intent being updated.
           anyOf:
           - $ref: '#/components/schemas/Key'
@@ -730,7 +730,7 @@ components:
           - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
           description: |-
-            True if this operational intent's Subscription should trigger notifications when Constraints change.  Otherwise, changes in Constraints should not trigger notifications.
+            True if this operational intent's Subscription should trigger notifications when constraints change.  Otherwise, changes in constraints should not trigger notifications.
           type: boolean
           default: false
 
@@ -789,7 +789,7 @@ components:
           default: []
 
     ConstraintReference:
-      description: A ConstraintReference (area in which a Constraint is present, along
+      description: A ConstraintReference (area in which a constraint is present, along
         with other high-level information, but no details).  The DSS reports only
         these references and clients must exchange details and additional information
         peer-to-peer.
@@ -811,8 +811,8 @@ components:
           description: |-
             Created by the DSS based on creating client's ID (via access token).  Used internal
             to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
-            to reject Constraint update notifications originating from a USS that does not own
-            the Constraint.
+            to reject constraint update notifications originating from a USS that does not own
+            the constraint.
         uss_availability:
           $ref: '#/components/schemas/UssAvailabilityState'
         version:
@@ -820,13 +820,13 @@ components:
           format: int32
           example: 1
           description: |-
-            Numeric version of this Constraint which increments upon each change in the Constraint,
-            regardless of whether any field of the Constraint reference changes.  A USS with the
-            details of this Constraint when it was at a particular version does not need to retrieve
+            Numeric version of this constraint which increments upon each change in the constraint,
+            regardless of whether any field of the constraint reference changes.  A USS with the
+            details of this constraint when it was at a particular version does not need to retrieve
             the details again until the version changes.
         ovn:
           description: |-
-            Opaque version number of this Constraint.  Populated only when the ConstraintReference
+            Opaque version number of this constraint.  Populated only when the ConstraintReference
             is owned by the USS retrieving or providing it.  Not populated when the
             ConstraintReference is not owned by the USS retrieving or providing it (instead, the
             USS must obtain the OVN from the details retrieved from the owning USS).
@@ -842,7 +842,7 @@ components:
     ConstraintUssBaseURL:
       description: |-
         The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
-        providing the details of this Constraint.
+        providing the details of this constraint.
       anyOf:
       - $ref: '#/components/schemas/UssBaseURL'
 
@@ -856,7 +856,7 @@ components:
       properties:
         extents:
           description: |-
-            Spacetime extents that bound this Constraint.
+            Spacetime extents that bound this constraint.
 
             The end time may not be in the past.
           type: array
@@ -885,7 +885,7 @@ components:
       properties:
         subscribers:
           description: DSS subscribers that this client now has the obligation to
-            notify of the Constraint changes just made.  This client must call POST
+            notify of the constraint changes just made.  This client must call POST
             for each provided URL according to the USS-USS `/uss/v1/constraints/{entityid}`
             path API.  The client's own Subscriptions will also be included in this
             list.
@@ -936,9 +936,9 @@ components:
             $ref: '#/components/schemas/OperationalIntentReference'
           default: []
         missing_constraints:
-          description: List of Constraint references for which current proof of knowledge
+          description: List of constraint references for which current proof of knowledge
             was not provided.  If this field is present and contains elements, the
-            calling USS should query the details URLs for these Constraints to obtain
+            calling USS should query the details URLs for these constraints to obtain
             their details and correct OVNs.  The OVNs can be used to update the key,
             at which point the USS may retry this call.
           type: array
@@ -1030,7 +1030,7 @@ components:
           $ref: '#/components/schemas/OperationalIntent'
 
     ConstraintDetails:
-      description: Details of a UTM Constraint. Note that this data is not stored
+      description: Details of a UTM constraint. Note that this data is not stored
         in the DSS; only with the clients.
       required:
       - volumes
@@ -1038,7 +1038,7 @@ components:
       properties:
         volumes:
           description: |-
-            Volumes that wholly contain the Constraint while being as small as practical.
+            Volumes that wholly contain the constraint while being as small as practical.
 
             The end time may not be in the past.
           minItems: 1
@@ -1047,17 +1047,17 @@ components:
             $ref: '#/components/schemas/Volume4D'
         type:
           description: |-
-            Type of airspace feature this Constraint represents.
+            Type of airspace feature this constraint represents.
           type: string
           example: NonUTMAircraftOperations
         geozone:
-          description: If this Constraint is an ED-269 compliant geo zone, the details
+          description: If this constraint is an ED-269 compliant geo zone, the details
             about that geo zone.
           anyOf:
           - $ref: '#/components/schemas/GeoZone'
 
     Constraint:
-      description: Full specification of a UTM Constraint.
+      description: Full specification of a UTM constraint.
       required:
       - reference
       - details
@@ -1070,7 +1070,7 @@ components:
 
     PutConstraintDetailsParameters:
       description: Parameters of a message informing of new full information for a
-        Constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
+        constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
         when another client makes a change to airspace within a cell with a subscription.
       required:
       - constraint_id
@@ -1078,13 +1078,13 @@ components:
       type: object
       properties:
         constraint_id:
-          description: ID of Constraint that has changed.
+          description: ID of constraint that has changed.
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         constraint:
           description: |-
-            Full information about the Constraint that has changed.  If this field is omitted,
-            the Constraint was deleted.  The `ovn` field in the nested `reference` must be
+            Full information about the constraint that has changed.  If this field is omitted,
+            the constraint was deleted.  The `ovn` field in the nested `reference` must be
             populated.
           anyOf:
           - $ref: '#/components/schemas/Constraint'
@@ -1480,7 +1480,7 @@ components:
           default: []
         missing_constraints:
           description: |-
-            List of missing Constraints (for planning attempts that were denied by the DSS with code 409)
+            List of missing constraints (for planning attempts that were denied by the DSS with code 409)
           type: array
           items:
             $ref: '#/components/schemas/EntityID'
@@ -1572,18 +1572,18 @@ components:
     ConstraintProviderAssociation:
       type: object
       description: |-
-        Association between a Constraint and the constraint provider responsible for that Constraint
+        Association between a constraint and the constraint provider responsible for that constraint
       required:
       - constraint_id
       - constraint_provider_id
       properties:
         constraint_id:
-          description: ID of Constraint to which this association pertains
+          description: ID of constraint to which this association pertains
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         constraint_provider_id:
           description: Unique identifier of the constraint provider responsible for
-            the Constraint
+            the constraint
           type: string
 
     #
@@ -2280,7 +2280,7 @@ paths:
   #
 
   /dss/v1/constraint_references/query:
-    summary: Query all Constraint references in the DSS that intersect with a specified
+    summary: Query all constraint references in the DSS that intersect with a specified
       area/volume/time.
     description: ''
 
@@ -2345,12 +2345,12 @@ paths:
   /dss/v1/constraint_references/{entityid}:
     parameters:
     - name: entityid
-      description: EntityID of the Constraint.
+      description: EntityID of the constraint.
       schema:
         $ref: '#/components/schemas/EntityID'
       in: path
       required: true
-    summary: Create/read endpoint for a specified Constraint reference in the DSS.
+    summary: Create/read endpoint for a specified constraint reference in the DSS.
 
     get:
       tags:
@@ -2361,7 +2361,7 @@ paths:
         - utm.constraint_management
       - Authority:
         - utm.constraint_ingestion
-      summary: Retrieve the specified Constraint reference from the DSS.
+      summary: Retrieve the specified constraint reference from the DSS.
       operationId: getConstraintReference
       responses:
         '200':
@@ -2416,7 +2416,7 @@ paths:
       security:
       - Authority:
         - utm.constraint_management
-      summary: Create the specified Constraint reference in the DSS.
+      summary: Create the specified constraint reference in the DSS.
       operationId: createConstraintReference
       responses:
         '201':
@@ -2424,7 +2424,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A Constraint reference was created successfully in the DSS.
+          description: A constraint reference was created successfully in the DSS.
         '400':
           content:
             application/json:
@@ -2432,7 +2432,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the Constraint in a disallowed way.
+            * The request attempted to mutate the constraint in a disallowed way.
         '401':
           content:
             application/json:
@@ -2453,14 +2453,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Constraint with the provided ID already exists.
+            * A constraint with the provided ID already exists.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '413':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The area of the Constraint is too large.
+          description: The area of the constraint is too large.
         '429':
           content:
             application/json:
@@ -2471,7 +2471,7 @@ paths:
   /dss/v1/constraint_references/{entityid}/{ovn}:
     parameters:
     - name: entityid
-      description: EntityID of the Constraint.
+      description: EntityID of the constraint.
       schema:
         $ref: '#/components/schemas/EntityID'
       in: path
@@ -2482,7 +2482,7 @@ paths:
         $ref: '#/components/schemas/EntityOVN'
       in: path
       required: true
-    summary: Update/delete endpoint for a specified Constraint reference in the DSS.
+    summary: Update/delete endpoint for a specified constraint reference in the DSS.
 
     put:
       requestBody:
@@ -2497,7 +2497,7 @@ paths:
       security:
       - Authority:
         - utm.constraint_management
-      summary: Update the specified Constraint reference in the DSS.
+      summary: Update the specified constraint reference in the DSS.
       operationId: putConstraintReference
       responses:
         '200':
@@ -2505,7 +2505,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A Constraint reference was updated successfully in the DSS.
+          description: A constraint reference was updated successfully in the DSS.
         '400':
           content:
             application/json:
@@ -2513,7 +2513,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the Constraint in a disallowed way.
+            * The request attempted to mutate the constraint in a disallowed way.
         '401':
           content:
             application/json:
@@ -2534,14 +2534,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * The provided `ovn` does not match the current version of the existing Constraint.
+            * The provided `ovn` does not match the current version of the existing constraint.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '413':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The area of the Constraint is too large.
+          description: The area of the constraint is too large.
         '429':
           content:
             application/json:
@@ -2556,7 +2556,7 @@ paths:
       security:
       - Authority:
         - utm.constraint_management
-      summary: Delete the specified Constraint reference from the DSS.
+      summary: Delete the specified constraint reference from the DSS.
       operationId: deleteConstraintReference
       responses:
         '200':
@@ -2564,7 +2564,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: The Constraint was successfully removed from the DSS.
+          description: The constraint was successfully removed from the DSS.
         '400':
           content:
             application/json:
@@ -2572,7 +2572,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the Constraint in a disallowed way.
+            * The request attempted to mutate the constraint in a disallowed way.
         '401':
           content:
             application/json:
@@ -2599,7 +2599,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * The provided `ovn` does not match the current version of the existing Constraint.
+            * The provided `ovn` does not match the current version of the existing constraint.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '429':
           content:
@@ -3349,10 +3349,10 @@ paths:
   #
 
   /uss/v1/constraints/{entityid}:
-    summary: Query detailed information of a Constraint from a USS.
+    summary: Query detailed information of a constraint from a USS.
     parameters:
     - name: entityid
-      description: EntityID of the Constraint.
+      description: EntityID of the constraint.
       schema:
         $ref: '#/components/schemas/EntityID'
       in: path
@@ -3365,15 +3365,15 @@ paths:
       security:
       - Authority:
         - utm.constraint_ingestion
-      summary: Retrieve the specified Constraint details from a USS.
+      summary: Retrieve the specified constraint details from a USS.
       operationId: getConstraintDetails
       description: |-
         The USS hosting this endpoint returns the details (and reference) of a
-        Constraint it owns.  While the USS has a pending request to change the
-        Constraint in the DSS, the USS should report the most recent version the
+        constraint it owns.  While the USS has a pending request to change the
+        constraint in the DSS, the USS should report the most recent version the
         USS knows was accepted by the DSS.  So, before a USS receives a response
-        to create a Constraint reference in the DSS, it should return 404 if
-        queried for that Constraint at this endpoint.
+        to create a constraint reference in the DSS, it should return 404 if
+        queried for that constraint at this endpoint.
       responses:
         '200':
           content:
@@ -3415,7 +3415,7 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   /uss/v1/constraints:
-    summary: A USS's representation of detailed information about Constraints.
+    summary: A USS's representation of detailed information about constraints.
 
     post:
       tags:
@@ -3424,9 +3424,9 @@ paths:
       security:
       - Authority:
         - utm.constraint_management
-      summary: Notify a peer USS of changed Constraint details.
+      summary: Notify a peer USS of changed constraint details.
       operationId: notifyConstraintDetailsChanged
-      description: Notify a peer USS directly of changed Constraint details (usually
+      description: Notify a peer USS directly of changed constraint details (usually
         as a requirement of previous interactions with the DSS).
       requestBody:
         content:
@@ -3436,7 +3436,7 @@ paths:
         required: true
       responses:
         '204':
-          description: New or updated full Constraint information received successfully.
+          description: New or updated full constraint information received successfully.
         '400':
           content:
             application/json:
@@ -3497,7 +3497,7 @@ paths:
       operationId: makeUssReport
       description: Endpoint to provide feedback (errors, etc.) that might otherwise
         go unnoticed by this USS.  This endpoint is used for all feedback related
-        to operational intents and Constraints.
+        to operational intents and constraints.
       requestBody:
         content:
           application/json:
