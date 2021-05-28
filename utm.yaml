@@ -34,7 +34,7 @@ tags:
     Endpoints exposed by USSs for interaction with details of constraints.
 - name: Subscriptions
   description: |-
-    Endpoints exposed by the DSS for interaction with Subscription entities.
+    Endpoints exposed by the DSS for interaction with subscription entities.
 - name: Reports
   description: |-
     Endpoints exposed by the DSS for reporting peer DSS issues.
@@ -121,7 +121,7 @@ components:
 
     SubscriptionID:
       description: |-
-        Identifier for a Subscription communicated through the DSS.  Formatted
+        Identifier for a subscription communicated through the DSS.  Formatted
         as a UUIDv4.
       anyOf:
       - $ref: '#/components/schemas/UUIDv4Format'
@@ -333,7 +333,7 @@ components:
 
     SubscriptionState:
       description: |-
-        State of Subscription which is causing a notification to be sent.
+        State of subscription which is causing a notification to be sent.
       required:
       - subscription_id
       - notification_index
@@ -379,10 +379,10 @@ components:
           $ref: '#/components/schemas/SubscriptionID'
         version:
           description: |-
-            Version that the DSS changes every time a USS changes the Subscription.  The DSS
+            Version that the DSS changes every time a USS changes the subscription.  The DSS
             incrementing the notification_index does not constitute a change that triggers a
             new version.  A USS must specify this version when modifying an existing
-            Subscription to ensure consistency in read-modify-write operations and distributed
+            subscription to ensure consistency in read-modify-write operations and distributed
             systems.
           type: string
         notification_index:
@@ -415,13 +415,13 @@ components:
           default: false
         implicit_subscription:
           description: |-
-            True if this Subscription was implicitly created by the DSS via the creation of an
+            True if this subscription was implicitly created by the DSS via the creation of an
             operational intent, and should therefore be deleted by the DSS when that operational intent is deleted.
           type: boolean
           default: false
         dependent_operational_intents:
           description: List of IDs for operational intents that are dependent on this
-            Subscription.
+            subscription.
           type: array
           items:
             $ref: '#/components/schemas/EntityID'
@@ -438,7 +438,7 @@ components:
 
     SearchSubscriptionParameters:
       description: |-
-        Parameters for a request to find Subscriptions matching the provided criteria.
+        Parameters for a request to find subscriptions matching the provided criteria.
       type: object
       properties:
         area_of_interest:
@@ -507,7 +507,7 @@ components:
     SubscriptionUssBaseURL:
       description: |-
         The base URL of a USS implementation of the parts of the USS-USS API necessary for
-        receiving the notifications requested by this Subscription.
+        receiving the notifications requested by this subscription.
       anyOf:
       - $ref: '#/components/schemas/UssBaseURL'
 
@@ -538,7 +538,7 @@ components:
           default: []
 
     DeleteSubscriptionResponse:
-      description: Response for a successful request to delete an Subscription.
+      description: Response for a successful request to delete a subscription.
       required:
       - subscription
       type: object
@@ -649,7 +649,7 @@ components:
           $ref: '#/components/schemas/OperationalIntentUssBaseURL'
         subscription_id:
           description: |-
-            The ID of the Subscription that is ensuring the operational intent manager receives relevant
+            The ID of the subscription that is ensuring the operational intent manager receives relevant
             airspace updates.
           anyOf:
           - $ref: '#/components/schemas/SubscriptionID'
@@ -691,7 +691,7 @@ components:
             features in the airspace.  This field is not required when declaring an operational intent NonConforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
             OVNs for constraints are required if and only if the USS managing this operational intent is considering
-            constraints, which is determined by whether the Subscription associated with this operational intent
+            constraints, which is determined by whether the subscription associated with this operational intent
             triggers notifications for constraints.  The key does not need to contain the OVN for an
             operational intent being updated.
           anyOf:
@@ -702,17 +702,17 @@ components:
           $ref: '#/components/schemas/OperationalIntentUssBaseURL'
         subscription_id:
           description: |-
-            The ID of an existing Subscription that the USS will use to keep the operator informed about
+            The ID of an existing subscription that the USS will use to keep the operator informed about
             updates to relevant airspace information.  If this field is not provided, then the
             `new_subscription` field must be provided in order to provide notification capability
-            for the operational intent.  The Subscription specified by this ID must cover at least the area over
+            for the operational intent.  The subscription specified by this ID must cover at least the area over
             which this operational intent is conducted, and it must provide notifications for operational intents.
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         new_subscription:
           description: |-
-            If an existing Subscription is not specified in `subscription_id`, then this field must be
-            populated.  When this field is populated, an implicit Subscription will be created and
+            If an existing subscription is not specified in `subscription_id`, then this field must be
+            populated.  When this field is populated, an implicit subscription will be created and
             associated with this operational intent, and will generally be deleted automatically upon the
             deletion of this operational intent.
           anyOf:
@@ -720,7 +720,7 @@ components:
 
     ImplicitSubscriptionParameters:
       description: |-
-        Information necessary to create a Subscription to serve a single operational intent's notification needs.
+        Information necessary to create a subscription to serve a single operational intent's notification needs.
       type: object
       required:
       - uss_base_url
@@ -734,7 +734,7 @@ components:
           - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
           description: |-
-            True if this operational intent's Subscription should trigger notifications when constraints change.  Otherwise, changes in constraints should not trigger notifications.
+            True if this operational intent's subscription should trigger notifications when constraints change.  Otherwise, changes in constraints should not trigger notifications.
           type: boolean
           default: false
 
@@ -762,7 +762,7 @@ components:
             DSS subscribers that this client now has the obligation to
             notify of the operational intent changes just made.  This client must call POST
             for each provided URL according to the USS-USS `/uss/v1/operational_intents/{entityid}`
-            path API.  The client's own Subscriptions will also be included in this list.
+            path API.  The client's own subscriptions will also be included in this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
@@ -891,7 +891,7 @@ components:
           description: DSS subscribers that this client now has the obligation to
             notify of the constraint changes just made.  This client must call POST
             for each provided URL according to the USS-USS `/uss/v1/constraints/{entityid}`
-            path API.  The client's own Subscriptions will also be included in this
+            path API.  The client's own subscriptions will also be included in this
             list.
           type: array
           items:
@@ -2303,7 +2303,7 @@ paths:
         - utm.constraint_management
       - Authority:
         - utm.constraint_ingestion
-      summary: Retrieve all Constraints references in the specified area/volume from
+      summary: Retrieve all constraint references in the specified area/volume from
         the DSS.
       operationId: queryConstraintReferences
       responses:
@@ -2312,7 +2312,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchConstraintReferencesResponse'
-          description: Constraints were successfully retrieved.
+          description: Constraint references were successfully retrieved.
         '400':
           content:
             application/json:
@@ -2635,7 +2635,7 @@ paths:
       - Authority:
         - utm.strategic_coordination
       description: |-
-        Retrieve Subscriptions intersecting an area of interest.  Subscription
+        Retrieve subscriptions intersecting an area of interest.  Subscription
         notifications are only triggered by (and contain full information of) changes to,
         creation of, or deletion of, Entities referenced by or stored in the DSS;
         they do not involve any data transfer (such as remote ID telemetry updates) apart
@@ -2644,10 +2644,10 @@ paths:
         Note that this parameter is a JSON object (in the 'request-body'). Note that either
         or both of the 'altitude' and 'time' values may be omitted from this parameter.
 
-        Only Subscriptions belonging to the caller are returned.  This endpoint would be
-        used if a USS lost track of Subscriptions they had created and/or wanted to resolve
-        an error indicating that they had too many existing Subscriptions in an area.
-      summary: Retrieve all Subscriptions in the specified area/volume from the DSS.
+        Only subscriptions belonging to the caller are returned.  This endpoint would be
+        used if a USS lost track of subscriptions they had created and/or wanted to resolve
+        an error indicating that they had too many existing subscriptions in an area.
+      summary: Retrieve all subscriptions in the specified area/volume from the DSS.
       operationId: querySubscriptions
       responses:
         '200':
@@ -2690,7 +2690,7 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   /dss/v1/subscriptions/{subscriptionid}:
-    summary: Create/read endpoint for a specific Subscription in the DSS.
+    summary: Create/read endpoint for a specific subscription in the DSS.
     parameters:
     - name: subscriptionid
       description: SubscriptionID of the subscription of interest.
@@ -2708,7 +2708,7 @@ paths:
         - utm.constraint_ingestion
       - Authority:
         - utm.strategic_coordination
-      summary: Retrieve the specified Subscription from the DSS.
+      summary: Retrieve the specified subscription from the DSS.
       operationId: getSubscription
       description: |-
         Retrieve a specific subscription.
@@ -2744,7 +2744,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: A Subscription with the specified ID was not found.
+          description: A subscription with the specified ID was not found.
         '429':
           content:
             application/json:
@@ -2758,7 +2758,7 @@ paths:
         - utm.constraint_ingestion
       - Authority:
         - utm.strategic_coordination
-      summary: Create the specified Subscription in the DSS.
+      summary: Create the specified subscription in the DSS.
       operationId: createSubscription
       description: |-
         Create a subscription.
@@ -2779,7 +2779,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PutSubscriptionResponse'
-          description: A new Subscription was created successfully.
+          description: A new subscription was created successfully.
         '400':
           content:
             application/json:
@@ -2787,7 +2787,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the Subscription in a disallowed way.
+            * The request attempted to mutate the subscription in a disallowed way.
         '401':
           content:
             application/json:
@@ -2809,7 +2809,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Subscription with the specified ID already exists.
+            * A subscription with the specified ID already exists.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '429':
           content:
@@ -2820,7 +2820,7 @@ paths:
             period of time.
 
   /dss/v1/subscriptions/{subscriptionid}/{version}:
-    summary: Update/delete a specific Subscription in the DSS.
+    summary: Update/delete a specific subscription in the DSS.
     parameters:
     - name: subscriptionid
       description: SubscriptionID of the subscription of interest.
@@ -2829,7 +2829,7 @@ paths:
       in: path
       required: true
     - name: version
-      description: Version of the Subscription to be modified.
+      description: Version of the subscription to be modified.
       schema:
         type: string
       in: path
@@ -2841,14 +2841,14 @@ paths:
         - utm.constraint_ingestion
       - Authority:
         - utm.strategic_coordination
-      summary: Update the specified Subscription in the DSS.
+      summary: Update the specified subscription in the DSS.
       operationId: updateSubscription
       description: |-
         Update a subscription.
 
         Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
 
-        The standard requires each operational intent to have a Subscription that cover the 4D volume of the operational intent.  If a USS attempts to update a Subscription upon which an operational intent depends, and this update would cause the operational intent to lose Subscription coverage, the update will be rejected by the DSS as a bad request.
+        The standard requires each operational intent to have a subscription that cover the 4D volume of the operational intent.  If a USS attempts to update a subscription upon which an operational intent depends, and this update would cause the operational intent to lose subscription coverage, the update will be rejected by the DSS as a bad request.
       requestBody:
         content:
           application/json:
@@ -2864,7 +2864,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PutSubscriptionResponse'
-          description: A Subscription was updated successfully.
+          description: A subscription was updated successfully.
         '400':
           content:
             application/json:
@@ -2872,7 +2872,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the Subscription in a disallowed way.
+            * The request attempted to mutate the subscription in a disallowed way.
         '401':
           content:
             application/json:
@@ -2894,8 +2894,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Subscription with the specified ID already exists and is managed by a different client.
-            * The provided `version` does not match the current Subscription.
+            * A subscription with the specified ID already exists and is managed by a different client.
+            * The provided `version` does not match the current subscription.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '429':
           content:
@@ -2914,10 +2914,10 @@ paths:
         - utm.constraint_ingestion
       - Authority:
         - utm.strategic_coordination
-      summary: Remove the specified Subscription from the DSS.
+      summary: Remove the specified subscription from the DSS.
       operationId: deleteSubscription
       description: |-
-        The standard requires each operational intent to have a Subscription that cover the 4D volume of the operational intent.  If a USS attempts to delete a Subscription upon which an operational intent depends, the deletion will be rejected by the DSS as a bad request.
+        The standard requires each operational intent to have a subscription that cover the 4D volume of the operational intent.  If a USS attempts to delete a subscription upon which an operational intent depends, the deletion will be rejected by the DSS as a bad request.
       responses:
         '200':
           content:
@@ -2950,15 +2950,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: A Subscription with the specified ID was not found.
+          description: A subscription with the specified ID was not found.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Subscription with the specified ID is managed by a different client.
-            * The provided `version` does not match the current Subscription.
+            * A subscription with the specified ID is managed by a different client.
+            * The provided `version` does not match the current subscription.
             * Despite repeated attempts, the DSS was unable to complete the deletion because of other simultaneous changes.
         '429':
           content:
