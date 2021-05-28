@@ -558,26 +558,30 @@ components:
       description: |-
         State of an operational intent.
 
-        'Accepted': This operational intent was fully deconflicted from other Entities at the time it changed to this
-        state, but no aircraft associated with it are active yet.  The create or update request for this
-        operational intent reference must include a Key containing all OVNs for all relevant Entities.
+        'Accepted': Operational intent is created and shared, but not yet in use; see standard text for more details.
 
-        'Activated': One or more aircraft associated with this operational intent are, or will imminently be, in
-        flight.  The create or update request for this operational intent reference must include a Key containing
-        all OVNs for all relevant Entities.
+        The create or update request for this operational intent reference must include a Key containing all OVNs for
+        all relevant Entities.
 
-        'NonConforming': This operational intent is outside of the planned volume.  The new or updated volumes MUST
-        contain the actual position of the aircraft.  In this state, the `/uss/v1/operational_intents/{entityid}/telemetry'
-        USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request
-        for this operational intent may omit a Key in this case because the operational intent is being adjusted as flown and
-        cannot necessarily deconflict.
+        'Activated': Operational intent is in active use; see standard text for more details.
 
-        'Contingent': This operational intent is executing a contingency action, either because it has been
-        NonConforming for a certain period of time, or because of operator initiation.  This state must
-        transition to Ended.  The new or updated volumes MUST contain the actual position of the aircraft.
-        In this state, the `/uss/v1/operational_intents/{entityid}/telemetry' USS-USS endpoint should respond, if available,
-        to queries from USS peers.  The create or update request for this operational intent may omit a Key in this
-        case because the operational intent is being adjusted as flown and cannot necessarily deconflict.
+        The create or update request for this operational intent reference must include a Key containing all OVNs for
+        all relevant Entities.
+
+        'NonConforming': UA is temporarily outside its volumes, but the situation is expected to be recoverable; see
+        standard text for more details.
+
+        In this state, the `/uss/v1/operational_intents/{entityid}/telemetry' USS-USS endpoint should respond, if
+        available, to queries from USS peers.  The create or update request for this operational intent may omit a Key
+        in this case because the operational intent is being adjusted as flown and cannot necessarily deconflict.
+
+        'Contingent': UA is considered unrecoverably unable to conform with its coordinate operational intent; see
+        standard text for more details.
+
+        This state must transition to Ended.  In this state, the `/uss/v1/operational_intents/{entityid}/telemetry'
+        USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request for
+        this operational intent may omit a Key in this case because the operational intent is being adjusted as flown
+        and cannot necessarily deconflict.
       type: string
       enum:
       - Accepted
