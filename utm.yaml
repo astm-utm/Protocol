@@ -1898,17 +1898,14 @@ components:
           - $ref: '#/components/schemas/TextShortType'
           description: |-
             A phone number at which the organisation may be contacted
-
-    AuthorityRequirements:
-      type: object
-      properties:
         purpose:
           anyOf:
-          - $ref: '#/components/schemas/CodeAuthorityRole'
+            - $ref: '#/components/schemas/CodeAuthorityRole'
           description: |-
             The role of the Authority in relation with the zone.
         interval_before:
           type: string
+          format: duration
           description: |-
             The minimal time interval required between notification or authorization request and starting to operate
             in the zone, in the format PnnDTnnHnnM (ISO 8601).
