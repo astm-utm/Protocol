@@ -1948,7 +1948,7 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Retrieve all operational intent references in the specified area/volume/time
+      summary: Query all operational intent references in the specified area/volume/time
         from the DSS.
       operationId: searchOperationalIntentReferences
       responses:
@@ -2288,7 +2288,6 @@ paths:
   /dss/v1/constraint_references/query:
     summary: Query all constraint references in the DSS that intersect with a specified
       area/volume/time.
-    description: ''
 
     post:
       requestBody:
@@ -2305,7 +2304,7 @@ paths:
         - utm.constraint_management
       - Authority:
         - utm.constraint_ingestion
-      summary: Retrieve all constraint references in the specified area/volume from
+      summary: Query all constraint references in the specified area/volume from
         the DSS.
       operationId: queryConstraintReferences
       responses:
@@ -2637,7 +2636,7 @@ paths:
       - Authority:
         - utm.strategic_coordination
       description: |-
-        Retrieve subscriptions intersecting an area of interest.  Subscription
+        Query subscriptions intersecting an area of interest.  Subscription
         notifications are only triggered by (and contain full information of) changes to,
         creation of, or deletion of, Entities referenced by or stored in the DSS;
         they do not involve any data transfer (such as remote ID telemetry updates) apart
@@ -2649,7 +2648,7 @@ paths:
         Only subscriptions belonging to the caller are returned.  This endpoint would be
         used if a USS lost track of subscriptions they had created and/or wanted to resolve
         an error indicating that they had too many existing subscriptions in an area.
-      summary: Retrieve all subscriptions in the specified area/volume from the DSS.
+      summary: Query all subscriptions in the specified area/volume from the DSS.
       operationId: querySubscriptions
       responses:
         '200':
