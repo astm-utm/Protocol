@@ -41,6 +41,9 @@ tags:
 - name: Availability
   description: |-
     Endpoints exposed by the DSS for declaring USS availability.
+- name: Logging
+  description: |-
+    Pseudo-endpoints not intended to be implemented literally, but rather to illustrate logging data formats
 - name: dss
   description: Endpoints exposed by the DSS server.
 - name: p2p_utm
@@ -1253,9 +1256,11 @@ components:
         availability arbitration scope.  Upon determination via availability arbitration, a USS is
         Down when it does not respond appropriately, and a Down USS may not perform the following
         operations in the DSS:
+
           * Create an operational intent in the Accepted or Activated states
           * Modify an operational intent whose new or unchanged state is Accepted or Activated
           * Delete an operational intent
+
         A USS in the Unknown state possesses all the capabilities, within the DSS, of a USS in the
         Normal state.
 
@@ -1276,7 +1281,7 @@ components:
     UssAvailabilityStatusResponse:
       type: object
       required:
-      - availability
+      - status
       - version
       properties:
         version:
@@ -3565,7 +3570,7 @@ paths:
       example: INCIDENT_20200107_v4
     get:
       tags:
-      - logging
+      - Logging
       summary: Get USS logs
       operationId: getLogSet
       description: |-
