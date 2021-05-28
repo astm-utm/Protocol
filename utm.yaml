@@ -402,9 +402,9 @@ components:
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operational_intents:
-          description: If true, trigger notifications when operational intents are created,
-            updated, or deleted.  Otherwise, changes in operational intents should not trigger
-            notifications.
+          description: If true, trigger notifications when operational intents are
+            created, updated, or deleted.  Otherwise, changes in operational intents
+            should not trigger notifications.
           type: boolean
           default: false
         notify_for_constraints:
@@ -420,7 +420,8 @@ components:
           type: boolean
           default: false
         dependent_operational_intents:
-          description: List of IDs for operational intents that are dependent on this Subscription.
+          description: List of IDs for operational intents that are dependent on this
+            Subscription.
           type: array
           items:
             $ref: '#/components/schemas/EntityID'
@@ -491,9 +492,9 @@ components:
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operational_intents:
-          description: If true, trigger notifications when operational intents are created,
-            updated, or deleted.  Otherwise, changes in operational intents should not trigger
-            notifications.
+          description: If true, trigger notifications when operational intents are
+            created, updated, or deleted.  Otherwise, changes in operational intents
+            should not trigger notifications.
           type: boolean
           default: false
         notify_for_constraints:
@@ -774,7 +775,8 @@ components:
           $ref: '#/components/schemas/Volume4D'
 
     SearchOperationalIntentReferenceResponse:
-      description: Response to DSS query for OperationalIntentReferences in an area of interest.
+      description: Response to DSS query for OperationalIntentReferences in an area
+        of interest.
       required:
       - operational_intent_references
       type: object
@@ -924,11 +926,11 @@ components:
             why.
           type: string
         missing_operational_intents:
-          description: List of operational intent references for which current proof of knowledge
-            was not provided.  If this field is present and contains elements, the
-            calling USS should query the details URLs for these operational intents to obtain
-            their details and correct OVNs.  The OVNs can be used to update the key,
-            at which point the USS may retry this call.
+          description: List of operational intent references for which current proof
+            of knowledge was not provided.  If this field is present and contains
+            elements, the calling USS should query the details URLs for these operational
+            intents to obtain their details and correct OVNs.  The OVNs can be used
+            to update the key, at which point the USS may retry this call.
           type: array
           items:
             $ref: '#/components/schemas/OperationalIntentReference'
@@ -1018,8 +1020,8 @@ components:
           minItems: 1
 
     GetOperationalIntentDetailsResponse:
-      description: Response to peer request for the details of operational intent with the
-        given ID.
+      description: Response to peer request for the details of operational intent
+        with the given ID.
       required:
       - operational_intent
       type: object
@@ -1104,14 +1106,15 @@ components:
           $ref: '#/components/schemas/Constraint'
 
     GetOperationalIntentTelemetryResponse:
-      description: Response to a peer request for telemetry of an off-nominal operational intent.
+      description: Response to a peer request for telemetry of an off-nominal operational
+        intent.
       required:
       - telemetry
       type: object
       properties:
         operational_intent_id:
-          description: ID of the operational intent which the vehicle reporting telemetry is
-            flying.
+          description: ID of the operational intent which the vehicle reporting telemetry
+            is flying.
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         telemetry:
@@ -1395,7 +1398,8 @@ components:
           description: HTTP response code sent/received in response to request.
         problem:
           type: string
-          description: Human-readable description of the problem with the exchange, if any.
+          description: Human-readable description of the problem with the exchange,
+            if any.
 
     ErrorReport:
       type: object
@@ -1561,7 +1565,8 @@ components:
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         operator_id:
-          description: Unique identifier of the operator responsible for the operational intent
+          description: Unique identifier of the operator responsible for the operational
+            intent
           type: string
 
     ConstraintProviderAssociation:
@@ -1920,8 +1925,8 @@ paths:
   #
 
   /dss/v1/operational_intent_references/query:
-    summary: Query all operational intents in the DSS that intersect with a specified geographic
-      area, altitude-range, and time-range.
+    summary: Query all operational intents in the DSS that intersect with a specified
+      geographic area, altitude-range, and time-range.
     description: Interface to operational intent references in the DSS.
 
     post:
@@ -1981,7 +1986,8 @@ paths:
           description: The client issued too many requests in a short period of time.
 
   /dss/v1/operational_intent_references/{entityid}:
-    summary: Create/read endpoint for a specified operational intent reference in the DSS.
+    summary: Create/read endpoint for a specified operational intent reference in
+      the DSS.
     parameters:
     - name: entityid
       description: EntityID of the operational intent.
@@ -2060,7 +2066,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeOperationalIntentReferenceResponse'
-          description: An operational intent reference was created successfully in the DSS.
+          description: An operational intent reference was created successfully in
+            the DSS.
         '400':
           content:
             application/json:
@@ -2148,7 +2155,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeOperationalIntentReferenceResponse'
-          description: An operational intent reference was updated successfully in the DSS.
+          description: An operational intent reference was updated successfully in
+            the DSS.
         '400':
           content:
             application/json:
@@ -2215,7 +2223,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeOperationalIntentReferenceResponse'
-          description: The specified operational intent was successfully removed from the DSS.
+          description: The specified operational intent was successfully removed from
+            the DSS.
         '400':
           content:
             application/json:
@@ -3217,8 +3226,8 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
-      summary: Query detailed information on the position of an off-nominal operational intent
-        from a USS.
+      summary: Query detailed information on the position of an off-nominal operational
+        intent from a USS.
       operationId: getOperationalIntentTelemetry
       responses:
         '200':
@@ -3284,8 +3293,8 @@ paths:
         - utm.strategic_coordination
       summary: Notify a peer USS of changed operational intent details.
       operationId: notifyOperationalIntentDetailsChanged
-      description: Notify a peer USS directly of changed operational intent details (usually
-        as a requirement of previous interactions with the DSS).
+      description: Notify a peer USS directly of changed operational intent details
+        (usually as a requirement of previous interactions with the DSS).
       requestBody:
         content:
           application/json:
@@ -3294,7 +3303,8 @@ paths:
         required: true
       responses:
         '204':
-          description: New or updated full operational intent information received successfully.
+          description: New or updated full operational intent information received
+            successfully.
         '400':
           content:
             application/json:
