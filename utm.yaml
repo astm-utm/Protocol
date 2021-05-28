@@ -1900,7 +1900,7 @@ components:
             A phone number at which the organisation may be contacted
         purpose:
           anyOf:
-            - $ref: '#/components/schemas/CodeAuthorityRole'
+          - $ref: '#/components/schemas/CodeAuthorityRole'
           description: |-
             The role of the Authority in relation with the zone.
         interval_before:
@@ -2304,8 +2304,8 @@ paths:
         - utm.constraint_management
       - Authority:
         - utm.constraint_ingestion
-      summary: Query all constraint references in the specified area/volume from
-        the DSS.
+      summary: Query all constraint references in the specified area/volume from the
+        DSS.
       operationId: queryConstraintReferences
       responses:
         '200':
