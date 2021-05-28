@@ -62,7 +62,7 @@ components:
             utm.strategic_coordination: |-
               Client may perform planning, strategic conflict detection, and conformance monitoring activities.
             utm.constraint_management: |-
-              Client may manage (create, edit, and delete) constraints they own.
+              Client may manage (create, edit, and delete) constraints they manage.
             utm.constraint_ingestion: |-
               Client may read constraint references from the DSS and details from the partner USSs.
             utm.availability_arbitration: |-
@@ -592,7 +592,7 @@ components:
         created the operational intent but NEVER to other USS instances.
       required:
       - id
-      - owner
+      - manager
       - uss_availability
       - version
       - state
@@ -604,13 +604,13 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/EntityID'
-        owner:
+        manager:
           type: string
           example: uss1
           description: |-
             Created by the DSS based on creating client's ID (via access token).  Used internal
-            to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
-            to reject operational intent update notifications originating from a USS that does not own
+            to the DSS for restricting mutation and deletion operations to manager.  Used by USSs
+            to reject operational intent update notifications originating from a USS that does not manage
             the operational intent.
         uss_availability:
           $ref: '#/components/schemas/UssAvailabilityState'
@@ -628,9 +628,9 @@ components:
         ovn:
           description: |-
             Opaque version number of this operational intent.  Populated only when the OperationalIntentReference
-            is owned by the USS retrieving or providing it.  Not populated when the
-            OperationalIntentReference is not owned by the USS retrieving or providing it (instead, the
-            USS must obtain the OVN from the details retrieved from the owning USS).
+            is managed by the USS retrieving or providing it.  Not populated when the
+            OperationalIntentReference is not managed by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the managing USS).
           anyOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -645,7 +645,7 @@ components:
           $ref: '#/components/schemas/OperationalIntentUssBaseURL'
         subscription_id:
           description: |-
-            The ID of the Subscription that is ensuring the operational intent owner receives relevant
+            The ID of the Subscription that is ensuring the operational intent manager receives relevant
             airspace updates.
           anyOf:
           - $ref: '#/components/schemas/SubscriptionID'
@@ -686,7 +686,7 @@ components:
             airspace, with the expectation that this operational intent is therefore deconflicted from all relevant
             features in the airspace.  This field is not required when declaring an operational intent NonConforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
-            OVNs for constraints are required if and only if the USS owning this operational intent is considering
+            OVNs for constraints are required if and only if the USS managing this operational intent is considering
             constraints, which is determined by whether the Subscription associated with this operational intent
             triggers notifications for constraints.  The key does not need to contain the OVN for an
             operational intent being updated.
@@ -795,7 +795,7 @@ components:
         peer-to-peer.
       required:
       - id
-      - owner
+      - manager
       - uss_availability
       - version
       - time_start
@@ -805,13 +805,13 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/EntityID'
-        owner:
+        manager:
           type: string
           example: uss1
           description: |-
             Created by the DSS based on creating client's ID (via access token).  Used internal
-            to the DSS for restricting mutation and deletion operations to owner.  Used by USSs
-            to reject constraint update notifications originating from a USS that does not own
+            to the DSS for restricting mutation and deletion operations to manager.  Used by USSs
+            to reject constraint update notifications originating from a USS that does not manage
             the constraint.
         uss_availability:
           $ref: '#/components/schemas/UssAvailabilityState'
@@ -827,9 +827,9 @@ components:
         ovn:
           description: |-
             Opaque version number of this constraint.  Populated only when the ConstraintReference
-            is owned by the USS retrieving or providing it.  Not populated when the
-            ConstraintReference is not owned by the USS retrieving or providing it (instead, the
-            USS must obtain the OVN from the details retrieved from the owning USS).
+            is managed by the USS retrieving or providing it.  Not populated when the
+            ConstraintReference is not managed by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the managing USS).
           anyOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -2890,7 +2890,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Subscription with the specified ID already exists and is owned by a different client.
+            * A Subscription with the specified ID already exists and is managed by a different client.
             * The provided `version` does not match the current Subscription.
             * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
         '429':
@@ -2953,7 +2953,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
-            * A Subscription with the specified ID is owned by a different client.
+            * A Subscription with the specified ID is managed by a different client.
             * The provided `version` does not match the current Subscription.
             * Despite repeated attempts, the DSS was unable to complete the deletion because of other simultaneous changes.
         '429':
@@ -3163,7 +3163,7 @@ paths:
       summary: Retrieve the specified operational intent details from a USS.
       description: |-
         The USS hosting this endpoint returns the details (and reference) of an
-        operational intent it owns.  While the USS has a pending request to change the
+        operational intent it manages.  While the USS has a pending request to change the
         operational intent in the DSS, the USS should report the most recent version the
         USS knows was accepted by the DSS.  So, before a USS receives a response
         to create an operational intent reference in the DSS, it should return 404 if
@@ -3327,7 +3327,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the owner of this Entity according to the receiving client's records.
+            * The client identified in the access token is not the manager of this Entity according to the receiving client's records.
         '409':
           content:
             application/json:
@@ -3369,7 +3369,7 @@ paths:
       operationId: getConstraintDetails
       description: |-
         The USS hosting this endpoint returns the details (and reference) of a
-        constraint it owns.  While the USS has a pending request to change the
+        constraint it manages.  While the USS has a pending request to change the
         constraint in the DSS, the USS should report the most recent version the
         USS knows was accepted by the DSS.  So, before a USS receives a response
         to create a constraint reference in the DSS, it should return 404 if
@@ -3459,7 +3459,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: |-
             * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the owner of this Entity according to the receiving client's records.
+            * The client identified in the access token is not the manager of this Entity according to the receiving client's records.
         '409':
           content:
             application/json:
