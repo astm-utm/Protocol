@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.14
+  version: 0.3.15
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -439,7 +439,7 @@ components:
       exclusiveMinimum: false
       default: 0
 
-    SearchSubscriptionParameters:
+    QuerySubscriptionParameters:
       description: |-
         Parameters for a request to find subscriptions matching the provided criteria.
       type: object
@@ -447,7 +447,7 @@ components:
         area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
-    SearchSubscriptionsResponse:
+    QuerySubscriptionsResponse:
       description: Response to DSS query for subscriptions in a particular geographic
         area.
       required:
@@ -773,7 +773,7 @@ components:
         operational_intent_reference:
           $ref: '#/components/schemas/OperationalIntentReference'
 
-    SearchOperationalIntentReferenceParameters:
+    QueryOperationalIntentReferenceParameters:
       description: |-
         Parameters for a request to find OperationalIntentReferences matching the provided criteria.
       type: object
@@ -781,7 +781,7 @@ components:
         area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
-    SearchOperationalIntentReferenceResponse:
+    QueryOperationalIntentReferenceResponse:
       description: Response to DSS query for OperationalIntentReferences in an area
         of interest.
       required:
@@ -903,7 +903,7 @@ components:
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
 
-    SearchConstraintReferenceParameters:
+    QueryConstraintReferenceParameters:
       description: |-
         Parameters for a request to find ConstraintReferences matching the provided criteria.
       type: object
@@ -911,7 +911,7 @@ components:
         area_of_interest:
           $ref: '#/components/schemas/Volume4D'
 
-    SearchConstraintReferencesResponse:
+    QueryConstraintReferencesResponse:
       description: Response to DSS query for ConstraintReferences in an area of interest.
       required:
       - constraint_references
@@ -1940,7 +1940,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearchOperationalIntentReferenceParameters'
+              $ref: '#/components/schemas/QueryOperationalIntentReferenceParameters'
         required: true
       tags:
       - Operational intent references
@@ -1950,13 +1950,20 @@ paths:
         - utm.strategic_coordination
       summary: Query all operational intent references in the specified area/volume/time
         from the DSS.
-      operationId: searchOperationalIntentReferences
+      description: |-
+        Note that this endpoint does not produce any mutations in the DSS
+        despite using the HTTP POST verb.  The HTTP GET verb is traditionally
+        used for operations like this one, but requiring or using a request body
+        for HTTP GET requests is non-standard and not supported by some
+        architectures.  POST is used here instead of GET to ensure robust
+        support for the use of a request body.
+      operationId: queryOperationalIntentReferences
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchOperationalIntentReferenceResponse'
+                $ref: '#/components/schemas/QueryOperationalIntentReferenceResponse'
           description: Operational intents were successfully retrieved.
         '400':
           content:
@@ -2294,7 +2301,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearchConstraintReferenceParameters'
+              $ref: '#/components/schemas/QueryConstraintReferenceParameters'
         required: true
       tags:
       - Constraint references
@@ -2306,13 +2313,20 @@ paths:
         - utm.constraint_ingestion
       summary: Query all constraint references in the specified area/volume from the
         DSS.
+      description: |-
+        Note that this endpoint does not produce any mutations in the DSS
+        despite using the HTTP POST verb.  The HTTP GET verb is traditionally
+        used for operations like this one, but requiring or using a request body
+        for HTTP GET requests is non-standard and not supported by some
+        architectures.  POST is used here instead of GET to ensure robust
+        support for the use of a request body.
       operationId: queryConstraintReferences
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchConstraintReferencesResponse'
+                $ref: '#/components/schemas/QueryConstraintReferencesResponse'
           description: Constraint references were successfully retrieved.
         '400':
           content:
@@ -2503,7 +2517,7 @@ paths:
       - Authority:
         - utm.constraint_management
       summary: Update the specified constraint reference in the DSS.
-      operationId: putConstraintReference
+      operationId: updateConstraintReference
       responses:
         '200':
           content:
@@ -2625,7 +2639,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearchSubscriptionParameters'
+              $ref: '#/components/schemas/QuerySubscriptionParameters'
         required: true
       tags:
       - Subscriptions
@@ -2655,7 +2669,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchSubscriptionsResponse'
+                $ref: '#/components/schemas/QuerySubscriptionsResponse'
           description: Subscriptions were retrieved successfully.
         '400':
           content:
