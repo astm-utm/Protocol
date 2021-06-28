@@ -1529,13 +1529,14 @@ components:
           description: |-
             Requirement ID that pertains to the given notification
           enum:
-          - GEN0100
-          - GEN0105
-          - TEMP_SCD0040
-          - TEMP_SCD0075
-          - TEMP_CNFM0030
-          - TEMP_CONP0020
-          - TEMP_CSTR0025
+          - GEN0400
+          - GEN0405
+          - SCD0035
+          - SCD0070
+          - ACM0010
+          - CMSA0115
+          - CMSA0300
+          - CSTP0015
 
     UserInputRecord:
       type: object
@@ -1559,7 +1560,21 @@ components:
           description: |-
             Requirement ID that pertains to the given notification
           enum:
-          - TEMP_CNFM0085
+          - OPIN0025
+          - OPIN0040
+          - CMSA0010
+          - CMSA0025
+          - CMSA0100
+          - CMSA0105
+          - CMSA0110
+          - CMSA0200
+          - CMSA0205
+          - CMSA0210
+          - CMSA0215
+        input_details:
+          type: string
+          description: |-
+            Description of the information that was provided by the user, as per the referenced input_triggering_event requirement
 
     OperatorAssociation:
       type: object
