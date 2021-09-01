@@ -1092,9 +1092,10 @@ components:
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 8.
           type: number
           format: int32
-        emergency_procedure:
+        emergency_procedure_url:
           description: |-
-            Applicable emergency procedure in case of a loss of command and control link.
+            The URL at which the applicable emergency procedure in case of a loss of command and
+            control link may be retrieved.
 
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 9.
           type: string
