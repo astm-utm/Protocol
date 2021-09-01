@@ -987,6 +987,14 @@ components:
         operational intent may not create a conflict with a higher-priority operational intent.  A higher-priority
         operational intent may create a conflict with a lower-priority operational intent.  The regulator specifies
         whether an operational intent may create a conflict with other operational intents of the same priority.
+
+        The priority represents the type of flight and is required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION
+        (EU) 2021/664, paragraph 3. The following values are allowed:
+        - 0: Normal operation.
+        - 100: Special operations as defined in accordance with Article 4 of Implementing Regulation (EU) No 923/2012.
+      enum:
+      - 0
+      - 100
       type: integer
       default: 0
 
@@ -1015,7 +1023,6 @@ components:
 
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 1.
           type: string
-
         operation_mode:
           description: |-
             Mode of operation.
@@ -1025,15 +1032,6 @@ components:
           enum:
           - vlos
           - bvlos
-
-        # TODO: Could #/components/schemas/Priority fullfill this purpose ?
-        flight_type:
-          description: |-
-            Type of flight (special operations).
-
-            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 3.
-          type: integer
-
         operation_category:
           description: |-
             Category of UAS operation (‘open’, ‘specific’, ‘certified’) as defined in COMMISSION
@@ -1045,7 +1043,6 @@ components:
           - open
           - specific
           - certified
-
         uas_class:
           description: |-
             UAS aircraft class as defined in COMMISSION DELEGATED REGULATION (EU) 2019/945 (C0 to C4)
@@ -1062,7 +1059,6 @@ components:
           - C5
           - C6
           - other
-
         uas_type_certificate:
           description: |-
             Provisional field. Not applicable as of September 2021.
@@ -1070,7 +1066,6 @@ components:
             Required only if `uas_class` is set to `other` by ANNEX IV of COMMISSION IMPLEMENTING
             REGULATION (EU) 2021/664, paragraph 4.
           type: string
-
         # TODO: clarify options
         identification_technologies:
           description: |-
@@ -1080,8 +1075,7 @@ components:
           type: array
           items:
             type: string
-          example: ["network_rid", "ads-b"]
-
+          example: ["netrid", "ads-b"]
         # TODO: clarify options
         connectivity_methods:
           description: |-
@@ -1091,7 +1085,6 @@ components:
           type: array
           items:
             type: string
-
         endurance:
           description: |-
             Endurance of the UAS. This is expressed in minutes.
@@ -1099,33 +1092,34 @@ components:
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 8.
           type: number
           format: int32
-
-        # TODO: clarify format
         emergency_procedure:
           description: |-
             Applicable emergency procedure in case of a loss of command and control link.
 
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 9.
           type: string
-
         # TODO: add standard reference
         operator_id:
           description: |-
             Registration number of the UAS operator.
 
+            The format is defined in EASA Easy Access Rules for Unmanned Aircraft Systems GM1 to AMC1
+            Article 14(6) Registration of UAS operators and ‘certified’ UAS.
+
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
           type: string
           example: FIN87astrdge12k8
-
         # TODO: add standard reference
         uas_id:
           description: |-
             When applicable, the registration number of the unmanned aircraft.
 
+            This is expressed using the nationality and registration mark of the unmanned aircraft in
+            line with ICAO Annex 7.
+
             Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
           type: string
-          example: HB***
-
+          example: HB-XXXX
     OperationalIntent:
       description: Full description of a UTM operational intent.
       required:
