@@ -1124,7 +1124,7 @@ components:
             This is expressed using the nationality and registration mark of the unmanned aircraft in
             line with ICAO Annex 7.
 
-            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
+            Specified by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
           type: string
           example: HB-XXXX
     OperationalIntent:
