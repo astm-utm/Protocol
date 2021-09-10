@@ -1683,6 +1683,7 @@ components:
 
             Note 2) this attribute is intended to facilitate extracting sub-sets of data, for specific regions
         reason:
+          type: array
           items:
             $ref: '#/components/schemas/CodeZoneReasonType'
           description: |-
