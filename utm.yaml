@@ -1688,6 +1688,7 @@ components:
           description: |-
             A coded indication for the reason that led to the establishment of the zone.
           maxItems: 9
+          type: array
         other_reason_info:
           type: string
           maxLength: 30
