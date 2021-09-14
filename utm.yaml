@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.15
+  version: 0.3.16+uspace
   description: |-
     Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
 
@@ -1829,6 +1829,7 @@ components:
           description: |-
             A coded indication for the reason that led to the establishment of the zone.
           maxItems: 9
+          type: array
         other_reason_info:
           type: string
           maxLength: 30
