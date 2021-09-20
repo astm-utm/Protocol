@@ -16,7 +16,8 @@ security:
 - Authority:
   - utm.strategic_coordination
   - utm.constraint_management
-  - utm.constraint_ingestion
+  - utm.constraint_processing
+  - utm.conformance_monitoring_sa
   - utm.availability_arbitration
 
 tags:
@@ -63,11 +64,13 @@ components:
           tokenUrl: https://token_vendor.com/oauth/token
           scopes:
             utm.strategic_coordination: |-
-              Client may perform planning, strategic conflict detection, and conformance monitoring activities.
+              Client may perform operations encompassed by the strategic coordination role including strategic conflict detection.
             utm.constraint_management: |-
               Client may manage (create, edit, and delete) constraints they manage.
-            utm.constraint_ingestion: |-
+            utm.constraint_processing: |-
               Client may read constraint references from the DSS and details from the partner USSs.
+            utm.conformance_monitoring_sa: |-
+              Client may perform operations encompassed by the conformance monitoring for situational awareness role.
             utm.availability_arbitration: |-
               Client may set the availability state of USSs in the DSS.
       description: |-
@@ -1974,6 +1977,8 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
       summary: Query all operational intent references in the specified area/volume/time
         from the DSS.
       description: |-
@@ -2042,6 +2047,8 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
       summary: Retrieve the specified operational intent reference from the DSS.
       operationId: getOperationalIntentReference
       responses:
@@ -2097,6 +2104,8 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
       summary: Create the specified operational intent reference in the DSS.
       operationId: createOperationalIntentReference
       responses:
@@ -2186,6 +2195,8 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
       summary: Update the specified operational intent reference in the DSS.
       operationId: updateOperationalIntentReference
       responses:
@@ -2254,6 +2265,8 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
       summary: Remove the specified operational intent reference from the DSS.
       operationId: deleteOperationalIntentReference
       responses:
@@ -2336,7 +2349,7 @@ paths:
       - Authority:
         - utm.constraint_management
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       summary: Query all constraint references in the specified area/volume from the
         DSS.
       description: |-
@@ -2405,7 +2418,7 @@ paths:
       - Authority:
         - utm.constraint_management
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       summary: Retrieve the specified constraint reference from the DSS.
       operationId: getConstraintReference
       responses:
@@ -2672,7 +2685,7 @@ paths:
       - dss
       security:
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
       description: |-
@@ -2746,7 +2759,7 @@ paths:
       - dss
       security:
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
       summary: Retrieve the specified subscription from the DSS.
@@ -2796,7 +2809,7 @@ paths:
     put:
       security:
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
       summary: Create the specified subscription in the DSS.
@@ -2879,7 +2892,7 @@ paths:
     put:
       security:
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
       summary: Update the specified subscription in the DSS.
@@ -2952,7 +2965,7 @@ paths:
       - dss
       security:
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
       summary: Remove the specified subscription from the DSS.
@@ -3020,9 +3033,13 @@ paths:
       - Authority:
         - utm.constraint_management
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
+      - Authority:
+        - utm.availability_arbitration
       summary: Report information about communication issues to a DSS.
       operationId: makeDssReport
       description: Report issues to a DSS. Data sent to this endpoint is archived.
@@ -3143,6 +3160,8 @@ paths:
         - utm.availability_arbitration
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
       summary: Get availability status of a USS.
       operationId: getUssAvailability
       description: Get availability status of a USS.
@@ -3270,7 +3289,7 @@ paths:
       - p2p_utm
       security:
       - Authority:
-        - utm.strategic_coordination
+        - utm.conformance_monitoring_sa
       summary: Query detailed information on the position of an off-nominal operational
         intent from a USS.
       operationId: getOperationalIntentTelemetry
@@ -3409,7 +3428,7 @@ paths:
       - p2p_utm
       security:
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       summary: Retrieve the specified constraint details from a USS.
       operationId: getConstraintDetails
       description: |-
@@ -3535,9 +3554,13 @@ paths:
       - Authority:
         - utm.strategic_coordination
       - Authority:
-        - utm.constraint_ingestion
+        - utm.constraint_processing
       - Authority:
         - utm.constraint_management
+      - Authority:
+        - utm.conformance_monitoring_sa
+      - Authority:
+        - utm.availability_arbitration
       summary: Notify USS of an error encountered that might otherwise go unnoticed.
       operationId: makeUssReport
       description: Endpoint to provide feedback (errors, etc.) that might otherwise
