@@ -3,12 +3,13 @@ info:
   title: UTM API (USS->DSS and USS->USS)
   version: 0.3.17
   description: |-
-    Interface definitions for 'Discovery and Synchronization Service' (DSS) and 'UAS Service Supplier (USS).
+    Interface definitions for communication between a UAS Service Supplier (USS) and a Discovery and Synchronization Service
+    (DSS), as well as for communication between two USSs.
 
     DSS functionality includes identification of peer UTM USS instances (managing flight operational intents and constraints).
     USS functionality includes sharing details of flight operational intents and constraints.
 
-    Note: Unless otherwise specified, fields specified in a message but not declared in the API shall be ignored.
+    Note: Unless otherwise specified, fields specified in a message but not declared in the API must be ignored.
 
     Whenever a object-type field may be omitted, it may also be set to null for the same effect.
 
@@ -66,17 +67,17 @@ components:
             utm.strategic_coordination: |-
               Client may perform operations encompassed by the strategic coordination role including strategic conflict detection.
             utm.constraint_management: |-
-              Client may manage (create, edit, and delete) constraints they manage.
+              Client may manage (create, edit, and delete) constraints they manage according to the constraint management role.
             utm.constraint_processing: |-
-              Client may read constraint references from the DSS and details from the partner USSs.
+              Client may read constraint references from the DSS and details from the partner USSs according to the constraint processing role.
             utm.conformance_monitoring_sa: |-
               Client may perform operations encompassed by the conformance monitoring for situational awareness role.
             utm.availability_arbitration: |-
               Client may set the availability state of USSs in the DSS.
       description: |-
-        Authorization from, or on behalf of, an authorization authority.  This authority shall issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
+        Authorization from, or on behalf of, an authorization authority.  This authority will issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
 
-        The following fields shall be included in the JWT claim for access tokens issued by this authority:
+        The following fields must be included in the JWT claim for access tokens issued by this authority:
 
         * `iss`, with the URL at which the token generation request was received.
         * `exp`, with a time no further than 1 hour in the future.
@@ -84,11 +85,11 @@ components:
         * `scope`, with a string composed of a space-separated list of strings indicating the scopes granted, per RFC 6749.
         * `jti`, according to RFC 7519.
 
-        Following the principle of least privilege, only one of the scopes enumerated in this document shall be granted in a single token (though other scopes may accompany it).  The tokens granted by this authority shall protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
+        Following the principle of least privilege, only one of the scopes enumerated in this document should be granted in a single token (though other scopes may accompany it).  The tokens granted by this authority must protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
 
-        When using the `aud` claim to protect against the reuse of received tokens, and absent guidance on behalf of the competent authority to the contrary, the JWT `aud` claim requested by the client shall be included in each access token and shall contain the fully qualified domain name of the URL the access token will be used to access.  For example, if a USS were querying the endpoint at https://dss.example.com:8888/rid/v2/dss/identification_service_areas, the access token included in the request should specify `"aud": "dss.example.com"`.
+        When using the `aud` claim to protect against the reuse of received tokens, and absent guidance on behalf of the competent authority to the contrary, the JWT `aud` claim requested by the client must be included in each access token and must contain the fully qualified domain name of the URL the access token will be used to access.  For example, if a USS were querying the endpoint at https://dss.example.com:8888/rid/v2/dss/identification_service_areas, the access token included in the request should specify `"aud": "dss.example.com"`.
 
-        Clients shall provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
+        Clients must provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
 
   schemas:
     UUIDv4Format:
@@ -196,7 +197,7 @@ components:
             The numeric value of the altitude. Note that min and max values are
             added as a sanity check. As use cases evolve and more options are
             made available in terms of units of measure or reference systems,
-            these bounds should be re-evaluated.
+            these bounds may be re-evaluated.
           type: number
           format: double
           minimum: -8000
@@ -246,11 +247,11 @@ components:
     Polygon:
       description: |-
         An enclosed area on the earth.
-        The bounding edges of this polygon shall be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude.
-        The winding order shall be interpreted as the order which produces the smaller area.
-        The path between two vertices shall be the shortest possible path between those vertices.
+        The bounding edges of this polygon are defined to be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude.
+        The winding order must be interpreted as the order which produces the smaller area.
+        The path between two vertices is defined to be the shortest possible path between those vertices.
         Edges may not cross.
-        Vertices may not be duplicated.  In particular, the final polygon vertex shall not be identical to the first vertex.
+        Vertices may not be duplicated.  In particular, the final polygon vertex must not be identical to the first vertex.
       required:
       - vertices
       type: object
@@ -285,8 +286,8 @@ components:
 
     Volume3D:
       description: |-
-        A three-dimensional geographic volume consisting of a vertically-extruded shape.  Exactly
-        one outline must be specified.
+        A three-dimensional geographic volume consisting of a vertically-extruded shape.
+        Exactly one outline must be specified.
       type: object
       properties:
         outline_circle:
@@ -385,11 +386,11 @@ components:
           $ref: '#/components/schemas/SubscriptionID'
         version:
           description: |-
-            Version that the DSS changes every time a USS changes the subscription.  The DSS
-            incrementing the notification_index does not constitute a change that triggers a
-            new version.  A USS must specify this version when modifying an existing
-            subscription to ensure consistency in read-modify-write operations and distributed
-            systems.
+            Version of the Subscription that the DSS changes every time a USS changes the
+            subscription.  The DSS incrementing the notification_index does not constitute a
+            change that triggers a new version.  A USS must specify this version when modifying
+            an existing subscription to ensure consistency in read-modify-write operations and
+            distributed systems.
           type: string
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
