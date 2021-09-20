@@ -410,13 +410,15 @@ components:
         notify_for_operational_intents:
           description: If true, trigger notifications when operational intents are
             created, updated, or deleted.  Otherwise, changes in operational intents
-            should not trigger notifications.
+            should not trigger notifications.  The scope utm.strategic_coordination is
+            required to set this flag true.
           type: boolean
           default: false
         notify_for_constraints:
           description: If true, trigger notifications when constraints are created,
             updated, or deleted.  Otherwise, changes in constraints should not trigger
-            notifications.
+            notifications.  The scope utm.constraint_processing is required to set this
+            flag true.
           type: boolean
           default: false
         implicit_subscription:
@@ -500,13 +502,15 @@ components:
         notify_for_operational_intents:
           description: If true, trigger notifications when operational intents are
             created, updated, or deleted.  Otherwise, changes in operational intents
-            should not trigger notifications.
+            should not trigger notifications.  The scope utm.strategic_coordination is
+            required to set this flag true.
           type: boolean
           default: false
         notify_for_constraints:
           description: If true, trigger notifications when constraints are created,
             updated, or deleted.  Otherwise, changes in constraints should not trigger
-            notifications.
+            notifications.  The scope utm.constraint_processing is required to set this
+            flag true.
           type: boolean
           default: false
 
@@ -740,7 +744,9 @@ components:
           - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
           description: |-
-            True if this operational intent's subscription should trigger notifications when constraints change.  Otherwise, changes in constraints should not trigger notifications.
+            True if this operational intent's subscription should trigger notifications when constraints change.
+            Otherwise, changes in constraints should not trigger notifications.  The scope
+            utm.constraint_processing is required to set this flag true.
           type: boolean
           default: false
 
