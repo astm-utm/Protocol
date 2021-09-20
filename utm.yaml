@@ -959,8 +959,6 @@ components:
     OperationalIntentDetails:
       description: |-
         Details of a UTM operational intent. Note that this data is not stored in the DSS; only with the clients.
-      required:
-      - volumes
       type: object
       properties:
         volumes:
@@ -969,10 +967,22 @@ components:
 
             Start and end times, as well as lower and upper altitudes, are required for each
             volume. The end time may not be in the past.
-          minItems: 1
+
+            Required with at least one item when the operational intent is Accepted, Activated, or Nonconforming.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
+          default: []
+        off_nominal_volumes:
+          description: |-
+            Volumes that contain the anticipated area of non-conformance while the aircraft is in the Nonconforming
+            or Contingent states.
+
+            Required with at least one item when the operational intent is Nonconforming or Contingent.
+          type: array
+          items:
+            $ref: '#/components/schemas/Volume4D'
+          default: []
         priority:
           $ref: '#/components/schemas/Priority'
 
