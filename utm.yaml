@@ -579,7 +579,7 @@ components:
         The create or update request for this operational intent reference must include a Key containing all OVNs for
         all relevant Entities.
 
-        'NonConforming': UA is temporarily outside its volumes, but the situation is expected to be recoverable; see
+        'Nonconforming': UA is temporarily outside its volumes, but the situation is expected to be recoverable; see
         standard text for more details.
 
         In this state, the `/uss/v1/operational_intents/{entityid}/telemetry' USS-USS endpoint should respond, if
@@ -597,7 +597,7 @@ components:
       enum:
       - Accepted
       - Activated
-      - NonConforming
+      - Nonconforming
       - Contingent
 
     OperationalIntentReference:
@@ -699,7 +699,7 @@ components:
           description: |-
             Proof that the USS creating or mutating this operational intent was aware of the current state of the
             airspace, with the expectation that this operational intent is therefore deconflicted from all relevant
-            features in the airspace.  This field is not required when declaring an operational intent NonConforming
+            features in the airspace.  This field is not required when declaring an operational intent Nonconforming
             or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
             OVNs for constraints are required if and only if the USS managing this operational intent is considering
             constraints, which is determined by whether the subscription associated with this operational intent
