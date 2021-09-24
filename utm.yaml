@@ -65,13 +65,13 @@ components:
           tokenUrl: https://auth.example.com/oauth/token
           scopes:
             utm.strategic_coordination: |-
-              Client may perform operations encompassed by the strategic coordination role including strategic conflict detection.
+              Client may perform actions encompassed by the strategic coordination role including strategic conflict detection.
             utm.constraint_management: |-
-              Client may manage (create, edit, and delete) constraints they manage according to the constraint management role.
+              Client may manage (create, edit, and delete) constraints according to the constraint management role.
             utm.constraint_processing: |-
               Client may read constraint references from the DSS and details from the partner USSs according to the constraint processing role.
             utm.conformance_monitoring_sa: |-
-              Client may perform operations encompassed by the conformance monitoring for situational awareness role.
+              Client may perform actions encompassed by the conformance monitoring for situational awareness role.
             utm.availability_arbitration: |-
               Client may set the availability state of USSs in the DSS.
       description: |-
@@ -386,7 +386,7 @@ components:
           $ref: '#/components/schemas/SubscriptionID'
         version:
           description: |-
-            Version of the Subscription that the DSS changes every time a USS changes the
+            Version of the subscription that the DSS changes every time a USS changes the
             subscription.  The DSS incrementing the notification_index does not constitute a
             change that triggers a new version.  A USS must specify this version when modifying
             an existing subscription to ensure consistency in read-modify-write operations and
@@ -988,6 +988,8 @@ components:
             volume. The end time may not be in the past.
 
             Required with at least one item when the operational intent is Accepted, Activated, or Nonconforming.
+
+            May not contain any items when the operational intent is Contingent.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
@@ -997,7 +999,12 @@ components:
             Volumes that contain the anticipated area of non-conformance while the aircraft is in the Nonconforming
             or Contingent states.
 
+            Start and end times, as well as lower and upper altitudes, are required for each
+            volume. The end time may not be in the past.
+
             Required with at least one item when the operational intent is Nonconforming or Contingent.
+
+            May not contain any items when the operational intent is Accepted or Activated.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
@@ -1562,12 +1569,17 @@ components:
           enum:
           - GEN0400
           - GEN0405
-          - SCD0035
-          - SCD0070
+          - SCD0090
+          - SCD0095
           - ACM0010
           - CMSA0115
           - CMSA0300
-          - CSTP0015
+          - CSTP0005
+          - CSTP0010
+          - CSTP0020
+          - CSTP0025
+          - CSTP0030
+          - CSTO0035
 
     UserInputRecord:
       type: object
@@ -1591,7 +1603,6 @@ components:
           description: |-
             Requirement ID that pertains to the given notification
           enum:
-          - OPIN0025
           - OPIN0040
           - CMSA0010
           - CMSA0025
@@ -2123,6 +2134,9 @@ paths:
       - Authority:
         - utm.strategic_coordination
       - Authority:
+        - utm.strategic_coordination
+        - utm.constraint_processing
+      - Authority:
         - utm.conformance_monitoring_sa
       summary: Create the specified operational intent reference in the DSS.
       operationId: createOperationalIntentReference
@@ -2213,6 +2227,9 @@ paths:
       security:
       - Authority:
         - utm.strategic_coordination
+      - Authority:
+        - utm.strategic_coordination
+        - utm.constraint_processing
       - Authority:
         - utm.conformance_monitoring_sa
       summary: Update the specified operational intent reference in the DSS.
