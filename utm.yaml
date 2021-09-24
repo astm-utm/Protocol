@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.17
+  version: 1.0.0
   description: |-
     Interface definitions for communication between a UAS Service Supplier (USS) and a Discovery and Synchronization Service
     (DSS), as well as for communication between two USSs.
