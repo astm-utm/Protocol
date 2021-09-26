@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.17
+  version: 0.3.17+uspace
   description: |-
     Interface definitions for communication between a UAS Service Supplier (USS) and a Discovery and Synchronization Service
     (DSS), as well as for communication between two USSs.
@@ -990,6 +990,8 @@ components:
             Required with at least one item when the operational intent is Accepted, Activated, or Nonconforming.
 
             May not contain any items when the operational intent is Contingent.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 5.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
@@ -1011,6 +1013,8 @@ components:
           default: []
         priority:
           $ref: '#/components/schemas/Priority'
+        flight_authorisation:
+          $ref: '#/components/schemas/FlightAuthorisation'
 
     Priority:
       description: |-
@@ -1019,9 +1023,146 @@ components:
         operational intent may not create a conflict with a higher-priority operational intent.  A higher-priority
         operational intent may create a conflict with a lower-priority operational intent.  The regulator specifies
         whether an operational intent may create a conflict with other operational intents of the same priority.
+
+        The priority represents the type of flight and is required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION
+        (EU) 2021/664, paragraph 3. The following values are allowed:
+        - 0: Normal operation.
+        - 100: Special operations as defined in accordance with Article 4 of Implementing Regulation (EU) No 923/2012.
       type: integer
       default: 0
 
+    FlightAuthorisation:
+      description: |-
+        Full description of a flight authorisation including mandatory information required by ANNEX IV of COMMISSION
+        IMPLEMENTING REGULATION (EU) 2021/664 for an UAS flight authorisation request.
+
+        Reference: https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32021R0664&from=EN#d1e32-178-1
+      required:
+      - uas_serial_number
+      - operation_mode
+      - operation_category
+      - uas_class
+      - identification_technologies
+      - connectivity_methods
+      - endurance_minutes
+      - emergency_procedure_url
+      - operator_id
+      type: object
+      properties:
+        uas_serial_number:
+          description: |-
+            Unique serial number of the unmanned aircraft or, if the unmanned aircraft
+            is privately built, the unique serial number of the add-on.
+            This is expressed in the ANSI/CTA-2063 Physical Serial Number format.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 1.
+          type: string
+          example: MFR1C123456789ABC
+        operation_mode:
+          description: |-
+            Mode of operation.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 2.
+          type: string
+          enum:
+          - vlos
+          - bvlos
+          example: vlos
+        operation_category:
+          description: |-
+            Category of UAS operation (‘open’, ‘specific’, ‘certified’) as defined in COMMISSION
+            DELEGATED REGULATION (EU) 2019/945.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4.
+          type: string
+          enum:
+          - open
+          - specific
+          - certified
+          example: open
+        uas_class:
+          description: |-
+            UAS aircraft class as defined in COMMISSION DELEGATED REGULATION (EU) 2019/945 (C0 to C4)
+            and COMMISSION DELEGATED REGULATION (EU) 2020/1058 (C5 and C6).
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4.
+          type: string
+          enum:
+          - C0
+          - C1
+          - C2
+          - C3
+          - C4
+          - C5
+          - C6
+          - other
+          example: C0
+        uas_type_certificate:
+          description: |-
+            Provisional field. Not applicable as of September 2021.
+
+            Required only if `uas_class` is set to `other` by ANNEX IV of COMMISSION IMPLEMENTING
+            REGULATION (EU) 2021/664, paragraph 4.
+          type: string
+          example: ""
+        # TODO: clarify options
+        identification_technologies:
+          description: |-
+            Technology used to identify the UAS.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 6.
+          type: array
+          items:
+            type: string
+          example: ["netrid", "ads-b"]
+        # TODO: clarify options
+        connectivity_methods:
+          description: |-
+            Connectivity methods.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 7.
+          type: array
+          items:
+            type: string
+          example: ["cellular"]
+        endurance_minutes:
+          description: |-
+            Endurance of the UAS. This is expressed in minutes.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 8.
+          type: number
+          format: int32
+          example: 20
+        emergency_procedure_url:
+          description: |-
+            The URL at which the applicable emergency procedure in case of a loss of command and
+            control link may be retrieved.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 9.
+          type: string
+          example: https://utm_uss.com/emergency_procedure
+        # TODO: add standard reference
+        operator_id:
+          description: |-
+            Registration number of the UAS operator.
+
+            The format is defined in EASA Easy Access Rules for Unmanned Aircraft Systems GM1 to AMC1
+            Article 14(6) Registration of UAS operators and ‘certified’ UAS.
+
+            Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
+          type: string
+          example: FIN87astrdge12k8
+        # TODO: add standard reference
+        uas_id:
+          description: |-
+            When applicable, the registration number of the unmanned aircraft.
+
+            This is expressed using the nationality and registration mark of the unmanned aircraft in
+            line with ICAO Annex 7.
+
+            Specified by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
+          type: string
+          example: HB-XXXX
     OperationalIntent:
       description: Full description of a UTM operational intent.
       required:
