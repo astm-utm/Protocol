@@ -603,7 +603,7 @@ components:
         situation is expected to be recoverable; see standard text for more
         details.
 
-        In this state, the `/uss/v1/operational_intents/{entityid}/telemetry'
+        In this state, the `/uss/v1/operational_intents/{entityid}/telemetry`
         USS-USS endpoint should respond, if available, to queries from USS
         peers.  The create or update request for this operational intent may
         omit a Key in this case because the operational intent is being adjusted
@@ -613,7 +613,7 @@ components:
         coordinate operational intent; see standard text for more details.
 
         This state must transition to Ended.  In this state, the
-        `/uss/v1/operational_intents/{entityid}/telemetry' USS-USS endpoint
+        `/uss/v1/operational_intents/{entityid}/telemetry` USS-USS endpoint
         should respond, if available, to queries from USS peers.  The create or
         update request for this operational intent may omit a Key in this case
         because the operational intent is being adjusted as flown and cannot
@@ -952,6 +952,7 @@ components:
         ConstraintReference. in the DSS.
       required:
       - subscribers
+      - constraint_reference
       type: object
       properties:
         subscribers:
