@@ -753,21 +753,23 @@ components:
           description: >-
             The ID of an existing subscription that the USS will use to keep the
             operator informed about updates to relevant airspace information. If
-            this field is not provided, then the `new_subscription` field must
-            be provided in order to provide notification capability for the
-            operational intent.  The subscription specified by this ID must
-            cover at least the area over which this operational intent is
-            conducted, and it must provide notifications for operational
-            intents.
+            this field is not provided when the operational intent is in the
+            Activated, Nonconforming, or Contingent state, then the
+            `new_subscription` field must be provided in order to provide
+            notification capability for the operational intent.  The
+            subscription specified by this ID must cover at least the area over
+            which this operational intent is conducted, and it must provide
+            notifications for operational intents.
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         new_subscription:
           description: >-
             If an existing subscription is not specified in `subscription_id`,
-            then this field must be populated.  When this field is populated, an
-            implicit subscription will be created and associated with this
-            operational intent, and will generally be deleted automatically upon
-            the deletion of this operational intent.
+            and the operational intent is in the Activated, Nonconforming, or
+            Contingent state, then this field must be populated.  When this
+            field is populated, an implicit subscription will be created and
+            associated with this operational intent, and will generally be
+            deleted automatically upon the deletion of this operational intent.
           anyOf:
           - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
     ImplicitSubscriptionParameters:
