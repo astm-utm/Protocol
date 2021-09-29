@@ -94,8 +94,9 @@ components:
         * `sub`, with unique ID of the client requesting the access token.
 
         * `scope`, with a string composed of a space-separated list of strings
-        indicating the scopes granted, per RFC 6749. * `jti`, according to RFC
-        7519.
+        indicating the scopes granted, per RFC 6749.
+
+        * `jti`, according to RFC 7519.
 
         Following the principle of least privilege, only one of the scopes
         enumerated in this document should be granted in a single token (though
@@ -1511,7 +1512,7 @@ components:
         problem:
           type: string
           description: >-
-            Human-readable description of the problem with the exchange, if any.
+            'Human-readable description of the problem with the exchange, if any.'
     ErrorReport:
       type: object
       description: A report informing a server of a communication problem.
@@ -2261,9 +2262,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the operational intent in a disallowed
-            way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the operational intent in a
+            disallowed way.
         '401':
           content:
             application/json:
@@ -2287,8 +2289,10 @@ paths:
                 $ref: '#/components/schemas/AirspaceConflictResponse'
           description: >-
             * The provided key did not prove knowledge of all current and
-            relevant airspace Entities * Despite repeated attempts, the DSS was
-            unable to complete the update because of other simultaneous changes.
+            relevant airspace Entities
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '412':
           content:
             application/json:
@@ -2361,9 +2365,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the operational intent in a disallowed
-            way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the operational intent in a
+            disallowed way.
         '401':
           content:
             application/json:
@@ -2387,10 +2392,13 @@ paths:
                 $ref: '#/components/schemas/AirspaceConflictResponse'
           description: >-
             * The provided key did not prove knowledge of all current and
-            relevant airspace Entities * The provided `ovn` does not match the
-            current version of the existing operational intent. * Despite
-            repeated attempts, the DSS was unable to complete the update because
-            of other simultaneous changes.
+            relevant airspace Entities
+
+            * The provided `ovn` does not match the current version of the
+            existing operational intent.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '412':
           content:
             application/json:
@@ -2438,9 +2446,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the operational intent in a disallowed
-            way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the operational intent in a
+            disallowed way.
         '401':
           content:
             application/json:
@@ -2470,9 +2479,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The provided `ovn` does not match the current version of the
-            existing operational intent. * Despite repeated attempts, the DSS
-            was unable to complete the update because of other simultaneous
-            changes.
+            existing operational intent.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '412':
           content:
             application/json:
@@ -2656,8 +2666,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the constraint in a disallowed way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the constraint in a disallowed
+            way.
         '401':
           content:
             application/json:
@@ -2680,9 +2692,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * A constraint with the provided ID already exists. * Despite
-            repeated attempts, the DSS was unable to complete the update because
-            of other simultaneous changes.
+            * A constraint with the provided ID already exists.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '413':
           content:
             application/json:
@@ -2742,8 +2755,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the constraint in a disallowed way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the constraint in a disallowed
+            way.
         '401':
           content:
             application/json:
@@ -2767,8 +2782,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The provided `ovn` does not match the current version of the
-            existing constraint. * Despite repeated attempts, the DSS was unable
-            to complete the update because of other simultaneous changes.
+            existing constraint.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '413':
           content:
             application/json:
@@ -2804,8 +2821,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the constraint in a disallowed way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the constraint in a disallowed
+            way.
         '401':
           content:
             application/json:
@@ -2835,8 +2854,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The provided `ovn` does not match the current version of the
-            existing constraint. * Despite repeated attempts, the DSS was unable
-            to complete the update because of other simultaneous changes.
+            existing constraint.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '429':
           content:
             application/json:
@@ -3026,8 +3047,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the subscription in a disallowed way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the subscription in a disallowed
+            way.
         '401':
           content:
             application/json:
@@ -3043,18 +3066,20 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The access token was decoded successfully but did not include a
-            scope appropriate to this endpoint or the request. * Client
-            attempted to request notifications for an Entity type to which the
-            scopes included in the access token do not provide access.
+            scope appropriate to this endpoint or the request.
+
+            * Client attempted to request notifications for an Entity type to
+            which the scopes included in the access token do not provide access.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * A subscription with the specified ID already exists. * Despite
-            repeated attempts, the DSS was unable to complete the update because
-            of other simultaneous changes.
+            * A subscription with the specified ID already exists.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '429':
           content:
             application/json:
@@ -3122,8 +3147,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more input parameters were missing or invalid. * The
-            request attempted to mutate the subscription in a disallowed way.
+            * One or more input parameters were missing or invalid.
+
+            * The request attempted to mutate the subscription in a disallowed
+            way.
         '401':
           content:
             application/json:
@@ -3139,9 +3166,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The access token was decoded successfully but did not include a
-            scope appropriate to this endpoint or the request. * Client
-            attempted to request notifications for an Entity type to which the
-            scopes included in the access token do not provide access.
+            scope appropriate to this endpoint or the request.
+
+            * Client attempted to request notifications for an Entity type to
+            which the scopes included in the access token do not provide access.
         '409':
           content:
             application/json:
@@ -3149,9 +3177,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * A subscription with the specified ID already exists and is managed
-            by a different client. * The provided `version` does not match the
-            current subscription. * Despite repeated attempts, the DSS was
-            unable to complete the update because of other simultaneous changes.
+            by a different client.
+
+            * The provided `version` does not match the current subscription.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '429':
           content:
             application/json:
@@ -3218,9 +3249,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * A subscription with the specified ID is managed by a different
-            client. * The provided `version` does not match the current
-            subscription. * Despite repeated attempts, the DSS was unable to
-            complete the deletion because of other simultaneous changes.
+            client.
+
+            * The provided `version` does not match the current subscription.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            deletion because of other simultaneous changes.
         '429':
           content:
             application/json:
@@ -3272,8 +3306,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more parameters were missing or invalid. * The report could
-            not be parsed, or contains unrecognized data.
+            * One or more parameters were missing or invalid.
+
+            * The report could not be parsed, or contains unrecognized data.
         '401':
           content:
             application/json:
@@ -3597,8 +3632,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more parameters were missing or invalid. * The Entity could
-            not be parsed, or contains illegal data.
+            * One or more parameters were missing or invalid.
+
+            * The Entity could not be parsed, or contains illegal data.
         '401':
           content:
             application/json:
@@ -3614,9 +3650,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The access token was decoded successfully but did not include a
-            scope appropriate to this endpoint. * The client identified in the
-            access token is not the manager of this Entity according to the
-            receiving client's records.
+            scope appropriate to this endpoint.
+
+            * The client identified in the access token is not the manager of
+            this Entity according to the receiving client's records.
         '409':
           content:
             application/json:
@@ -3734,8 +3771,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more parameters were missing or invalid. * The Entity could
-            not be parsed, or contains illegal data.
+            * One or more parameters were missing or invalid.
+
+            * The Entity could not be parsed, or contains illegal data.
         '401':
           content:
             application/json:
@@ -3751,9 +3789,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
             * The access token was decoded successfully but did not include a
-            scope appropriate to this endpoint. * The client identified in the
-            access token is not the manager of this Entity according to the
-            receiving client's records.
+            scope appropriate to this endpoint.
+
+            * The client identified in the access token is not the manager of
+            this Entity according to the receiving client's records.
         '409':
           content:
             application/json:
@@ -3817,8 +3856,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: >-
-            * One or more parameters were missing or invalid. * The report could
-            not be parsed, or contains unrecognized data.
+            * One or more parameters were missing or invalid.
+
+            * The report could not be parsed, or contains unrecognized data.
         '401':
           content:
             application/json:
