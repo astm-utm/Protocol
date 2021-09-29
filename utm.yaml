@@ -1,18 +1,21 @@
 openapi: 3.0.2
 info:
   title: UTM API (USS->DSS and USS->USS)
-  version: 0.3.17
-  description: |-
-    Interface definitions for communication between a UAS Service Supplier (USS) and a Discovery and Synchronization Service
-    (DSS), as well as for communication between two USSs.
+  version: 1.0.0
+  description: >-
+    Interface definitions for communication between a UAS Service Supplier (USS)
+    and a Discovery and Synchronization Service (DSS), as well as for
+    communication between two USSs.
 
-    DSS functionality includes identification of peer UTM USS instances (managing flight operational intents and constraints).
-    USS functionality includes sharing details of flight operational intents and constraints.
+    DSS functionality includes identification of peer UTM USS instances
+    (managing flight operational intents and constraints). USS functionality
+    includes sharing details of flight operational intents and constraints.
 
-    Note: Unless otherwise specified, fields specified in a message but not declared in the API must be ignored.
+    Note: Unless otherwise specified, fields specified in a message but not
+    declared in the API must be ignored.
 
-    Whenever a object-type field may be omitted, it may also be set to null for the same effect.
-
+    Whenever a object-type field may be omitted, it may also be set to null for
+    the same effect.
 security:
 - Authority:
   - utm.strategic_coordination
@@ -20,42 +23,37 @@ security:
   - utm.constraint_processing
   - utm.conformance_monitoring_sa
   - utm.availability_arbitration
-
 tags:
 - name: Operational intent references
-  description: |-
-    Endpoints exposed by the DSS for interaction with references to operational intents.
+  description: >-
+    Endpoints exposed by the DSS for interaction with references to
+    operational intents.
 - name: Operational intent details
-  description: |-
-    Endpoints exposed by USSs for interaction with details of operational intents.
+  description: >-
+    Endpoints exposed by USSs for interaction with details of operational
+    intents.
 - name: Constraint references
-  description: |-
-    Endpoints exposed by the DSS for interaction with references to constraints.
+  description: >-
+    Endpoints exposed by the DSS for interaction with references to
+    constraints.
 - name: Constraint details
-  description: |-
+  description: >-
     Endpoints exposed by USSs for interaction with details of constraints.
 - name: Subscriptions
-  description: |-
+  description: >-
     Endpoints exposed by the DSS for interaction with subscription entities.
 - name: Reports
-  description: |-
-    Endpoints exposed by the DSS for reporting peer DSS issues.
+  description: Endpoints exposed by the DSS for reporting peer DSS issues.
 - name: Availability
-  description: |-
-    Endpoints exposed by the DSS for declaring USS availability.
+  description: Endpoints exposed by the DSS for declaring USS availability.
 - name: Logging
-  description: |-
-    Pseudo-endpoints not intended to be implemented literally, but rather to illustrate logging data formats
+  description: >-
+    Pseudo-endpoints not intended to be implemented literally, but rather to
+    illustrate logging data formats
 - name: dss
   description: Endpoints exposed by the DSS server.
 - name: p2p_utm
   description: Endpoints exposed by UTM USSs for peer-peer communication.
-
-
-#
-#
-#
-
 components:
   securitySchemes:
     Authority:
@@ -64,89 +62,112 @@ components:
         clientCredentials:
           tokenUrl: https://auth.example.com/oauth/token
           scopes:
-            utm.strategic_coordination: |-
-              Client may perform actions encompassed by the strategic coordination role including strategic conflict detection.
-            utm.constraint_management: |-
-              Client may manage (create, edit, and delete) constraints according to the constraint management role.
-            utm.constraint_processing: |-
-              Client may read constraint references from the DSS and details from the partner USSs according to the constraint processing role.
-            utm.conformance_monitoring_sa: |-
-              Client may perform actions encompassed by the conformance monitoring for situational awareness role.
-            utm.availability_arbitration: |-
+            utm.strategic_coordination: >-
+              Client may perform actions encompassed by the strategic
+              coordination role including strategic conflict detection.
+            utm.constraint_management: >-
+              Client may manage (create, edit, and delete) constraints according
+              to the constraint management role.
+            utm.constraint_processing: >-
+              Client may read constraint references from the DSS and details
+              from the partner USSs according to the constraint processing role.
+            utm.conformance_monitoring_sa: >-
+              Client may perform actions encompassed by the conformance
+              monitoring for situational awareness role.
+            utm.availability_arbitration: >-
               Client may set the availability state of USSs in the DSS.
-      description: |-
-        Authorization from, or on behalf of, an authorization authority.  This authority will issue access tokens that are JSON Web Tokens as defined in RFC 7519, using the `RS256` algorithm for the signature, publish to all providers the public key for verifying that signature, and implement standard OAuth server discovery mechanisms as described in RFC 8414.
+      description: >-
+        Authorization from, or on behalf of, an authorization authority.  This
+        authority will issue access tokens that are JSON Web Tokens as defined
+        in RFC 7519, using the `RS256` algorithm for the signature, publish to
+        all providers the public key for verifying that signature, and implement
+        standard OAuth server discovery mechanisms as described in RFC 8414.
 
-        The following fields must be included in the JWT claim for access tokens issued by this authority:
+        The following fields must be included in the JWT claim for access tokens
+        issued by this authority:
 
-        * `iss`, with the URL at which the token generation request was received.
+        * `iss`, with the URL at which the token generation request was
+        received.
+
         * `exp`, with a time no further than 1 hour in the future.
+
         * `sub`, with unique ID of the client requesting the access token.
-        * `scope`, with a string composed of a space-separated list of strings indicating the scopes granted, per RFC 6749.
+
+        * `scope`, with a string composed of a space-separated list of strings
+        indicating the scopes granted, per RFC 6749.
+
         * `jti`, according to RFC 7519.
 
-        Following the principle of least privilege, only one of the scopes enumerated in this document should be granted in a single token (though other scopes may accompany it).  The tokens granted by this authority must protect against reuse of received tokens to impersonate the sender to other recipients (via use of the `aud` claim or other means).
+        Following the principle of least privilege, only one of the scopes
+        enumerated in this document should be granted in a single token (though
+        other scopes may accompany it).  The tokens granted by this authority
+        must protect against reuse of received tokens to impersonate the sender
+        to other recipients (via use of the `aud` claim or other means).
 
-        When using the `aud` claim to protect against the reuse of received tokens, and absent guidance on behalf of the competent authority to the contrary, the JWT `aud` claim requested by the client must be included in each access token and must contain the fully qualified domain name of the URL the access token will be used to access.  For example, if a USS were querying the endpoint at https://dss.example.com:8888/rid/v2/dss/identification_service_areas, the access token included in the request should specify `"aud": "dss.example.com"`.
+        When using the `aud` claim to protect against the reuse of received
+        tokens, and absent guidance on behalf of the competent authority to the
+        contrary, the JWT `aud` claim requested by the client must be included
+        in each access token and must contain the fully qualified domain name of
+        the URL the access token will be used to access.  For example, if a USS
+        were querying the endpoint at
+        https://dss.example.com:8888/rid/v2/dss/identification_service_areas,
+        the access token included in the request should specify `"aud":
+        "dss.example.com"`.
 
-        Clients must provide these access tokens in an `Authorization` header in the form `Bearer <token>` in accordance with RFC 6750.
-
+        Clients must provide these access tokens in an `Authorization` header in
+        the form `Bearer <token>` in accordance with RFC 6750.
   schemas:
     UUIDv4Format:
-      description: |-
+      description: >-
         String whose format matches a version-4 UUID according to RFC 4122.
       maxLength: 36
       minLength: 36
       type: string
       format: uuid
       pattern: >-
-        '^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$'
+        ^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-4[0-9a-fA-F]{3}\\-[8-b][0-9a-fA-F]{3}\\-[0-9a-fA-F]{12}$
       example: 03e5572a-f733-49af-bc14-8a18bd53ee39
-
     EntityID:
-      description: |-
-        Identifier for an Entity communicated through the DSS.  Formatted as
-        a UUIDv4.
+      description: >-
+        Identifier for an Entity communicated through the DSS.  Formatted as a
+        UUIDv4.
       anyOf:
       - $ref: '#/components/schemas/UUIDv4Format'
       example: 2f8343be-6482-4d1b-a474-16847e01af1e
-
     EntityOVN:
       title: EntityOVN
-      description: |-
-        A token associated with a particular UTM Entity+version created
-        by the DSS upon creation or modification of an Entity reference and provided
-        to the client creating or modifying the Entity reference.  The EntityOVN
-        is stored privately by the DSS and then compared against entries in a Key
-        provided to mutate the airspace.  The EntityOVN is also provided by
-        the client whenever that client transmits the full information of the Entity
+      description: >-
+        A token associated with a particular UTM Entity+version created by the
+        DSS upon creation or modification of an Entity reference and provided to
+        the client creating or modifying the Entity reference.  The EntityOVN is
+        stored privately by the DSS and then compared against entries in a Key
+        provided to mutate the airspace.  The EntityOVN is also provided by the
+        client whenever that client transmits the full information of the Entity
         (either via GET, or via a subscription notification).
       type: string
       minLength: 16
       maxLength: 128
       example: 9d158f59-80b7-4c11-9c0c-8a2b4d936b2d
-
     SubscriptionID:
-      description: |-
+      description: >-
         Identifier for a subscription communicated through the DSS.  Formatted
         as a UUIDv4.
       anyOf:
       - $ref: '#/components/schemas/UUIDv4Format'
       example: 78ea3fe8-71c2-4f5c-9b44-9c02f5563c6f
-
     Key:
-      description: |
-        Proof that a client has obtained the latest airspace content, used to ensure that write
-        operations to the DSS occur only when the latest content is known (i.e. has been read). The
-        client is required to pass a current Key constructed from information obtained with
-        previous read operations and subsequent requests for full information, and optionally,
-        subscription updates for deconflicted write operations to the DSS.  The contents of this
-        data structure are generated by the client.
+      description: >-
+        Proof that a client has obtained the latest airspace content, used to
+        ensure that write operations to the DSS occur only when the latest
+        content is known (i.e. has been read). The client is required to pass a
+        current Key constructed from information obtained with previous read
+        operations and subsequent requests for full information, and optionally,
+        subscription updates for deconflicted write operations to the DSS.  The
+        contents of this data structure are generated by the client.
       type: array
       items:
         $ref: '#/components/schemas/EntityOVN'
-      default: []
-
+      default: [ ]
     Time:
       required:
       - value
@@ -155,15 +176,14 @@ components:
       properties:
         value:
           type: string
-          description: RFC3339-formatted time/date string.  The time zone must be
-            'Z'.
+          description: >-
+            RFC3339-formatted time/date string.  The time zone must be 'Z'.
           format: date-time
           example: '1985-04-12T23:20:50.52Z'
         format:
           type: string
           enum:
           - RFC3339
-
     Radius:
       required:
       - value
@@ -172,19 +192,19 @@ components:
       properties:
         value:
           format: float
-          description: Distance from the centerpoint of a circular area, along the
-            WGS84 ellipsoid.
+          description: >-
+            Distance from the centerpoint of a circular area, along the WGS84
+            ellipsoid.
           type: number
           minimum: 0
           exclusiveMinimum: true
           example: 300.183
         units:
           type: string
-          description: FIXM-compatible units.  Only meters ("M") are acceptable for
-            UTM.
+          description: >-
+            FIXM-compatible units.  Only meters ("M") are acceptable for UTM.
           enum:
           - M
-
     Altitude:
       type: object
       required:
@@ -193,7 +213,7 @@ components:
       - units
       properties:
         value:
-          description: |-
+          description: >-
             The numeric value of the altitude. Note that min and max values are
             added as a sanity check. As use cases evolve and more options are
             made available in terms of units of measure or reference systems,
@@ -205,26 +225,26 @@ components:
           maximum: 100000
           exclusiveMaximum: false
         reference:
-          description: |-
-            A code indicating the reference for a vertical distance. See AIXM 5.1
-            and FIXM 4.2.0. Currently, UTM only allows WGS84 with no immediate
-            plans to allow other options. FIXM and AIXM allow for 'SFC' which is
-            equivalent to AGL.
+          description: >-
+            A code indicating the reference for a vertical distance. See AIXM
+            5.1 and FIXM 4.2.0. Currently, UTM only allows WGS84 with no
+            immediate plans to allow other options. FIXM and AIXM allow for
+            'SFC' which is equivalent to AGL.
           type: string
           enum:
           - W84
         units:
-          description: |-
+          description: >-
             The reference quantities used to express the value of altitude. See
             FIXM 4.2. Currently, UTM only allows meters with no immediate plans
             to allow other options.
           type: string
           enum:
           - M
-
     Latitude:
-      description: Degrees of latitude north of the equator, with reference to the
-        WGS84 ellipsoid.
+      description: >-
+        Degrees of latitude north of the equator, with reference to the WGS84
+        ellipsoid.
       maximum: 90
       exclusiveMaximum: false
       minimum: -90
@@ -232,10 +252,10 @@ components:
       type: number
       format: double
       example: 34.123
-
     Longitude:
-      description: Degrees of longitude east of the Prime Meridian, with reference
-        to the WGS84 ellipsoid.
+      description: >-
+        Degrees of longitude east of the Prime Meridian, with reference to the
+        WGS84 ellipsoid.
       minimum: -180
       exclusiveMaximum: false
       maximum: 180
@@ -243,15 +263,17 @@ components:
       type: number
       format: double
       example: -118.456
-
     Polygon:
-      description: |-
-        An enclosed area on the earth.
-        The bounding edges of this polygon are defined to be the shortest paths between connected vertices.  This means, for instance, that the edge between two points both defined at a particular latitude is not generally contained at that latitude.
-        The winding order must be interpreted as the order which produces the smaller area.
-        The path between two vertices is defined to be the shortest possible path between those vertices.
-        Edges may not cross.
-        Vertices may not be duplicated.  In particular, the final polygon vertex must not be identical to the first vertex.
+      description: >-
+        An enclosed area on the earth. The bounding edges of this polygon are
+        defined to be the shortest paths between connected vertices.  This
+        means, for instance, that the edge between two points both defined at a
+        particular latitude is not generally contained at that latitude. The
+        winding order must be interpreted as the order which produces the
+        smaller area. The path between two vertices is defined to be the
+        shortest possible path between those vertices. Edges may not cross.
+        Vertices may not be duplicated.  In particular, the final polygon vertex
+        must not be identical to the first vertex.
       required:
       - vertices
       type: object
@@ -261,7 +283,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LatLngPoint'
-
     LatLngPoint:
       description: Point on the earth's surface.
       required:
@@ -273,21 +294,18 @@ components:
           $ref: '#/components/schemas/Longitude'
         lat:
           $ref: '#/components/schemas/Latitude'
-
     Circle:
-      description: |-
-        A circular area on the surface of the earth.
+      description: A circular area on the surface of the earth.
       type: object
       properties:
         center:
           $ref: '#/components/schemas/LatLngPoint'
         radius:
           $ref: '#/components/schemas/Radius'
-
     Volume3D:
-      description: |-
-        A three-dimensional geographic volume consisting of a vertically-extruded shape.
-        Exactly one outline must be specified.
+      description: >-
+        A three-dimensional geographic volume consisting of a
+        vertically-extruded shape. Exactly one outline must be specified.
       type: object
       properties:
         outline_circle:
@@ -297,18 +315,20 @@ components:
         outline_polygon:
           anyOf:
           - $ref: '#/components/schemas/Polygon'
-          description: A polygonal geographic shape on the surface of the earth.
+          description: >-
+            A polygonal geographic shape on the surface of the earth.
         altitude_lower:
-          description: Minimum bounding altitude of this volume. Must be less than
+          description: >-
+            Minimum bounding altitude of this volume. Must be less than
             altitude_upper, if specified.
           anyOf:
           - $ref: '#/components/schemas/Altitude'
         altitude_upper:
-          description: Maximum bounding altitude of this volume. Must be greater than
+          description: >-
+            Maximum bounding altitude of this volume. Must be greater than
             altitude_lower, if specified.
           anyOf:
           - $ref: '#/components/schemas/Altitude'
-
     Volume4D:
       description: Contiguous block of geographic spacetime.
       required:
@@ -325,21 +345,19 @@ components:
           description: End time of this volume. Must be after time_start.
           anyOf:
           - $ref: '#/components/schemas/Time'
-
     ErrorResponse:
-      description: |-
-        Human-readable string returned when an error occurs
-        as a result of a USS - DSS transaction.
+      description: >-
+        Human-readable string returned when an error occurs as a result of a USS
+        - DSS transaction.
       type: object
       properties:
         message:
-          description: |-
+          description: >-
             Human-readable message indicating what error occurred and/or why.
           type: string
           example: The error occurred because [...]
-
     SubscriptionState:
-      description: |-
+      description: >-
         State of subscription which is causing a notification to be sent.
       required:
       - subscription_id
@@ -350,13 +368,12 @@ components:
           $ref: '#/components/schemas/SubscriptionID'
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
-
     SubscriberToNotify:
-      description: |-
-        Subscriber to notify of a change in the airspace.  This is provided by the DSS
-        to a client changing the airspace, and it is the responsibility of that client
-        to send a notification to the specified USS according to the change made to the
-        airspace.
+      description: >-
+        Subscriber to notify of a change in the airspace.  This is provided by
+        the DSS to a client changing the airspace, and it is the responsibility
+        of that client to send a notification to the specified USS according to
+        the change made to the airspace.
       required:
       - subscriptions
       - uss_base_url
@@ -370,11 +387,10 @@ components:
           minItems: 1
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
-
     Subscription:
-      description: |-
-        Specification of a geographic area that a client is interested
-        in on an ongoing basis (e.g., "planning area").
+      description: >-
+        Specification of a geographic area that a client is interested in on an
+        ongoing basis (e.g., "planning area").
       required:
       - id
       - version
@@ -385,146 +401,151 @@ components:
         id:
           $ref: '#/components/schemas/SubscriptionID'
         version:
-          description: |-
-            Version of the subscription that the DSS changes every time a USS changes the
-            subscription.  The DSS incrementing the notification_index does not constitute a
-            change that triggers a new version.  A USS must specify this version when modifying
-            an existing subscription to ensure consistency in read-modify-write operations and
-            distributed systems.
+          description: >-
+            Version of the subscription that the DSS changes every time a USS
+            changes the subscription.  The DSS incrementing the
+            notification_index does not constitute a change that triggers a new
+            version.  A USS must specify this version when modifying an existing
+            subscription to ensure consistency in read-modify-write operations
+            and distributed systems.
           type: string
         notification_index:
           $ref: '#/components/schemas/SubscriptionNotificationIndex'
         time_start:
-          description: |-
-            If set, this subscription will not receive notifications involving airspace changes
-            entirely before this time.
+          description: >-
+            If set, this subscription will not receive notifications involving
+            airspace changes entirely before this time.
           anyOf:
           - $ref: '#/components/schemas/Time'
         time_end:
-          description: |-
-            If set, this subscription will not receive notifications involving airspace changes
-            entirely after this time.
+          description: >-
+            If set, this subscription will not receive notifications involving
+            airspace changes entirely after this time.
           anyOf:
           - $ref: '#/components/schemas/Time'
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operational_intents:
-          description: If true, trigger notifications when operational intents are
-            created, updated, or deleted.  Otherwise, changes in operational intents
-            should not trigger notifications.  The scope utm.strategic_coordination is
-            required to set this flag true.
+          description: >-
+            If true, trigger notifications when operational intents are created,
+            updated, or deleted.  Otherwise, changes in operational intents
+            should not trigger notifications.  The scope
+            utm.strategic_coordination is required to set this flag true.
           type: boolean
           default: false
         notify_for_constraints:
-          description: If true, trigger notifications when constraints are created,
-            updated, or deleted.  Otherwise, changes in constraints should not trigger
-            notifications.  The scope utm.constraint_processing is required to set this
-            flag true.
+          description: >-
+            If true, trigger notifications when constraints are created,
+            updated, or deleted.  Otherwise, changes in constraints should not
+            trigger notifications.  The scope utm.constraint_processing is
+            required to set this flag true.
           type: boolean
           default: false
         implicit_subscription:
-          description: |-
-            True if this subscription was implicitly created by the DSS via the creation of an
-            operational intent, and should therefore be deleted by the DSS when that operational intent is deleted.
+          description: >-
+            True if this subscription was implicitly created by the DSS via the
+            creation of an operational intent, and should therefore be deleted
+            by the DSS when that operational intent is deleted.
           type: boolean
           default: false
         dependent_operational_intents:
-          description: List of IDs for operational intents that are dependent on this
+          description: >-
+            List of IDs for operational intents that are dependent on this
             subscription.
           type: array
           items:
             $ref: '#/components/schemas/EntityID'
-          default: []
-
+          default: [ ]
     SubscriptionNotificationIndex:
       format: int32
-      description: Tracks the notifications sent for a subscription so the subscriber
-        can detect missed notifications more easily.
+      description: >-
+        Tracks the notifications sent for a subscription so the subscriber can
+        detect missed notifications more easily.
       type: integer
       minimum: 0
       exclusiveMinimum: false
       default: 0
-
     QuerySubscriptionParameters:
-      description: |-
-        Parameters for a request to find subscriptions matching the provided criteria.
+      description: >-
+        Parameters for a request to find subscriptions matching the provided
+        criteria.
       type: object
       properties:
         area_of_interest:
           $ref: '#/components/schemas/Volume4D'
-
     QuerySubscriptionsResponse:
-      description: Response to DSS query for subscriptions in a particular geographic
-        area.
+      description: >-
+        Response to DSS query for subscriptions in a particular geographic area.
       required:
       - subscriptions
       type: object
       properties:
         subscriptions:
-          description: Subscriptions that overlap the specified geographic area.
+          description: >-
+            Subscriptions that overlap the specified geographic area.
           type: array
           items:
             $ref: '#/components/schemas/Subscription'
-          default: []
-
+          default: [ ]
     GetSubscriptionResponse:
-      description: Response to DSS request for the subscription with the given id.
+      description: >-
+        Response to DSS request for the subscription with the given id.
       required:
       - subscription
       type: object
       properties:
         subscription:
           $ref: '#/components/schemas/Subscription'
-
     PutSubscriptionParameters:
-      description: |-
-        Parameters for a request to create/update a subscription in the DSS.  At least one form of
-        notifications must be requested.
+      description: >-
+        Parameters for a request to create/update a subscription in the DSS.  At
+        least one form of notifications must be requested.
       required:
       - extents
       - uss_base_url
       type: object
       properties:
         extents:
-          description: |-
+          description: >-
             Spacetime extents of the volume to subscribe to.
 
-            This subscription will automatically be deleted after its end time if it has not been
-            refreshed by then. If end time is not specified, the value will be chosen automatically
-            by the DSS. If start time is not specified, it will default to the time the request is
-            processed. The end time may not be in the past.
+            This subscription will automatically be deleted after its end time
+            if it has not been refreshed by then. If end time is not specified,
+            the value will be chosen automatically by the DSS. If start time is
+            not specified, it will default to the time the request is processed.
+            The end time may not be in the past.
 
-            Note that some Entities triggering notifications may lie entirely outside the requested
-            area.
+            Note that some Entities triggering notifications may lie entirely
+            outside the requested area.
           anyOf:
           - $ref: '#/components/schemas/Volume4D'
         uss_base_url:
           $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_operational_intents:
-          description: If true, trigger notifications when operational intents are
-            created, updated, or deleted.  Otherwise, changes in operational intents
-            should not trigger notifications.  The scope utm.strategic_coordination is
-            required to set this flag true.
+          description: >-
+            If true, trigger notifications when operational intents are created,
+            updated, or deleted.  Otherwise, changes in operational intents
+            should not trigger notifications.  The scope
+            utm.strategic_coordination is required to set this flag true.
           type: boolean
           default: false
         notify_for_constraints:
-          description: If true, trigger notifications when constraints are created,
-            updated, or deleted.  Otherwise, changes in constraints should not trigger
-            notifications.  The scope utm.constraint_processing is required to set this
-            flag true.
+          description: >-
+            If true, trigger notifications when constraints are created,
+            updated, or deleted.  Otherwise, changes in constraints should not
+            trigger notifications.  The scope utm.constraint_processing is
+            required to set this flag true.
           type: boolean
           default: false
-
     SubscriptionUssBaseURL:
-      description: |-
-        The base URL of a USS implementation of the parts of the USS-USS API necessary for
-        receiving the notifications requested by this subscription.
+      description: >-
+        The base URL of a USS implementation of the parts of the USS-USS API
+        necessary for receiving the notifications requested by this
+        subscription.
       anyOf:
       - $ref: '#/components/schemas/UssBaseURL'
-
     PutSubscriptionResponse:
-      description: |-
-        Response for a request to create or update a subscription.
+      description: Response for a request to create or update a subscription.
       required:
       - subscription
       type: object
@@ -532,22 +553,21 @@ components:
         subscription:
           $ref: '#/components/schemas/Subscription'
         operational_intent_references:
-          description: |-
-            Operational intents in or near the subscription area at the time of creation/update,
-            if `notify_for_operational_intents` is true.
+          description: >-
+            Operational intents in or near the subscription area at the time of
+            creation/update, if `notify_for_operational_intents` is true.
           type: array
           items:
             $ref: '#/components/schemas/OperationalIntentReference'
-          default: []
+          default: [ ]
         constraint_references:
-          description: |-
-            Constraints in or near the subscription area at the time of creation/update,
-            if `notify_for_constraints` is true.
+          description: >-
+            Constraints in or near the subscription area at the time of
+            creation/update, if `notify_for_constraints` is true.
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
-          default: []
-
+          default: [ ]
     DeleteSubscriptionResponse:
       description: Response for a successful request to delete a subscription.
       required:
@@ -556,55 +576,61 @@ components:
       properties:
         subscription:
           $ref: '#/components/schemas/Subscription'
-
     UssBaseURL:
-      description: |-
-        The base URL of a USS implementation of part or all of the USS-USS API. Per the USS-USS API, the full URL
-        of a particular resource can be constructed by appending, e.g., `/uss/v1/{resource}/{id}` to this base URL.
-        Accordingly, this URL may not have a trailing '/' character.
+      description: >-
+        The base URL of a USS implementation of part or all of the USS-USS API.
+        Per the USS-USS API, the full URL of a particular resource can be
+        constructed by appending, e.g., `/uss/v1/{resource}/{id}` to this base
+        URL. Accordingly, this URL may not have a trailing '/' character.
       type: string
       example: https://uss.example.com/utm
-
     OperationalIntentState:
-      description: |-
+      description: >-
         State of an operational intent.
 
-        'Accepted': Operational intent is created and shared, but not yet in use; see standard text for more details.
+        'Accepted': Operational intent is created and shared, but not yet in
+        use; see standard text for more details.
 
-        The create or update request for this operational intent reference must include a Key containing all OVNs for
-        all relevant Entities.
+        The create or update request for this operational intent reference must
+        include a Key containing all OVNs for all relevant Entities.
 
-        'Activated': Operational intent is in active use; see standard text for more details.
+        'Activated': Operational intent is in active use; see standard text for
+        more details.
 
-        The create or update request for this operational intent reference must include a Key containing all OVNs for
-        all relevant Entities.
+        The create or update request for this operational intent reference must
+        include a Key containing all OVNs for all relevant Entities.
 
-        'Nonconforming': UA is temporarily outside its volumes, but the situation is expected to be recoverable; see
-        standard text for more details.
+        'Nonconforming': UA is temporarily outside its volumes, but the
+        situation is expected to be recoverable; see standard text for more
+        details.
 
-        In this state, the `/uss/v1/operational_intents/{entityid}/telemetry' USS-USS endpoint should respond, if
-        available, to queries from USS peers.  The create or update request for this operational intent may omit a Key
-        in this case because the operational intent is being adjusted as flown and cannot necessarily deconflict.
+        In this state, the `/uss/v1/operational_intents/{entityid}/telemetry`
+        USS-USS endpoint should respond, if available, to queries from USS
+        peers.  The create or update request for this operational intent may
+        omit a Key in this case because the operational intent is being adjusted
+        as flown and cannot necessarily deconflict.
 
-        'Contingent': UA is considered unrecoverably unable to conform with its coordinate operational intent; see
-        standard text for more details.
+        'Contingent': UA is considered unrecoverably unable to conform with its
+        coordinate operational intent; see standard text for more details.
 
-        This state must transition to Ended.  In this state, the `/uss/v1/operational_intents/{entityid}/telemetry'
-        USS-USS endpoint should respond, if available, to queries from USS peers.  The create or update request for
-        this operational intent may omit a Key in this case because the operational intent is being adjusted as flown
-        and cannot necessarily deconflict.
+        This state must transition to Ended.  In this state, the
+        `/uss/v1/operational_intents/{entityid}/telemetry` USS-USS endpoint
+        should respond, if available, to queries from USS peers.  The create or
+        update request for this operational intent may omit a Key in this case
+        because the operational intent is being adjusted as flown and cannot
+        necessarily deconflict.
       type: string
       enum:
       - Accepted
       - Activated
       - Nonconforming
       - Contingent
-
     OperationalIntentReference:
-      description: |-
-        The high-level information of a planned or active operational intent with the URL
-        of a USS to query for details.  Note: 'ovn' is returned ONLY to the USS that
-        created the operational intent but NEVER to other USS instances.
+      description: >-
+        The high-level information of a planned or active operational intent
+        with the URL of a USS to query for details.  Note: 'ovn' is returned
+        ONLY to the USS that created the operational intent but NEVER to other
+        USS instances.
       required:
       - id
       - manager
@@ -622,30 +648,35 @@ components:
         manager:
           type: string
           example: uss1
-          description: |-
-            Created by the DSS based on creating client's ID (via access token).  Used internal
-            to the DSS for restricting mutation and deletion operations to manager.  Used by USSs
-            to reject operational intent update notifications originating from a USS that does not manage
-            the operational intent.
+          description: >-
+            Created by the DSS based on creating client's ID (via access
+            token).  Used internal to the DSS for restricting mutation and
+            deletion operations to manager.  Used by USSs to reject operational
+            intent update notifications originating from a USS that does not
+            manage the operational intent.
         uss_availability:
           $ref: '#/components/schemas/UssAvailabilityState'
         version:
           type: integer
           format: int32
           example: 1
-          description: |-
-            Numeric version of this operational intent which increments upon each change in the operational intent,
-            regardless of whether any field of the operational intent reference changes.  A USS with the
-            details of this operational intent when it was at a particular version does not need to retrieve
-            the details again until the version changes.
+          description: >-
+            Numeric version of this operational intent which increments upon
+            each change in the operational intent, regardless of whether any
+            field of the operational intent reference changes.  A USS with the
+            details of this operational intent when it was at a particular
+            version does not need to retrieve the details again until the
+            version changes.
         state:
           $ref: '#/components/schemas/OperationalIntentState'
         ovn:
-          description: |-
-            Opaque version number of this operational intent.  Populated only when the OperationalIntentReference
-            is managed by the USS retrieving or providing it.  Not populated when the
-            OperationalIntentReference is not managed by the USS retrieving or providing it (instead, the
-            USS must obtain the OVN from the details retrieved from the managing USS).
+          description: >-
+            Opaque version number of this operational intent.  Populated only
+            when the OperationalIntentReference is managed by the USS retrieving
+            or providing it.  Not populated when the OperationalIntentReference
+            is not managed by the USS retrieving or providing it (instead, the
+            USS must obtain the OVN from the details retrieved from the managing
+            USS).
           anyOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -659,26 +690,26 @@ components:
         uss_base_url:
           $ref: '#/components/schemas/OperationalIntentUssBaseURL'
         subscription_id:
-          description: |-
-            The ID of the subscription that is ensuring the operational intent manager receives relevant
-            airspace updates.
+          description: >-
+            The ID of the subscription that is ensuring the operational intent
+            manager receives relevant airspace updates.
           anyOf:
           - $ref: '#/components/schemas/SubscriptionID'
-
     OperationalIntentUssBaseURL:
-      description: |-
-        The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
-        providing the details of this operational intent, and telemetry during non-conformance or contingency,
-        if applicable.
+      description: >-
+        The base URL of a USS implementation that implements the parts of the
+        USS-USS API necessary for providing the details of this operational
+        intent, and telemetry during non-conformance or contingency, if
+        applicable.
       anyOf:
       - $ref: '#/components/schemas/UssBaseURL'
-
     PutOperationalIntentReferenceParameters:
-      description: |-
-        Parameters for a request to create an OperationalIntentReference in the DSS.
-        A subscription to changes overlapping this volume may be implicitly created, but
-        this can be overridden by providing the (optional) 'subscription_id' to use.
-        Note: The implicit subscription is managed by the DSS, not the USS.
+      description: >-
+        Parameters for a request to create an OperationalIntentReference in the
+        DSS. A subscription to changes overlapping this volume may be implicitly
+        created, but this can be overridden by providing the (optional)
+        'subscription_id' to use. Note: The implicit subscription is managed by
+        the DSS, not the USS.
       required:
       - extents
       - state
@@ -686,28 +717,33 @@ components:
       type: object
       properties:
         extents:
-          description: |-
+          description: >-
             Spacetime extents that bound this operational intent.
 
-            Start and end times, as well as lower and upper altitudes, are required for each
-            volume. The end time may not be in the past. All volumes, both nominal and off-nominal,
-            must be encompassed in these extents. However, these extents do not need to match the
-            precise volumes of the operational intent; a single bounding extent may be provided
-            instead, for instance.
+            Start and end times, as well as lower and upper altitudes, are
+            required for each volume. The end time may not be in the past. All
+            volumes, both nominal and off-nominal, must be encompassed in these
+            extents. However, these extents do not need to match the precise
+            volumes of the operational intent; a single bounding extent may be
+            provided instead, for instance.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
           minItems: 1
         key:
-          description: |-
-            Proof that the USS creating or mutating this operational intent was aware of the current state of the
-            airspace, with the expectation that this operational intent is therefore deconflicted from all relevant
-            features in the airspace.  This field is not required when declaring an operational intent Nonconforming
-            or Contingent, or when there are no relevant Entities in the airspace, but is otherwise required.
-            OVNs for constraints are required if and only if the USS managing this operational intent is performing
-            the constraint processing role, which is indicated by whether the subscription associated with this
-            operational intent triggers notifications for constraints.  The key does not need to contain the OVN for
-            the operational intent being updated.
+          description: >-
+            Proof that the USS creating or mutating this operational intent was
+            aware of the current state of the airspace, with the expectation
+            that this operational intent is therefore deconflicted from all
+            relevant features in the airspace.  This field is not required when
+            declaring an operational intent Nonconforming or Contingent, or when
+            there are no relevant Entities in the airspace, but is otherwise
+            required. OVNs for constraints are required if and only if the USS
+            managing this operational intent is performing the constraint
+            processing role, which is indicated by whether the subscription
+            associated with this operational intent triggers notifications for
+            constraints.  The key does not need to contain the OVN for the
+            operational intent being updated.
           anyOf:
           - $ref: '#/components/schemas/Key'
         state:
@@ -715,89 +751,98 @@ components:
         uss_base_url:
           $ref: '#/components/schemas/OperationalIntentUssBaseURL'
         subscription_id:
-          description: |-
-            The ID of an existing subscription that the USS will use to keep the operator informed about
-            updates to relevant airspace information.  If this field is not provided, then the
-            `new_subscription` field must be provided in order to provide notification capability
-            for the operational intent.  The subscription specified by this ID must cover at least the area over
-            which this operational intent is conducted, and it must provide notifications for operational intents.
+          description: >-
+            The ID of an existing subscription that the USS will use to keep the
+            operator informed about updates to relevant airspace information. If
+            this field is not provided when the operational intent is in the
+            Activated, Nonconforming, or Contingent state, then the
+            `new_subscription` field must be provided in order to provide
+            notification capability for the operational intent.  The
+            subscription specified by this ID must cover at least the area over
+            which this operational intent is conducted, and it must provide
+            notifications for operational intents.
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         new_subscription:
-          description: |-
-            If an existing subscription is not specified in `subscription_id`, then this field must be
-            populated.  When this field is populated, an implicit subscription will be created and
-            associated with this operational intent, and will generally be deleted automatically upon the
-            deletion of this operational intent.
+          description: >-
+            If an existing subscription is not specified in `subscription_id`,
+            and the operational intent is in the Activated, Nonconforming, or
+            Contingent state, then this field must be populated.  When this
+            field is populated, an implicit subscription will be created and
+            associated with this operational intent, and will generally be
+            deleted automatically upon the deletion of this operational intent.
           anyOf:
           - $ref: '#/components/schemas/ImplicitSubscriptionParameters'
-
     ImplicitSubscriptionParameters:
-      description: |-
-        Information necessary to create a subscription to serve a single operational intent's notification needs.
+      description: >-
+        Information necessary to create a subscription to serve a single
+        operational intent's notification needs.
       type: object
       required:
       - uss_base_url
       properties:
         uss_base_url:
-          description: |-
-            The base URL of a USS implementation of the parts of the USS-USS API necessary for
-            receiving the notifications that the operational intent must be aware of.  This includes, at least,
-            notifications for relevant changes in operational intents.
+          description: >-
+            The base URL of a USS implementation of the parts of the USS-USS API
+            necessary for receiving the notifications that the operational
+            intent must be aware of.  This includes, at least, notifications for
+            relevant changes in operational intents.
           anyOf:
           - $ref: '#/components/schemas/SubscriptionUssBaseURL'
         notify_for_constraints:
-          description: |-
-            True if this operational intent's subscription should trigger notifications when constraints change.
-            Otherwise, changes in constraints should not trigger notifications.  The scope
-            utm.constraint_processing is required to set this flag true, and a USS performing the constraint
-            processing role should set this flag true.
+          description: >-
+            True if this operational intent's subscription should trigger
+            notifications when constraints change. Otherwise, changes in
+            constraints should not trigger notifications.  The scope
+            utm.constraint_processing is required to set this flag true, and a
+            USS performing the constraint processing role should set this flag
+            true.
           type: boolean
           default: false
-
     GetOperationalIntentReferenceResponse:
-      description: |-
-        Response to DSS request for the OperationalIntentReference with the given ID.
+      description: >-
+        Response to DSS request for the OperationalIntentReference with the
+        given ID.
       required:
       - operational_intent_reference
       type: object
       properties:
         operational_intent_reference:
           $ref: '#/components/schemas/OperationalIntentReference'
-
     ChangeOperationalIntentReferenceResponse:
-      description: |-
-        Response to a request to create, update, or delete an OperationalIntentReference
-        in the DSS.
+      description: >-
+        Response to a request to create, update, or delete an
+        OperationalIntentReference in the DSS.
       required:
       - subscribers
       - operational_intent_reference
       type: object
       properties:
         subscribers:
-          description: |-
-            DSS subscribers that this client now has the obligation to
-            notify of the operational intent changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/uss/v1/operational_intents`
-            path API.  The client's own subscriptions will also be included in this list.
+          description: >-
+            DSS subscribers that this client now has the obligation to notify of
+            the operational intent changes just made.  This client must call
+            POST for each provided URL according to the USS-USS
+            `/uss/v1/operational_intents` path API.  The client's own
+            subscriptions will also be included in this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
-          default: []
+          default: [ ]
         operational_intent_reference:
           $ref: '#/components/schemas/OperationalIntentReference'
-
     QueryOperationalIntentReferenceParameters:
-      description: |-
-        Parameters for a request to find OperationalIntentReferences matching the provided criteria.
+      description: >-
+        Parameters for a request to find OperationalIntentReferences matching
+        the provided criteria.
       type: object
       properties:
         area_of_interest:
           $ref: '#/components/schemas/Volume4D'
-
     QueryOperationalIntentReferenceResponse:
-      description: Response to DSS query for OperationalIntentReferences in an area
-        of interest.
+      description: >-
+        Response to DSS query for OperationalIntentReferences in an area of
+        interest.
       required:
       - operational_intent_references
       type: object
@@ -807,13 +852,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationalIntentReference'
-          default: []
-
+          default: [ ]
     ConstraintReference:
-      description: A ConstraintReference (area in which a constraint is present, along
-        with other high-level information, but no details).  The DSS reports only
-        these references and clients must exchange details and additional information
-        peer-to-peer.
+      description: >-
+        A ConstraintReference (area in which a constraint is present, along with
+        other high-level information, but no details).  The DSS reports only
+        these references and clients must exchange details and additional
+        information peer-to-peer.
       required:
       - id
       - manager
@@ -829,28 +874,31 @@ components:
         manager:
           type: string
           example: uss1
-          description: |-
-            Created by the DSS based on creating client's ID (via access token).  Used internal
-            to the DSS for restricting mutation and deletion operations to manager.  Used by USSs
-            to reject constraint update notifications originating from a USS that does not manage
-            the constraint.
+          description: >-
+            Created by the DSS based on creating client's ID (via access
+            token).  Used internal to the DSS for restricting mutation and
+            deletion operations to manager.  Used by USSs to reject constraint
+            update notifications originating from a USS that does not manage the
+            constraint.
         uss_availability:
           $ref: '#/components/schemas/UssAvailabilityState'
         version:
           type: integer
           format: int32
           example: 1
-          description: |-
-            Numeric version of this constraint which increments upon each change in the constraint,
-            regardless of whether any field of the constraint reference changes.  A USS with the
-            details of this constraint when it was at a particular version does not need to retrieve
-            the details again until the version changes.
+          description: >-
+            Numeric version of this constraint which increments upon each change
+            in the constraint, regardless of whether any field of the constraint
+            reference changes.  A USS with the details of this constraint when
+            it was at a particular version does not need to retrieve the details
+            again until the version changes.
         ovn:
-          description: |-
-            Opaque version number of this constraint.  Populated only when the ConstraintReference
-            is managed by the USS retrieving or providing it.  Not populated when the
-            ConstraintReference is not managed by the USS retrieving or providing it (instead, the
-            USS must obtain the OVN from the details retrieved from the managing USS).
+          description: >-
+            Opaque version number of this constraint.  Populated only when the
+            ConstraintReference is managed by the USS retrieving or providing
+            it.  Not populated when the ConstraintReference is not managed by
+            the USS retrieving or providing it (instead, the USS must obtain the
+            OVN from the details retrieved from the managing USS).
           anyOf:
           - $ref: '#/components/schemas/EntityOVN'
         time_start:
@@ -859,24 +907,23 @@ components:
           $ref: '#/components/schemas/Time'
         uss_base_url:
           $ref: '#/components/schemas/ConstraintUssBaseURL'
-
     ConstraintUssBaseURL:
-      description: |-
-        The base URL of a USS implementation that implements the parts of the USS-USS API necessary for
-        providing the details of this constraint.
+      description: >-
+        The base URL of a USS implementation that implements the parts of the
+        USS-USS API necessary for providing the details of this constraint.
       anyOf:
       - $ref: '#/components/schemas/UssBaseURL'
-
     PutConstraintReferenceParameters:
-      description: Parameters for a request to create/update a ConstraintReference
-        in the DSS.
+      description: >-
+        Parameters for a request to create/update a ConstraintReference in the
+        DSS.
       required:
       - extents
       - uss_base_url
       type: object
       properties:
         extents:
-          description: |-
+          description: >-
             Spacetime extents that bound this constraint.
 
             The end time may not be in the past.
@@ -891,47 +938,48 @@ components:
           minItems: 1
         uss_base_url:
           $ref: '#/components/schemas/ConstraintUssBaseURL'
-
     GetConstraintReferenceResponse:
-      description: Response to DSS request for the ConstraintReference with the given
-        ID.
+      description: >-
+        Response to DSS request for the ConstraintReference with the given ID.
       required:
       - constraint_reference
       type: object
       properties:
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
-
     ChangeConstraintReferenceResponse:
-      description: Response to a request to create, update, or delete a ConstraintReference.
-        in the DSS.
+      description: >-
+        Response to a request to create, update, or delete a
+        ConstraintReference. in the DSS.
       required:
       - subscribers
+      - constraint_reference
       type: object
       properties:
         subscribers:
-          description: DSS subscribers that this client now has the obligation to
-            notify of the constraint changes just made.  This client must call POST
-            for each provided URL according to the USS-USS `/uss/v1/constraints`
-            path API.  The client's own subscriptions will also be included in this
-            list.
+          description: >-
+            DSS subscribers that this client now has the obligation to notify of
+            the constraint changes just made.  This client must call POST for
+            each provided URL according to the USS-USS `/uss/v1/constraints`
+            path API.  The client's own subscriptions will also be included in
+            this list.
           type: array
           items:
             $ref: '#/components/schemas/SubscriberToNotify'
-          default: []
+          default: [ ]
         constraint_reference:
           $ref: '#/components/schemas/ConstraintReference'
-
     QueryConstraintReferenceParameters:
-      description: |-
-        Parameters for a request to find ConstraintReferences matching the provided criteria.
+      description: >-
+        Parameters for a request to find ConstraintReferences matching the
+        provided criteria.
       type: object
       properties:
         area_of_interest:
           $ref: '#/components/schemas/Volume4D'
-
     QueryConstraintReferencesResponse:
-      description: Response to DSS query for ConstraintReferences in an area of interest.
+      description: >-
+        Response to DSS query for ConstraintReferences in an area of interest.
       required:
       - constraint_references
       type: object
@@ -941,87 +989,95 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
-          default: []
-
+          default: [ ]
     AirspaceConflictResponse:
       description: Data provided when an airspace conflict was encountered.
       type: object
       properties:
         message:
-          description: Human-readable message indicating what error occurred and/or
-            why.
+          description: >-
+            Human-readable message indicating what error occurred and/or why.
           type: string
         missing_operational_intents:
-          description: List of operational intent references for which current proof
-            of knowledge was not provided.  If this field is present and contains
-            elements, the calling USS should query the details URLs for these operational
-            intents to obtain their details and correct OVNs.  The OVNs can be used
-            to update the key, at which point the USS may retry this call.
+          description: >-
+            List of operational intent references for which current proof of
+            knowledge was not provided.  If this field is present and contains
+            elements, the calling USS should query the details URLs for these
+            operational intents to obtain their details and correct OVNs.  The
+            OVNs can be used to update the key, at which point the USS may retry
+            this call.
           type: array
           items:
             $ref: '#/components/schemas/OperationalIntentReference'
-          default: []
+          default: [ ]
         missing_constraints:
-          description: List of constraint references for which current proof of knowledge
-            was not provided.  If this field is present and contains elements, the
-            calling USS should query the details URLs for these constraints to obtain
-            their details and correct OVNs.  The OVNs can be used to update the key,
-            at which point the USS may retry this call.
+          description: >-
+            List of constraint references for which current proof of knowledge
+            was not provided.  If this field is present and contains elements,
+            the calling USS should query the details URLs for these constraints
+            to obtain their details and correct OVNs.  The OVNs can be used to
+            update the key, at which point the USS may retry this call.
           type: array
           items:
             $ref: '#/components/schemas/ConstraintReference'
-          default: []
+          default: [ ]
 
     #
     # USS-USS schema components
     #
     OperationalIntentDetails:
-      description: |-
-        Details of a UTM operational intent. Note that this data is not stored in the DSS; only with the clients.
+      description: >-
+        Details of a UTM operational intent. Note that this data is not stored
+        in the DSS; only with the clients.
       type: object
       properties:
         volumes:
-          description: |-
-            Volumes that wholly contain the operational intent while being as small as practical.
+          description: >-
+            Volumes that wholly contain the operational intent while being as
+            small as practical.
 
-            Start and end times, as well as lower and upper altitudes, are required for each
-            volume. The end time may not be in the past.
+            Start and end times, as well as lower and upper altitudes, are
+            required for each volume. The end time may not be in the past.
 
-            Required with at least one item when the operational intent is Accepted, Activated, or Nonconforming.
+            Required with at least one item when the operational intent is
+            Accepted, Activated, or Nonconforming.
 
             May not contain any items when the operational intent is Contingent.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
-          default: []
+          default: [ ]
         off_nominal_volumes:
-          description: |-
-            Volumes that contain the anticipated area of non-conformance while the aircraft is in the Nonconforming
-            or Contingent states.
+          description: >-
+            Volumes that contain the anticipated area of non-conformance while
+            the aircraft is in the Nonconforming or Contingent states.
 
-            Start and end times, as well as lower and upper altitudes, are required for each
-            volume. The end time may not be in the past.
+            Start and end times, as well as lower and upper altitudes, are
+            required for each volume. The end time may not be in the past.
 
-            Required with at least one item when the operational intent is Nonconforming or Contingent.
+            Required with at least one item when the operational intent is
+            Nonconforming or Contingent.
 
-            May not contain any items when the operational intent is Accepted or Activated.
+            May not contain any items when the operational intent is Accepted or
+            Activated.
           type: array
           items:
             $ref: '#/components/schemas/Volume4D'
-          default: []
+          default: [ ]
         priority:
           $ref: '#/components/schemas/Priority'
-
     Priority:
-      description: |-
-        Ordinal priority of the operational intent, as defined by the regulator.  Operational intents with lesser
-        values are lower priority than all operational intents with greater values.  A lower-priority
-        operational intent may not create a conflict with a higher-priority operational intent.  A higher-priority
-        operational intent may create a conflict with a lower-priority operational intent.  The regulator specifies
-        whether an operational intent may create a conflict with other operational intents of the same priority.
+      description: >-
+        Ordinal priority of the operational intent, as defined by the
+        regulator.  Operational intents with lesser values are lower priority
+        than all operational intents with greater values.  A lower-priority
+        operational intent may not create a conflict with a higher-priority
+        operational intent.  A higher-priority operational intent may create a
+        conflict with a lower-priority operational intent.  The regulator
+        specifies whether an operational intent may create a conflict with other
+        operational intents of the same priority.
       type: integer
       default: 0
-
     OperationalIntent:
       description: Full description of a UTM operational intent.
       required:
@@ -1033,12 +1089,12 @@ components:
           $ref: '#/components/schemas/OperationalIntentReference'
         details:
           $ref: '#/components/schemas/OperationalIntentDetails'
-
     PutOperationalIntentDetailsParameters:
-      description: |-
-        Parameters of a message informing of detailed information for a peer operational intent.
-        Pushed (by a client, not the DSS) directly to clients with subscriptions when
-        another client makes a change to airspace within a cell with a subscription.
+      description: >-
+        Parameters of a message informing of detailed information for a peer
+        operational intent. Pushed (by a client, not the DSS) directly to
+        clients with subscriptions when another client makes a change to
+        airspace within a cell with a subscription.
       required:
       - operational_intent_id
       - subscriptions
@@ -1049,10 +1105,10 @@ components:
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         operational_intent:
-          description: |-
-            Full information about the operational intent that has changed.  If this field is omitted,
-            the operational intent was deleted.  The `ovn` field in the nested `reference` must be
-            populated.
+          description: >-
+            Full information about the operational intent that has changed.  If
+            this field is omitted, the operational intent was deleted.  The
+            `ovn` field in the nested `reference` must be populated.
           anyOf:
           - $ref: '#/components/schemas/OperationalIntent'
         subscriptions:
@@ -1061,27 +1117,28 @@ components:
           items:
             $ref: '#/components/schemas/SubscriptionState'
           minItems: 1
-
     GetOperationalIntentDetailsResponse:
-      description: Response to peer request for the details of operational intent
-        with the given ID.
+      description: >-
+        Response to peer request for the details of operational intent with the
+        given ID.
       required:
       - operational_intent
       type: object
       properties:
         operational_intent:
           $ref: '#/components/schemas/OperationalIntent'
-
     ConstraintDetails:
-      description: Details of a UTM constraint. Note that this data is not stored
-        in the DSS; only with the clients.
+      description: >-
+        Details of a UTM constraint. Note that this data is not stored in the
+        DSS; only with the clients.
       required:
       - volumes
       type: object
       properties:
         volumes:
-          description: |-
-            Volumes that wholly contain the constraint while being as small as practical.
+          description: >-
+            Volumes that wholly contain the constraint while being as small as
+            practical.
 
             The end time may not be in the past.
           minItems: 1
@@ -1089,16 +1146,15 @@ components:
           items:
             $ref: '#/components/schemas/Volume4D'
         type:
-          description: |-
-            Type of airspace feature this constraint represents.
+          description: Type of airspace feature this constraint represents.
           type: string
           example: com.example.non_utm_aircraft_operations
         geozone:
-          description: If this constraint is an ED-269 compliant geo zone, the details
+          description: >-
+            If this constraint is an ED-269 compliant geo zone, the details
             about that geo zone.
           anyOf:
           - $ref: '#/components/schemas/GeoZone'
-
     Constraint:
       description: Full specification of a UTM constraint.
       required:
@@ -1110,11 +1166,12 @@ components:
           $ref: '#/components/schemas/ConstraintReference'
         details:
           $ref: '#/components/schemas/ConstraintDetails'
-
     PutConstraintDetailsParameters:
-      description: Parameters of a message informing of new full information for a
-        constraint.  Pushed (by a client, not the DSS) directly to clients with subscriptions
-        when another client makes a change to airspace within a cell with a subscription.
+      description: >-
+        Parameters of a message informing of new full information for a
+        constraint.  Pushed (by a client, not the DSS) directly to clients with
+        subscriptions when another client makes a change to airspace within a
+        cell with a subscription.
       required:
       - constraint_id
       - subscriptions
@@ -1125,10 +1182,10 @@ components:
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         constraint:
-          description: |-
-            Full information about the constraint that has changed.  If this field is omitted,
-            the constraint was deleted.  The `ovn` field in the nested `reference` must be
-            populated.
+          description: >-
+            Full information about the constraint that has changed.  If this
+            field is omitted, the constraint was deleted.  The `ovn` field in
+            the nested `reference` must be populated.
           anyOf:
           - $ref: '#/components/schemas/Constraint'
         subscriptions:
@@ -1137,33 +1194,34 @@ components:
           items:
             $ref: '#/components/schemas/SubscriptionState'
           minItems: 1
-
     GetConstraintDetailsResponse:
-      description: |-
-        Response to peer request for the details of operational intent with the given ID.
+      description: >-
+        Response to peer request for the details of operational intent with the
+        given ID.
       required:
       - constraint
       type: object
       properties:
         constraint:
           $ref: '#/components/schemas/Constraint'
-
     GetOperationalIntentTelemetryResponse:
-      description: Response to a peer request for telemetry of an off-nominal operational
+      description: >-
+        Response to a peer request for telemetry of an off-nominal operational
         intent.
       required:
       - operational_intent_id
       type: object
       properties:
         operational_intent_id:
-          description: ID of the operational intent which the vehicle reporting telemetry
+          description: >-
+            ID of the operational intent which the vehicle reporting telemetry
             is flying.
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         telemetry:
           $ref: '#/components/schemas/VehicleTelemetry'
         next_telemetry_opportunity:
-          description: |-
+          description: >-
             The next telemetry similar to this telemetry is not expected to be
             available until at or after this time, so the polling USS should
             generally not poll the endpoint providing this response data again
@@ -1171,7 +1229,6 @@ components:
             is no current expectation of new telemetry becoming available.
           anyOf:
           - $ref: '#/components/schemas/Time'
-
     VehicleTelemetry:
       description: Vehicle position, altitude, and velocity.
       required:
@@ -1184,9 +1241,8 @@ components:
           $ref: '#/components/schemas/Position'
         velocity:
           $ref: '#/components/schemas/Velocity'
-
     PositionAccuracyVertical:
-      description: |-
+      description: >-
         Vertical error that is likely to be present in this reported position.
         This is the GVA enumeration from ADS-B, plus some finer values for UAS.
       type: string
@@ -1199,11 +1255,11 @@ components:
       - VA10m
       - VA3m
       - VA1m
-
     PositionAccuracyHorizontal:
-      description: |-
+      description: >-
         Horizontal error that is likely to be present in this reported position.
-        This is the NACp enumeration from ADS-B, plus 1m for a more complete range for UAS.
+        This is the NACp enumeration from ADS-B, plus 1m for a more complete
+        range for UAS.
       type: string
       enum:
       - HAUnknown
@@ -1220,11 +1276,10 @@ components:
       - HA10m
       - HA3m
       - HA1m
-
     Position:
-      description: |-
-        Location of the vehicle (UAS) as reported for UTM.
-        Note: 'accuracy' values are required when extrapolated field is true.
+      description: >-
+        Location of the vehicle (UAS) as reported for UTM. Note: 'accuracy'
+        values are required when extrapolated field is true.
       type: object
       properties:
         longitude:
@@ -1236,14 +1291,13 @@ components:
         accuracy_v:
           $ref: '#/components/schemas/PositionAccuracyVertical'
         extrapolated:
-          description: |-
-            True if this position was generated primarily by computation
-            rather than primarily from a direct instrument measurement.
+          description: >-
+            True if this position was generated primarily by computation rather
+            than primarily from a direct instrument measurement.
           type: boolean
           default: false
         altitude:
           $ref: '#/components/schemas/Altitude'
-
     Velocity:
       required:
       - speed
@@ -1253,8 +1307,7 @@ components:
         speed:
           format: float
           type: number
-          description: |-
-            Ground speed in meters/second.
+          description: Ground speed in meters/second.
           example: 200.1
         units_speed:
           type: string
@@ -1263,13 +1316,13 @@ components:
         track:
           format: float
           type: number
-          description: |-
-            Direction of flight expressed as a "True North-based" ground track angle.
-            This value is provided in degrees East of North with a minimum resolution of 1 degree.
-            A value of 360 indicates invalid, no value, or unknown.
+          description: >-
+            Direction of flight expressed as a "True North-based" ground track
+            angle. This value is provided in degrees East of North with a
+            minimum resolution of 1 degree. A value of 360 indicates invalid, no
+            value, or unknown.
           example: 120
           default: 0
-
     UssAvailabilityStatus:
       type: object
       required:
@@ -1278,30 +1331,33 @@ components:
       properties:
         uss:
           type: string
-          description: |-
-            Client ID (matching their `sub` in access tokens) of the USS to which this availability applies.
+          description: >-
+            Client ID (matching their `sub` in access tokens) of the USS to
+            which this availability applies.
         availability:
           $ref: '#/components/schemas/UssAvailabilityState'
-
     UssAvailabilityState:
       type: string
       enum:
       - Unknown
       - Normal
       - Down
-      description: |-
-        A USS is presumed to be in the Unknown state absent indication otherwise by a USS with
-        availability arbitration scope.  Upon determination via availability arbitration, a USS is
-        Down when it does not respond appropriately, and a Down USS may not perform the following
-        operations in the DSS:
+      description: >-
+        A USS is presumed to be in the Unknown state absent indication otherwise
+        by a USS with availability arbitration scope.  Upon determination via
+        availability arbitration, a USS is Down when it does not respond
+        appropriately, and a Down USS may not perform the following operations
+        in the DSS:
 
-          * Create an operational intent in the Accepted or Activated states
-          * Modify an operational intent whose new or unchanged state is Accepted or Activated
-          * Delete an operational intent
+        * Create an operational intent in the Accepted or Activated states
 
-        A USS in the Unknown state possesses all the capabilities, within the DSS, of a USS in the
-        Normal state.
+        * Modify an operational intent whose new or unchanged state is Accepted
+        or Activated
 
+        * Delete an operational intent
+
+        A USS in the Unknown state possesses all the capabilities, within the
+        DSS, of a USS in the Normal state.
     SetUssAvailabilityStatusParameters:
       type: object
       required:
@@ -1311,11 +1367,11 @@ components:
         old_version:
           type: string
           default: ''
-          description: |-
-            Version of USS's availability to change, for consistent read-modify-write operations and consistent retry behavior.
+          description: >-
+            Version of USS's availability to change, for consistent
+            read-modify-write operations and consistent retry behavior.
         availability:
           $ref: '#/components/schemas/UssAvailabilityState'
-
     UssAvailabilityStatusResponse:
       type: object
       required:
@@ -1324,74 +1380,80 @@ components:
       properties:
         version:
           type: string
-          description: |-
-            Current version of USS's availability.  Used to change USS's availability.
+          description: >-
+            Current version of USS's availability.  Used to change USS's
+            availability.
         status:
           $ref: '#/components/schemas/UssAvailabilityStatus'
 
     #
     # Data structures for logging
     #
-
     USSLogSet:
       type: object
-      description: |-
+      description: >-
         The set of log data fulfilling this standard's Logging requirements.
       properties:
         messages:
-          description: Outgoing messages sent to other USSs and the DSS, and incoming
-            messages received from other USSs, including instances where an expected
-            response to a request is not received.
+          description: >-
+            Outgoing messages sent to other USSs and the DSS, and incoming
+            messages received from other USSs, including instances where an
+            expected response to a request is not received.
           type: array
           items:
             $ref: '#/components/schemas/ExchangeRecord'
-          default: []
+          default: [ ]
         operator_notifications:
-          description: Instances of operator notifications as specifically required
-            within this standard.
-          type: array
-          items:
-            $ref: '#/components/schemas/UserNotificationRecord'
-          default: []
-        operator_inputs:
-          description: Instances of operator input as specifically required within
+          description: >-
+            Instances of operator notifications as specifically required within
             this standard.
           type: array
           items:
+            $ref: '#/components/schemas/UserNotificationRecord'
+          default: [ ]
+        operator_inputs:
+          description: >-
+            Instances of operator input as specifically required within this
+            standard.
+          type: array
+          items:
             $ref: '#/components/schemas/UserInputRecord'
-          default: []
+          default: [ ]
         operator_associations:
-          description: For a USS that manages operational intents, associations of
-            an operator with operational intents that transitioned to the Accepted
+          description: >-
+            For a USS that manages operational intents, associations of an
+            operator with operational intents that transitioned to the Accepted
             state.
           type: array
           items:
             $ref: '#/components/schemas/OperatorAssociation'
-          default: []
+          default: [ ]
         planning_attempts:
-          description: For a USS that manages operational intents, instances where
-            an operational intent could not be planned or replanned due to conflicts
-            with other operational intents or constraints.
+          description: >-
+            For a USS that manages operational intents, instances where an
+            operational intent could not be planned or replanned due to
+            conflicts with other operational intents or constraints.
           type: array
           items:
             $ref: '#/components/schemas/PlanningRecord'
-          default: []
+          default: [ ]
         operational_intent_positions:
-          description: For a USS performing conformance monitoring, all position data
-            used for conformance monitoring that is ingested from the UA.
+          description: >-
+            For a USS performing conformance monitoring, all position data used
+            for conformance monitoring that is ingested from the UA.
           type: array
           items:
             $ref: '#/components/schemas/OperationalIntentPositions'
-          default: []
+          default: [ ]
         constraint_provider_associations:
-          description: For a USS that performs constraint management, associations
-            of an authorized constraint provider with all constraints that transition
+          description: >-
+            For a USS that performs constraint management, associations of an
+            authorized constraint provider with all constraints that transition
             to the valid state.
           type: array
           items:
             $ref: '#/components/schemas/ConstraintProviderAssociation'
-          default: []
-
+          default: [ ]
     ExchangeRecord:
       type: object
       description: Details of a request/response data exchange.
@@ -1407,18 +1469,21 @@ components:
           description: Full URL of request.
         method:
           type: string
-          description: HTTP verb used by requestor (e.g., "PUT," "GET," etc.).
+          description: HTTP verb used by requestor (e.g., "PUT," "GET," etc.)
         headers:
-          description: |-
-            Set of headers associated with request or response. Requires 'Authorization:' field (at a minimum)
+          description: >-
+            Set of headers associated with request or response. Requires
+            'Authorization:' field (at a minimum)
           type: array
           items:
             type: string
-          default: []
+          default: [ ]
         recorder_role:
           type: string
-          description: |-
-            A coded value that indicates the role of the logging USS: 'Client' (initiating a request to a remote USS) or 'Server' (handling a request from a remote USS)
+          description: >-
+            A coded value that indicates the role of the logging USS: 'Client'
+            (initiating a request to a remote USS) or 'Server' (handling a
+            request from a remote USS)
           enum:
           - Client
           - Server
@@ -1437,7 +1502,8 @@ components:
         response_body:
           type: string
           default: ''
-          description: Base64-encoded body content sent/received in response to request.
+          description: >-
+            Base64-encoded body content sent/received in response to request.
         response_code:
           type: integer
           format: int32
@@ -1445,9 +1511,8 @@ components:
           description: HTTP response code sent/received in response to request.
         problem:
           type: string
-          description: Human-readable description of the problem with the exchange,
-            if any.
-
+          description: >-
+            'Human-readable description of the problem with the exchange, if any.'
     ErrorReport:
       type: object
       description: A report informing a server of a communication problem.
@@ -1457,18 +1522,19 @@ components:
         report_id:
           type: string
           maxLength: 128
-          description: ID assigned by the server receiving the report.  Not populated
-            when submitting a report.
+          description: >-
+            ID assigned by the server receiving the report.  Not populated when
+            submitting a report.
         exchange:
           anyOf:
           - $ref: '#/components/schemas/ExchangeRecord'
-          description: The request (by this USS) and response associated with the
-            error.
-
+          description: >-
+            The request (by this USS) and response associated with the error.
     PositionRecord:
       type: object
-      description: |-
-        A record of vehicle telemetry information received by this USS (typically for conformance monitoring).
+      description: >-
+        A record of vehicle telemetry information received by this USS
+        (typically for conformance monitoring).
       required:
       - time_received
       - telemetry
@@ -1476,14 +1542,12 @@ components:
         time_received:
           anyOf:
           - $ref: '#/components/schemas/Time'
-          description: |-
-            Time that this position data was received by the USS
+          description: Time that this position data was received by the USS
         telemetry:
           $ref: '#/components/schemas/VehicleTelemetry'
-
     OperationalIntentPositions:
       type: object
-      description: |-
+      description: >-
         A record of position data gathered through the course of an operational
         intent
       required:
@@ -1493,16 +1557,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PositionRecord'
-          default: []
+          default: [ ]
         operational_intent_id:
           description: ID of the operational intent associated with `positions`
           anyOf:
           - $ref: '#/components/schemas/EntityID'
-
     PlanningRecord:
       type: object
-      description: |-
-        A record of a single attempt to (successfully or unsuccessfully) create or modify an operational intent.
+      description: >-
+        A record of a single attempt to (successfully or unsuccessfully) create
+        or modify an operational intent.
       required:
       - time
       - ovns
@@ -1512,39 +1576,41 @@ components:
           - $ref: '#/components/schemas/Time'
           description: Time that this planning event occurred
         ovns:
-          description: |-
-            OVNs the planning USS was aware of when it was planning the operational intent
+          description: >-
+            OVNs the planning USS was aware of when it was planning the
+            operational intent
           type: array
-          default: []
+          default: [ ]
           items:
             $ref: '#/components/schemas/EntityOVN'
         missing_operational_intents:
-          description: |-
-            List of missing operational intents (for planning attempts that were denied by the DSS with code 409)
+          description: >-
+            List of missing operational intents (for planning attempts that were
+            denied by the DSS with code 409)
           type: array
           items:
             $ref: '#/components/schemas/EntityID'
-          default: []
+          default: [ ]
         missing_constraints:
-          description: |-
-            List of missing constraints (for planning attempts that were denied by the DSS with code 409)
+          description: >-
+            List of missing constraints (for planning attempts that were denied
+            by the DSS with code 409)
           type: array
           items:
             $ref: '#/components/schemas/EntityID'
-          default: []
+          default: [ ]
         operational_intent_id:
           description: ID of the operational intent being planned
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         problem:
           type: string
-          description: |-
-            A free text description of the problem(s) encountered during this planning attempt.
-
+          description: >-
+            A free text description of the problem(s) encountered during this
+            planning attempt.
     UserNotificationRecord:
       type: object
-      description: |-
-        User notification record.
+      description: User notification record.
       required:
       - triggering_event_time
       - notification_time
@@ -1560,12 +1626,12 @@ components:
           description: Time at which the user was notified
         notification_details:
           type: string
-          description: |-
-            Description of information that was provided to the user, as per the referenced notification_triggering_event requirement
+          description: >-
+            Description of information that was provided to the user, as per the
+            referenced notification_triggering_event requirement
         notification_triggering_event:
           type: string
-          description: |-
-            Requirement ID that pertains to the given notification
+          description: Requirement ID that pertains to the given notification
           enum:
           - GEN0400
           - GEN0405
@@ -1580,11 +1646,9 @@ components:
           - CSTP0025
           - CSTP0030
           - CSTO0035
-
     UserInputRecord:
       type: object
-      description: |-
-        User input record
+      description: User input record
       required:
       - triggering_event_time
       - operational_intent_id
@@ -1597,11 +1661,11 @@ components:
         operational_intent_id:
           anyOf:
           - $ref: '#/components/schemas/EntityID'
-          description: ID of the operational_intent ID pertaining to the user input
+          description: >-
+            ID of the operational_intent ID pertaining to the user input
         input_triggering_event:
           type: string
-          description: |-
-            Requirement ID that pertains to the given notification
+          description: Requirement ID that pertains to the given notification
           enum:
           - OPIN0040
           - CMSA0010
@@ -1615,30 +1679,33 @@ components:
           - CMSA0215
         input_details:
           type: string
-          description: |-
-            Description of the information that was provided by the user, as per the referenced input_triggering_event requirement
-
+          description: >-
+            Description of the information that was provided by the user, as per
+            the referenced input_triggering_event requirement
     OperatorAssociation:
       type: object
-      description: |-
-        Association between an operational intent and the operator of that operational intent
+      description: >-
+        Association between an operational intent and the operator of that
+        operational intent
       required:
       - operational_intent_id
       - operator_id
       properties:
         operational_intent_id:
-          description: ID of operational intent to which this association pertains
+          description: >-
+            ID of operational intent to which this association pertains
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         operator_id:
-          description: Unique identifier of the operator responsible for the operational
+          description: >-
+            Unique identifier of the operator responsible for the operational
             intent
           type: string
-
     ConstraintProviderAssociation:
       type: object
-      description: |-
-        Association between a constraint and the constraint provider responsible for that constraint
+      description: >-
+        Association between a constraint and the constraint provider responsible
+        for that constraint
       required:
       - constraint_id
       - constraint_provider_id
@@ -1648,19 +1715,20 @@ components:
           anyOf:
           - $ref: '#/components/schemas/EntityID'
         constraint_provider_id:
-          description: Unique identifier of the constraint provider responsible for
-            the constraint
+          description: >-
+            Unique identifier of the constraint provider responsible for the
+            constraint
           type: string
 
     #
     # ED-269 compliant GeoZone representation
     #
-
     GeoZone:
       type: object
-      description: |-
-        An airspace of defined dimensions, above the land areas or territorial waters of a
-        State, within which a particular restriction or condition for UAS flights applies.
+      description: >-
+        An airspace of defined dimensions, above the land areas or territorial
+        waters of a State, within which a particular restriction or condition
+        for UAS flights applies.
       required:
       - identifier
       - country
@@ -1671,20 +1739,21 @@ components:
         identifier:
           anyOf:
           - $ref: '#/components/schemas/CodeZoneIdentifierType'
-          description: |-
-            A string of characters that uniquely identifies the UAS Zone within the State/Territory identified by the
-            country attribute.
+          description: >-
+            A string of characters that uniquely identifies the UAS Zone within
+            the State/Territory identified by the country attribute.
 
-            Note - The UAS Zone is uniquely identified worldwide by the combination of the country and the
-            identifier attributes
+            Note - The UAS Zone is uniquely identified worldwide by the
+            combination of the country and the identifier attributes
         country:
           anyOf:
           - $ref: '#/components/schemas/CodeCountryISOType'
-          description: |-
+          description: >-
             The State that has the authority to declare the zone.
 
-            Note - There will be no Zone belonging to two States. Not necessary to code the information that two
-            zones are "in neighboring States" or "related".
+            Note - There will be no Zone belonging to two States. Not necessary
+            to code the information that two zones are "in neighboring States"
+            or "related".
         zone_authority:
           type: array
           minItems: 1
@@ -1693,116 +1762,127 @@ components:
         name:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: A free text name by which the zone may be known by the public
-            or by the UAS community.
+          description: >-
+            A free text name by which the zone may be known by the public or by
+            the UAS community.
         type:
           anyOf:
           - $ref: '#/components/schemas/CodeZoneType'
-          description: |-
-            An indication whether the Zone is provided with its common definition or with a customised definition,
-            for a particular user.
+          description: >-
+            An indication whether the Zone is provided with its common
+            definition or with a customised definition, for a particular user.
         restriction:
           anyOf:
           - $ref: '#/components/schemas/CodeRestrictionType'
-          description: |-
-            An indication if flying in the zone is conditional, forbidden or unrestricted.
+          description: >-
+            An indication if flying in the zone is conditional, forbidden or
+            unrestricted.
         restriction_conditions:
           type: array
           items:
             $ref: '#/components/schemas/ConditionExpressionType'
-          description: |-
+          description: >-
             An indication of the conditions under which the zone can be used
         region:
           type: integer
           format: int32
           minimum: 0
           maximum: 65535
-          description: |-
-            Where applicable, identifies a region inside a State where the UAS Zone is located.
+          description: >-
+            Where applicable, identifies a region inside a State where the UAS
+            Zone is located.
 
-            Note 1) identified with a digit between 0-65535 (16 bit), corresponding to a list of regions pre-defined for
-            each State.
+            Note 1) identified with a digit between 0-65535 (16 bit),
+            corresponding to a list of regions pre-defined for each State.
 
-            Note 2) this attribute is intended to facilitate extracting sub-sets of data, for specific regions
+            Note 2) this attribute is intended to facilitate extracting sub-sets
+            of data, for specific regions
         reason:
           items:
             $ref: '#/components/schemas/CodeZoneReasonType'
-          description: |-
-            A coded indication for the reason that led to the establishment of the zone.
+          description: >-
+            A coded indication for the reason that led to the establishment of
+            the zone.
           maxItems: 9
           type: array
         other_reason_info:
           type: string
           maxLength: 30
-          description: |-
-            A free text description of the reason that led to the establishment of the zone, when not covered by a
-            pre-defined coded value.
+          description: >-
+            A free text description of the reason that led to the establishment
+            of the zone, when not covered by a pre-defined coded value.
         regulation_exemption:
           anyOf:
           - $ref: '#/components/schemas/CodeYesNoType'
-          description: |-
-            This is an extension point. It allows adding additional attributes of national interest through this element.
+          description: >-
+            This is an extension point. It allows adding additional attributes
+            of national interest through this element.
         u_space_class:
           anyOf:
           - $ref: '#/components/schemas/CodeUSpaceClassType'
-          description: |-
-            A code that identifies the category or class of the zone applying a "USpace concept".
+          description: >-
+            A code that identifies the category or class of the zone applying a
+            "USpace concept".
 
-            Note: Two (draft) classifications exist, one from Eurocontrol and one from CORUS. Therefore, two
-            instances of this attribute are expected, one from each sub-list. This might be later replaced with
+            Note: Two (draft) classifications exist, one from Eurocontrol and
+            one from CORUS. Therefore, two instances of this attribute are
+            expected, one from each sub-list. This might be later replaced with
             separate attributes and separate lists of values.
         message:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
-            A message to be displayed to the user of the zone, typically on the RPS for the Remote Pilot, to make
-            him/her aware about specific information associated with the zone (typically when it is not only a
-            restriction to fly in the zone, thus not only an alert or an automatic limitation, for example : “image capture
-            prohibited in this zone”, “frequent strong winds in this zone”, “no landing or take-off in this zone”). This
-            message is also used to indicate exemptions from regulation in a zone (see below). Several information
-            can be grouped in a message, separated by a “/”.
+          description: >-
+            A message to be displayed to the user of the zone, typically on the
+            RPS for the Remote Pilot, to make him/her aware about specific
+            information associated with the zone (typically when it is not only
+            a restriction to fly in the zone, thus not only an alert or an
+            automatic limitation, for example : “image capture prohibited in
+            this zone”, “frequent strong winds in this zone”, “no landing or
+            take-off in this zone”). This message is also used to indicate
+            exemptions from regulation in a zone (see below). Several
+            information can be grouped in a message, separated by a “/”.
         additional_properties:
           type: object
           default:
-          description: |-
-            Indicates that exemptions from the national or European regulations are allowed in the UAS Zone, that
-            will be detailed via the "message" property.
-
+          description: >-
+            Indicates that exemptions from the national or European regulations
+            are allowed in the UAS Zone, that will be detailed via the "message"
+            property.
     CodeZoneIdentifierType:
       type: string
       maxLength: 7
-      description: |-
-        a string of maximum 7 characters that uniquely identifies the area within
-        a geographical scope.
+      description: >-
+        a string of maximum 7 characters that uniquely identifies the area
+        within a geographical scope.
 
-        NOTE (1): This shall not include the country identifier, which is a separate attribute of
-        the UAS Zone.
+        NOTE (1): This shall not include the country identifier, which is a
+        separate attribute of the UAS Zone.
 
-        NOTE (2): The length of this data type is limited to 7 characters for compatibility with
-        ARINC 424 and AIXM, where an airspace designator may have maximum
-        10 characters. The 10 characters are the result of concatenating the UAS
-        Zone attributes for country and identifier.
-
+        NOTE (2): The length of this data type is limited to 7 characters for
+        compatibility with ARINC 424 and AIXM, where an airspace designator may
+        have maximum 10 characters. The 10 characters are the result of
+        concatenating the UAS Zone attributes for country and identifier.
     CodeCountryISOType:
       type: string
       minLength: 3
       maxLength: 3
-      description: |-
-        A 3 letter identifier of a country or territory using the ISO 3166-1 alpha-3 standard.
+      description: >-
+        A 3 letter identifier of a country or territory using the ISO 3166-1
+        alpha-3 standard.
 
-        NOTE: The ISO 3-letter country codes come with the following advantages:
+        NOTE: >-
+           The ISO 3-letter country codes come with the following advantages:
               - allow to distinguish between remote territories and mainland
               - are unique, unlike the ICAO Country codes where the same State
                 could have two or more codes
               - are also used in military standards, such as NATO STANAG 1059
                 INT, which come with well document additions that might be also
                 useful for UAS areas.
-
     CodeZoneType:
       type: string
-      description: |-
-        A coded list of values which allows indicating that the definition of a UAS Zone is
-        specifically customised for a particular UAS or operator.
+      description: >-
+        A coded list of values which allows indicating that the definition of a
+        UAS Zone is specifically customised for a particular UAS or operator.
       enum:
       - COMMON
       - CUSTOMIZED
@@ -1810,77 +1890,100 @@ components:
       - REQ_AUTHORISATION
       - CONDITIONAL
       - NO_RESTRICTION
-
     ConditionExpressionType:
       type: string
       maxLength: 10000
-      description: |-
-        A coded expression that provides information about what is authorised / forbidden in a
-        zone that has conditional access.
+      description: >-
+        A coded expression that provides information about what is authorised /
+        forbidden in a zone that has conditional access.
 
-        By difference with the “Message” field per zone, this coded expression is made to be
-        interopreted by the UAS while the “Message” is to interpreted by the remote pilot.
+        By difference with the “Message” field per zone, this coded expression
+        is made to be interopreted by the UAS while the “Message” is to
+        interpreted by the remote pilot.
 
         NOTE: the maximum field length is 10 000 characters.
 
-        ---------------------- Condition definition language ----------------
-        • A list of relevant characteristics (CHARTYPE) has first to be established per state,
-        and their finite list of acceptable values (CHARVAL)
-        • Each chartype and charval fields are defined by a limited set of characters
-        • A public document shall give the definitions of each, and provide the reference to
-        legal or technical characteristics implied
-        • The Geozone editor per state can use these characteristics, with the dedicated
-        condition language defined below, to define exact conditions per zone
+        ---------------------- Condition definition language ---------------- •
+        A list of relevant characteristics (CHARTYPE) has first to be
+        established per state, and their finite list of acceptable values
+        (CHARVAL)
+
+        • Each chartype and charval fields are defined by a limited set of
+        characters
+
+        • A public document shall give the definitions of each, and provide the
+        reference to legal or technical characteristics implied
+
+        • The Geozone editor per state can use these characteristics, with the
+        dedicated condition language defined below, to define exact conditions
+        per zone
+
         • Each UAS Geofencing function shall be loaded with the corresponding
-        chararacteristic status of the UAS for the intended flight, so as to be able to apply
-        the conditions , either to generate alerts or to limit the flight
-        • If the value of a given characteristic of the condition equation is not defined in
-        the UAS, the UAS Geofencing function should inform the pilot in Geoawareness
-        alerting or consider that the zone is forbidden, by default in automatic
-        Geofencing.
+        chararacteristic status of the UAS for the intended flight, so as to be
+        able to apply the conditions , either to generate alerts or to limit the
+        flight
+
+        • If the value of a given characteristic of the condition equation is
+        not defined in the UAS, the UAS Geofencing function should inform the
+        pilot in Geoawareness alerting or consider that the zone is forbidden,
+        by default in automatic Geofencing.
 
         A conditional expression shall be of the following type:
-        • The UAS is PERMITTED XOR PROHIBITED (exclusive choice) to fly in this zone
-        at this time IF (Characteristic1) CHARTYPE1 = (Value1) CHARVAL1 AND
+
+        • The UAS is PERMITTED XOR PROHIBITED (exclusive choice) to fly in this
+        zone at this time IF (Characteristic1) CHARTYPE1 = (Value1) CHARVAL1 AND
+
         CHARTYPE 2 = CHARVAL 2 AND ... AND End IF
+
         OR (...)
+
         ...
+
         End OR
 
-        • Only the fields in bold need to be edited in the character string, separated by”/”.
-        Others are implicit.
+        • Only the fields in bold need to be edited in the character string,
+        separated by”/”. Others are implicit.
 
         Examples of CHARTYPE and CHARVALUE:
-        • CHARTYPE: operator type; Acceptable CHARVAL values:
-          Military/Police/Firefighting
-        • CHARTYPE: Operator ID (registration number); Acceptable CHARVAL values:
-          as per registration format
-        • CHARTYPE: Operation type: A1 as per EASA Open Types or S1 (National
-          standard Scenario 1), STS01 (EASA Specific standard scenario) or ...
-        • CHARTYPE: UTM operation type: Planned/Unplanned,
-        • CHARTYPE: passengers on board: yes /no
-          Note that it is possible in each national catalog of chartype and charval items, to define
-        complex categories of operation/drone /equipment. Example: In nation A, we may have
-          a type “drone level” with values Low, Medium, High. Each level corresponds to a defined
-          set of required UAS performance/operation features/ operator qualification etc. This
-          avoids to code a complex combination in the geozone database.
-          This conditional expression can also be used to code a prohibition of image capture in
-          a zone.
-        Example: PERMITTED/IMAGE CAPTURE=NO/NOISE
-          CLASS=A/OR/OPERATOR=POLICE
-        Meaning: the fight is permitted in this zone at that time if No image is captured
-          (removed or deactivated) and if noise class = class A (following a known classification)
-          or if the UAS operator is the Police
 
+        • CHARTYPE: operator type; Acceptable CHARVAL values:
+        Military/Police/Firefighting
+
+        • CHARTYPE: Operator ID (registration number); Acceptable CHARVAL
+        values: as per registration format
+
+        • CHARTYPE: Operation type: A1 as per EASA Open Types or S1 (National
+        standard Scenario 1), STS01 (EASA Specific standard scenario) or ...
+
+        • CHARTYPE: UTM operation type: Planned/Unplanned,
+
+        • CHARTYPE: passengers on board: yes /no Note that it is possible in
+        each national catalog of chartype and charval items, to define complex
+        categories of operation/drone /equipment. Example: In nation A, we may
+        have a type “drone level” with values Low, Medium, High. Each level
+        corresponds to a defined set of required UAS performance/operation
+        features/ operator qualification etc. This avoids to code a complex
+        combination in the geozone database. This conditional expression can
+        also be used to code a prohibition of image capture in a zone.
+
+        Example: PERMITTED/IMAGE CAPTURE=NO/NOISE
+
+          CLASS=A/OR/OPERATOR=POLICE
+
+        Meaning: >-
+           the fight is permitted in this zone at that time if No image is
+        captured (removed or deactivated) and if noise class = class A
+        (following a known classification) or if the UAS operator is the Police
     CodeRestrictionType:
       type: string
-      description: |-
-        An indication if flying in the zone is conditional, forbidden or unrestricted.
-
+      description: >-
+        An indication if flying in the zone is conditional, forbidden or
+        unrestricted.
     CodeZoneReasonType:
       type: string
-      description: |-
-        A coded indication of a reason that justifies the existence of an UAS Zone
+      description: >-
+        A coded indication of a reason that justifies the existence of an UAS
+        Zone
       enum:
       - AIR_TRAFFIC
       - SENSITIVE
@@ -1891,108 +1994,107 @@ components:
       - FOREIGN_TERRITORY
       - EMERGENCY
       - OTHER
-
     CodeUSpaceClassType:
       type: string
       maxLength: 100
-      description: |-
-        A coded identifier for a category or class of the zone applying a "USpace concept".
+      description: >-
+        A coded identifier for a category or class of the zone applying a
+        "USpace concept".
 
-        NOTE: In the current model version, there is no specific list of values. For example,
-        the “X”, “Y”, “Z” types of zones as per SESAR JU Corus project on USpace
-        concept of operation could be used in a future version. Until a precise list
-        of values is defined, this data type will be considered as string of characters
-        of maximum 100 characters.
-
+        NOTE: >-
+           In the current model version, there is no specific list of values.
+        For example, the “X”, “Y”, “Z” types of zones as per SESAR JU Corus
+        project on USpace concept of operation could be used in a future
+        version. Until a precise list of values is defined, this data type will
+        be considered as string of characters of maximum 100 characters.
     CodeYesNoType:
       type: string
-      description: |-
-        A coded value that indicates a choice between a positive (yes) or a negative (no)
-        applicability.
+      description: >-
+        A coded value that indicates a choice between a positive (yes) or a
+        negative (no) applicability.
       enum:
       - YES
       - NO
-
     Authority:
       type: object
-      description: |-
-        A relevant authority that is in charge for authorising, being notified or providing
-        information for UAS operations in the UAS zone.
+      description: >-
+        A relevant authority that is in charge for authorising, being notified
+        or providing information for UAS operations in the UAS zone.
 
-        Rule: at least one of the following shall be specified - siteURL, email, phone.
+        Rule: >-
+           at least one of the following shall be specified - siteURL, email,
+        phone.
       properties:
         name:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
-            The official name of a public or private authority
+          description: The official name of a public or private authority
         service:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
+          description: >-
             The name of a specific department or service within the organisation
         contact_name:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
-            The name or role of a specific person that needs to be contacted within the organisation
+          description: >-
+            The name or role of a specific person that needs to be contacted
+            within the organisation
         site_url:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
-            The URL of the public internet site through which the organisation may be contacted
+          description: >-
+            The URL of the public internet site through which the organisation
+            may be contacted
 
-            Note: in the data coding format, this might be further constrained in order to ensure a valid URL format.
+            Note: in the data coding format, this might be further constrained
+            in order to ensure a valid URL format.
         email:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
+          description: >-
             The e-mail address by which the organisation may be contacted.
 
-            Note: in the data coding format, this might be further constrained in order to ensure a valid e-mail
-            format.
+            Note: in the data coding format, this might be further constrained
+            in order to ensure a valid e-mail format.
         phone:
           anyOf:
           - $ref: '#/components/schemas/TextShortType'
-          description: |-
+          description: >-
             A phone number at which the organisation may be contacted
         purpose:
           anyOf:
           - $ref: '#/components/schemas/CodeAuthorityRole'
-          description: |-
-            The role of the Authority in relation with the zone.
+          description: The role of the Authority in relation with the zone.
         interval_before:
           type: string
           format: duration
-          description: |-
-            The minimal time interval required between notification or authorization request and starting to operate
-            in the zone, in the format PnnDTnnHnnM (ISO 8601).
-
+          description: >-
+            The minimal time interval required between notification or
+            authorization request and starting to operate in the zone, in the
+            format PnnDTnnHnnM (ISO 8601).
     CodeAuthorityRole:
       type: string
-      description: |-
-        A coded list of values indicating the role that an authority has in relation with the UAS
-        zone.
+      description: >-
+        A coded list of values indicating the role that an authority has in
+        relation with the UAS zone.
       enum:
       - AUTHORIZATION
       - NOTIFICATION
       - INFORMATION
-
     TextShortType:
       type: string
       maxLength: 200
       description: A free text with a maximum length of 200 characters
-
 paths:
   #
-  # DSS Endpoint: OPERATIONAL INTENTS
+  # DSS endpoints for operational intents
   #
-
   /dss/v1/operational_intent_references/query:
-    summary: Query all operational intents in the DSS that intersect with a specified
+    summary: >-
+      Query all operational intents in the DSS that intersect with a specified
       geographic area, altitude-range, and time-range.
     description: Interface to operational intent references in the DSS.
-
     post:
       requestBody:
         content:
@@ -2008,9 +2110,10 @@ paths:
         - utm.strategic_coordination
       - Authority:
         - utm.conformance_monitoring_sa
-      summary: Query all operational intent references in the specified area/volume/time
-        from the DSS.
-      description: |-
+      summary: >-
+        Query all operational intent references in the specified
+        area/volume/time from the DSS.
+      description: >-
         Note that this endpoint does not produce any mutations in the DSS
         despite using the HTTP POST verb.  The HTTP GET verb is traditionally
         used for operations like this one, but requiring or using a request body
@@ -2036,15 +2139,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '413':
           content:
             application/json:
@@ -2056,11 +2161,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /dss/v1/operational_intent_references/{entityid}:
-    summary: Create/read endpoint for a specified operational intent reference in
-      the DSS.
+    summary: >-
+      Create/read endpoint for a specified operational intent reference in the
+      DSS.
     parameters:
     - name: entityid
       description: EntityID of the operational intent.
@@ -2068,7 +2174,6 @@ paths:
         $ref: '#/components/schemas/EntityID'
       in: path
       required: true
-
     get:
       tags:
       - Operational intent references
@@ -2078,7 +2183,8 @@ paths:
         - utm.strategic_coordination
       - Authority:
         - utm.conformance_monitoring_sa
-      summary: Retrieve the specified operational intent reference from the DSS.
+      summary: >-
+        Retrieve the specified operational intent reference from the DSS.
       operationId: getOperationalIntentReference
       responses:
         '200':
@@ -2098,15 +2204,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -2118,8 +2226,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
     put:
       requestBody:
         content:
@@ -2146,45 +2254,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeOperationalIntentReferenceResponse'
-          description: An operational intent reference was created successfully in
-            the DSS.
+          description: >-
+            An operational intent reference was created successfully in the DSS.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the operational intent in a disallowed way.
+
+            * The request attempted to mutate the operational intent in a
+            disallowed way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AirspaceConflictResponse'
-          description: |-
-            * The provided key did not prove knowledge of all current and relevant airspace Entities
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+          description: >-
+            * The provided key did not prove knowledge of all current and
+            relevant airspace Entities
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '412':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            The client attempted to transition the operational intent to Accepted or Activated while marked as Down in the DSS.
+          description: >-
+            The client attempted to transition the operational intent to
+            Accepted or Activated while marked as Down in the DSS.
         '413':
           content:
             application/json:
@@ -2196,10 +2312,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /dss/v1/operational_intent_references/{entityid}/{ovn}:
-    summary: Update endpoint for a specified operational intent reference in the DSS.
+    summary: >-
+      Update endpoint for a specified operational intent reference in the DSS.
     parameters:
     - name: entityid
       description: EntityID of the operational intent.
@@ -2208,12 +2325,12 @@ paths:
       in: path
       required: true
     - name: ovn
-      description: Opaque version number of the existing operational intent reference.
+      description: >-
+        Opaque version number of the existing operational intent reference.
       schema:
         $ref: '#/components/schemas/EntityOVN'
       in: path
       required: true
-
     put:
       requestBody:
         content:
@@ -2240,46 +2357,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeOperationalIntentReferenceResponse'
-          description: An operational intent reference was updated successfully in
-            the DSS.
+          description: >-
+            An operational intent reference was updated successfully in the DSS.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the operational intent in a disallowed way.
+
+            * The request attempted to mutate the operational intent in a
+            disallowed way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AirspaceConflictResponse'
-          description: |-
-            * The provided key did not prove knowledge of all current and relevant airspace Entities
-            * The provided `ovn` does not match the current version of the existing operational intent.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+          description: >-
+            * The provided key did not prove knowledge of all current and
+            relevant airspace Entities
+
+            * The provided `ovn` does not match the current version of the
+            existing operational intent.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '412':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            The client attempted to transition the operational intent to Accepted or Activated while marked as Down in the DSS.
+          description: >-
+            The client attempted to transition the operational intent to
+            Accepted or Activated while marked as Down in the DSS.
         '413':
           content:
             application/json:
@@ -2291,8 +2418,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
     delete:
       tags:
       - Operational intent references
@@ -2310,30 +2437,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeOperationalIntentReferenceResponse'
-          description: The specified operational intent was successfully removed from
-            the DSS.
+          description: >-
+            The specified operational intent was successfully removed from the
+            DSS.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the operational intent in a disallowed way.
+
+            * The request attempted to mutate the operational intent in a
+            disallowed way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -2345,31 +2477,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The provided `ovn` does not match the current version of the existing operational intent.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+          description: >-
+            * The provided `ovn` does not match the current version of the
+            existing operational intent.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '412':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            The client attempted to delete the operational intent while marked as Down in the DSS.
+          description: >-
+            The client attempted to delete the operational intent while marked
+            as Down in the DSS.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # DSS Endpoint: CONSTRAINTS
+  # DSS endpoints for constraints
   #
-
   /dss/v1/constraint_references/query:
-    summary: Query all constraint references in the DSS that intersect with a specified
+    summary: >-
+      Query all constraint references in the DSS that intersect with a specified
       area/volume/time.
-
     post:
       requestBody:
         content:
@@ -2385,9 +2521,10 @@ paths:
         - utm.constraint_management
       - Authority:
         - utm.constraint_processing
-      summary: Query all constraint references in the specified area/volume from the
+      summary: >-
+        Query all constraint references in the specified area/volume from the
         DSS.
-      description: |-
+      description: >-
         Note that this endpoint does not produce any mutations in the DSS
         despite using the HTTP POST verb.  The HTTP GET verb is traditionally
         used for operations like this one, but requiring or using a request body
@@ -2413,15 +2550,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '413':
           content:
             application/json:
@@ -2433,8 +2572,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /dss/v1/constraint_references/{entityid}:
     parameters:
     - name: entityid
@@ -2443,8 +2582,8 @@ paths:
         $ref: '#/components/schemas/EntityID'
       in: path
       required: true
-    summary: Create/read endpoint for a specified constraint reference in the DSS.
-
+    summary: >-
+      Create/read endpoint for a specified constraint reference in the DSS.
     get:
       tags:
       - Constraint references
@@ -2474,15 +2613,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -2494,8 +2635,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
     put:
       requestBody:
         content:
@@ -2517,37 +2658,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A constraint reference was created successfully in the DSS.
+          description: >-
+            A constraint reference was created successfully in the DSS.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the constraint in a disallowed way.
+
+            * The request attempted to mutate the constraint in a disallowed
+            way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * A constraint with the provided ID already exists.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '413':
           content:
             application/json:
@@ -2559,8 +2707,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /dss/v1/constraint_references/{entityid}/{ovn}:
     parameters:
     - name: entityid
@@ -2570,13 +2718,14 @@ paths:
       in: path
       required: true
     - name: ovn
-      description: Opaque version number of the existing operational intent reference.
+      description: >-
+        Opaque version number of the existing operational intent reference.
       schema:
         $ref: '#/components/schemas/EntityOVN'
       in: path
       required: true
-    summary: Update/delete endpoint for a specified constraint reference in the DSS.
-
+    summary: >-
+      Update/delete endpoint for a specified constraint reference in the DSS.
     put:
       requestBody:
         content:
@@ -2598,37 +2747,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChangeConstraintReferenceResponse'
-          description: A constraint reference was updated successfully in the DSS.
+          description: >-
+            A constraint reference was updated successfully in the DSS.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the constraint in a disallowed way.
+
+            * The request attempted to mutate the constraint in a disallowed
+            way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The provided `ovn` does not match the current version of the existing constraint.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+          description: >-
+            * The provided `ovn` does not match the current version of the
+            existing constraint.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '413':
           content:
             application/json:
@@ -2640,8 +2797,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
     delete:
       tags:
       - Constraint references
@@ -2663,23 +2820,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the constraint in a disallowed way.
+
+            * The request attempted to mutate the constraint in a disallowed
+            way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -2691,23 +2852,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The provided `ovn` does not match the current version of the existing constraint.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+          description: >-
+            * The provided `ovn` does not match the current version of the
+            existing constraint.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # DSS Endpoint: SUBSCRIPTIONS
+  # DSS endpoints for subscriptions
   #
-
   /dss/v1/subscriptions/query:
     summary: Subscriptions for airspace updates to a volume of interest.
-
     post:
       requestBody:
         content:
@@ -2723,20 +2886,23 @@ paths:
         - utm.constraint_processing
       - Authority:
         - utm.strategic_coordination
-      description: |-
+      description: >-
         Query subscriptions intersecting an area of interest.  Subscription
-        notifications are only triggered by (and contain full information of) changes to,
-        creation of, or deletion of, Entities referenced by or stored in the DSS;
-        they do not involve any data transfer (such as remote ID telemetry updates) apart
-        from Entity information.
+        notifications are only triggered by (and contain full information of)
+        changes to, creation of, or deletion of, Entities referenced by or
+        stored in the DSS; they do not involve any data transfer (such as remote
+        ID telemetry updates) apart from Entity information.
 
-        Note that this parameter is a JSON object (in the 'request-body'). Note that either
-        or both of the 'altitude' and 'time' values may be omitted from this parameter.
+        Note that this parameter is a JSON object (in the 'request-body'). Note
+        that either or both of the 'altitude' and 'time' values may be omitted
+        from this parameter.
 
-        Only subscriptions belonging to the caller are returned.  This endpoint would be
-        used if a USS lost track of subscriptions they had created and/or wanted to resolve
-        an error indicating that they had too many existing subscriptions in an area.
-      summary: Query all subscriptions in the specified area/volume from the DSS.
+        Only subscriptions belonging to the caller are returned.  This endpoint
+        would be used if a USS lost track of subscriptions they had created
+        and/or wanted to resolve an error indicating that they had too many
+        existing subscriptions in an area.
+      summary: >-
+        Query all subscriptions in the specified area/volume from the DSS.
       operationId: querySubscriptions
       responses:
         '200':
@@ -2756,15 +2922,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '413':
           content:
             application/json:
@@ -2776,8 +2944,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /dss/v1/subscriptions/{subscriptionid}:
     summary: Create/read endpoint for a specific subscription in the DSS.
     parameters:
@@ -2787,7 +2955,6 @@ paths:
         $ref: '#/components/schemas/SubscriptionID'
       in: path
       required: true
-
     get:
       tags:
       - Subscriptions
@@ -2799,8 +2966,7 @@ paths:
         - utm.strategic_coordination
       summary: Retrieve the specified subscription from the DSS.
       operationId: getSubscription
-      description: |-
-        Retrieve a specific subscription.
+      description: Retrieve a specific subscription.
       responses:
         '200':
           content:
@@ -2819,15 +2985,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -2839,8 +3007,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
     put:
       security:
       - Authority:
@@ -2849,10 +3017,14 @@ paths:
         - utm.strategic_coordination
       summary: Create the specified subscription in the DSS.
       operationId: createSubscription
-      description: |-
+      description: >-
         Create a subscription.
 
-        Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
+        Subscription notifications are only triggered by (and contain full
+        information of) changes to, creation of, or deletion of, Entities
+        referenced by or stored in the DSS; they do not involve any data
+        transfer (such as remote ID telemetry updates) apart from Entity
+        information.
       requestBody:
         content:
           application/json:
@@ -2874,40 +3046,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the subscription in a disallowed way.
+
+            * The request attempted to mutate the subscription in a disallowed
+            way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
-            * Client attempted to request notifications for an Entity type to which the scopes included in the access token do not provide access.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
+
+            * Client attempted to request notifications for an Entity type to
+            which the scopes included in the access token do not provide access.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * A subscription with the specified ID already exists.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client may have issued too many requests within a small
-            period of time.
-
+          description: >-
+            The client may have issued too many requests within a small period
+            of time.
   /dss/v1/subscriptions/{subscriptionid}/{version}:
     summary: Update/delete a specific subscription in the DSS.
     parameters:
@@ -2923,7 +3103,6 @@ paths:
         type: string
       in: path
       required: true
-
     put:
       security:
       - Authority:
@@ -2932,12 +3111,20 @@ paths:
         - utm.strategic_coordination
       summary: Update the specified subscription in the DSS.
       operationId: updateSubscription
-      description: |-
+      description: >-
         Update a subscription.
 
-        Subscription notifications are only triggered by (and contain full information of) changes to, creation of, or deletion of, Entities referenced by or stored in the DSS; they do not involve any data transfer (such as remote ID telemetry updates) apart from Entity information.
+        Subscription notifications are only triggered by (and contain full
+        information of) changes to, creation of, or deletion of, Entities
+        referenced by or stored in the DSS; they do not involve any data
+        transfer (such as remote ID telemetry updates) apart from Entity
+        information.
 
-        The standard requires each operational intent to have a subscription that cover the 4D volume of the operational intent.  If a USS attempts to update a subscription upon which an operational intent depends, and this update would cause the operational intent to lose subscription coverage, the update will be rejected by the DSS as a bad request.
+        The standard requires each operational intent to have a subscription
+        that cover the 4D volume of the operational intent.  If a USS attempts
+        to update a subscription upon which an operational intent depends, and
+        this update would cause the operational intent to lose subscription
+        coverage, the update will be rejected by the DSS as a bad request.
       requestBody:
         content:
           application/json:
@@ -2959,41 +3146,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more input parameters were missing or invalid.
-            * The request attempted to mutate the subscription in a disallowed way.
+
+            * The request attempted to mutate the subscription in a disallowed
+            way.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
-            * Client attempted to request notifications for an Entity type to which the scopes included in the access token do not provide access.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
+
+            * Client attempted to request notifications for an Entity type to
+            which the scopes included in the access token do not provide access.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * A subscription with the specified ID already exists and is managed by a different client.
+          description: >-
+            * A subscription with the specified ID already exists and is managed
+            by a different client.
+
             * The provided `version` does not match the current subscription.
-            * Despite repeated attempts, the DSS was unable to complete the update because of other simultaneous changes.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            update because of other simultaneous changes.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client may have issued too many requests within a small
-            period of time.
-
+          description: >-
+            The client may have issued too many requests within a small period
+            of time.
     delete:
       tags:
       - Subscriptions
@@ -3005,8 +3202,11 @@ paths:
         - utm.strategic_coordination
       summary: Remove the specified subscription from the DSS.
       operationId: deleteSubscription
-      description: |-
-        The standard requires each operational intent to have a subscription that cover the 4D volume of the operational intent.  If a USS attempts to delete a subscription upon which an operational intent depends, the deletion will be rejected by the DSS as a bad request.
+      description: >-
+        The standard requires each operational intent to have a subscription
+        that cover the 4D volume of the operational intent.  If a USS attempts
+        to delete a subscription upon which an operational intent depends, the
+        deletion will be rejected by the DSS as a bad request.
       responses:
         '200':
           content:
@@ -3025,15 +3225,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -3045,24 +3247,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * A subscription with the specified ID is managed by a different client.
+          description: >-
+            * A subscription with the specified ID is managed by a different
+            client.
+
             * The provided `version` does not match the current subscription.
-            * Despite repeated attempts, the DSS was unable to complete the deletion because of other simultaneous changes.
+
+            * Despite repeated attempts, the DSS was unable to complete the
+            deletion because of other simultaneous changes.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # DSS Endpoint: REPORT
+  # DSS endpoints for reports
   #
-
   /dss/v1/reports:
     summary: Error reports of potential operational issues relevant to DSSs.
-
     post:
       security:
       - Authority:
@@ -3077,7 +3282,8 @@ paths:
         - utm.availability_arbitration
       summary: Report information about communication issues to a DSS.
       operationId: makeDssReport
-      description: Report issues to a DSS. Data sent to this endpoint is archived.
+      description: >-
+        Report issues to a DSS. Data sent to this endpoint is archived.
       requestBody:
         content:
           application/json:
@@ -3099,45 +3305,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more parameters were missing or invalid.
+
             * The report could not be parsed, or contains unrecognized data.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # DSS Endpoint: USS AVAILABILITY
+  # DSS endpoints for USS availability
   #
-
   /dss/v1/uss_availability/{uss_id}:
     summary: Availability status of a USS
     parameters:
     - name: uss_id
-      description: Client ID (matching their `sub` in access tokens) of the USS to
-        which this availability applies.
+      description: >-
+        Client ID (matching their `sub` in access tokens) of the USS to which
+        this availability applies.
       schema:
         type: string
       in: path
       required: true
-
     put:
       security:
       - Authority:
@@ -3156,7 +3365,8 @@ paths:
       - dss
       responses:
         '200':
-          description: Availability status of specified USS was successfully updated.
+          description: >-
+            Availability status of specified USS was successfully updated.
           content:
             application/json:
               schema:
@@ -3166,29 +3376,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * One or more parameters were missing or invalid.
+          description: '* One or more parameters were missing or invalid.'
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
     get:
       security:
       - Authority:
@@ -3205,7 +3416,8 @@ paths:
       - dss
       responses:
         '200':
-          description: Availability status of specified USS was successfully retrieved.
+          description: >-
+            Availability status of specified USS was successfully retrieved.
           content:
             application/json:
               schema:
@@ -3215,33 +3427,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * One or more parameters were missing or invalid.
+          description: '* One or more parameters were missing or invalid.'
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint or the request.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # USS Endpoint: OPERATIONAL INTENTS
+  # USS endpoints for operational intents
   #
-
   /uss/v1/operational_intents/{entityid}:
     summary: Query detailed information of an operational intent from a USS.
     parameters:
@@ -3251,7 +3464,6 @@ paths:
         $ref: '#/components/schemas/EntityID'
       in: path
       required: true
-
     get:
       tags:
       - Operational intent details
@@ -3260,13 +3472,14 @@ paths:
       - Authority:
         - utm.strategic_coordination
       summary: Retrieve the specified operational intent details from a USS.
-      description: |-
+      description: >-
         The USS hosting this endpoint returns the details (and reference) of an
-        operational intent it manages.  While the USS has a pending request to change the
-        operational intent in the DSS, the USS should report the most recent version the
-        USS knows was accepted by the DSS.  So, before a USS receives a response
-        to create an operational intent reference in the DSS, it should return 404 if
-        queried for that operational intent at this endpoint.
+        operational intent it manages.  While the USS has a pending request to
+        change the operational intent in the DSS, the USS should report the most
+        recent version the USS knows was accepted by the DSS.  So, before a USS
+        receives a response to create an operational intent reference in the
+        DSS, it should return 404 if queried for that operational intent at this
+        endpoint.
       operationId: getOperationalIntentDetails
       responses:
         '200':
@@ -3286,15 +3499,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -3306,10 +3521,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /uss/v1/operational_intents/{entityid}/telemetry:
-    summary: Detailed information on the position of an off-nominal operational intent.
+    summary: >-
+      Detailed information on the position of an off-nominal operational intent.
     parameters:
     - name: entityid
       description: EntityID for this operational intent.
@@ -3317,7 +3533,6 @@ paths:
         $ref: '#/components/schemas/EntityID'
       in: path
       required: true
-
     get:
       tags:
       - Operational intent details
@@ -3325,7 +3540,8 @@ paths:
       security:
       - Authority:
         - utm.conformance_monitoring_sa
-      summary: Query detailed information on the position of an off-nominal operational
+      summary: >-
+        Query detailed information on the position of an off-nominal operational
         intent from a USS.
       operationId: getOperationalIntentTelemetry
       responses:
@@ -3334,7 +3550,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOperationalIntentTelemetryResponse'
-          description: OperationalIntent telemetry details were retrieved successfully.
+          description: >-
+            OperationalIntent telemetry details were retrieved successfully.
         '400':
           content:
             application/json:
@@ -3346,43 +3563,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: The requested Entity could not be found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            Operational intent is not in a state that provides telemetry.
         '412':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: No telemetry data is available.
-        '409':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Operational intent is not in a state that provides telemetry.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /uss/v1/operational_intents:
-    summary: A USS's representation of detailed information about operational intents.
-
+    summary: >-
+      A USS's representation of detailed information about operational intents.
     post:
       tags:
       - Operational intent details
@@ -3392,7 +3612,8 @@ paths:
         - utm.strategic_coordination
       summary: Notify a peer USS of changed operational intent details.
       operationId: notifyOperationalIntentDetailsChanged
-      description: Notify a peer USS directly of changed operational intent details
+      description: >-
+        Notify a peer USS directly of changed operational intent details
         (usually as a requirement of previous interactions with the DSS).
       requestBody:
         content:
@@ -3402,51 +3623,57 @@ paths:
         required: true
       responses:
         '204':
-          description: New or updated full operational intent information received
+          description: >-
+            New or updated full operational intent information received
             successfully.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more parameters were missing or invalid.
+
             * The Entity could not be parsed, or contains illegal data.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            Bearer access token was not provided in Authorization header, token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the manager of this Entity according to the receiving client's records.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
+
+            * The client identified in the access token is not the manager of
+            this Entity according to the receiving client's records.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            The Entity version specified in this message is lower than
-            a previously-received notification, or identical to a previously-received
-            notification and the Entity is different.
+          description: >-
+            The Entity version specified in this message is lower than a
+            previously-received notification, or identical to a
+            previously-received notification and the Entity is different.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # USS Endpoint: CONSTRAINTS
+  # USS endpoints for constraints
   #
-
   /uss/v1/constraints/{entityid}:
     summary: Query detailed information of a constraint from a USS.
     parameters:
@@ -3456,7 +3683,6 @@ paths:
         $ref: '#/components/schemas/EntityID'
       in: path
       required: true
-
     get:
       tags:
       - Constraint details
@@ -3466,13 +3692,13 @@ paths:
         - utm.constraint_processing
       summary: Retrieve the specified constraint details from a USS.
       operationId: getConstraintDetails
-      description: |-
+      description: >-
         The USS hosting this endpoint returns the details (and reference) of a
-        constraint it manages.  While the USS has a pending request to change the
-        constraint in the DSS, the USS should report the most recent version the
-        USS knows was accepted by the DSS.  So, before a USS receives a response
-        to create a constraint reference in the DSS, it should return 404 if
-        queried for that constraint at this endpoint.
+        constraint it manages.  While the USS has a pending request to change
+        the constraint in the DSS, the USS should report the most recent version
+        the USS knows was accepted by the DSS.  So, before a USS receives a
+        response to create a constraint reference in the DSS, it should return
+        404 if queried for that constraint at this endpoint.
       responses:
         '200':
           content:
@@ -3491,15 +3717,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The access token was decoded successfully but did not include
-            a scope appropriate to this endpoint.
+          description: >-
+            The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '404':
           content:
             application/json:
@@ -3511,11 +3739,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
-
+          description: >-
+            The client issued too many requests in a short period of time.
   /uss/v1/constraints:
     summary: A USS's representation of detailed information about constraints.
-
     post:
       tags:
       - Constraint details
@@ -3525,8 +3752,9 @@ paths:
         - utm.constraint_management
       summary: Notify a peer USS of changed constraint details.
       operationId: notifyConstraintDetailsChanged
-      description: Notify a peer USS directly of changed constraint details (usually
-        as a requirement of previous interactions with the DSS).
+      description: >-
+        Notify a peer USS directly of changed constraint details (usually as a
+        requirement of previous interactions with the DSS).
       requestBody:
         content:
           application/json:
@@ -3535,52 +3763,58 @@ paths:
         required: true
       responses:
         '204':
-          description: New or updated full constraint information received successfully.
+          description: >-
+            New or updated full constraint information received successfully.
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more parameters were missing or invalid.
+
             * The Entity could not be parsed, or contains illegal data.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
-            * The client identified in the access token is not the manager of this Entity according to the receiving client's records.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
+
+            * The client identified in the access token is not the manager of
+            this Entity according to the receiving client's records.
         '409':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The Entity version specified in this message is lower than
-            a previously-received notification, or identical to a previously-received
-            notification and the Entity is different.
+          description: >-
+            The Entity version specified in this message is lower than a
+            previously-received notification, or identical to a
+            previously-received notification and the Entity is different.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # USS Endpoint: REPORT
+  # USS endpoints for reports
   #
-
   /uss/v1/reports:
     summary: Error reports of issues communicating with a peer USS.
-
     post:
       tags:
       - Reports
@@ -3596,10 +3830,12 @@ paths:
         - utm.conformance_monitoring_sa
       - Authority:
         - utm.availability_arbitration
-      summary: Notify USS of an error encountered that might otherwise go unnoticed.
+      summary: >-
+        Notify USS of an error encountered that might otherwise go unnoticed.
       operationId: makeUssReport
-      description: Endpoint to provide feedback (errors, etc.) that might otherwise
-        go unnoticed by this USS.  This endpoint is used for all feedback related
+      description: >-
+        Endpoint to provide feedback (errors, etc.) that might otherwise go
+        unnoticed by this USS.  This endpoint is used for all feedback related
         to operational intents and constraints.
       requestBody:
         content:
@@ -3619,41 +3855,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
+          description: >-
             * One or more parameters were missing or invalid.
+
             * The report could not be parsed, or contains unrecognized data.
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            Bearer access token was not provided in Authorization header,
-            token could not be decoded, or token was invalid.
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
         '403':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: |-
-            * The access token was decoded successfully but did not include a scope appropriate to this endpoint.
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint.
         '429':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: The client issued too many requests in a short period of time.
+          description: >-
+            The client issued too many requests in a short period of time.
 
   #
-  # USS pseudo endpoint: LOGGING
+  # USS pseudo endpoint for logging
   #
-
   /uss/v1/log_sets/{log_set_id}:
     summary: General summary
-
     parameters:
     - name: log_set_id
-      description: |-
+      description: >-
         USS-defined identifier for a set of log entries.  For instance, this
         ID may refer to all logs associated with a particular reportable
         incident, or over a time range for the purpose of metric computation.
@@ -3667,7 +3904,7 @@ paths:
       - Logging
       summary: Get USS logs
       operationId: getLogSet
-      description: |-
+      description: >-
         A USS will not usually implement this endpoint directly, but rather will
         be capable of exporting log data in a format equivalent to the response
         format of this pseudo-endpoint according to the requirements of the
