@@ -23,6 +23,7 @@ security:
   - utm.constraint_processing
   - utm.conformance_monitoring_sa
   - utm.availability_arbitration
+  - utm.operation_categories.admin
 tags:
 - name: Operational intent references
   description: >-
@@ -46,6 +47,8 @@ tags:
   description: Endpoints exposed by the DSS for reporting peer DSS issues.
 - name: Availability
   description: Endpoints exposed by the DSS for declaring USS availability.
+- name: Operation categories
+  description: Endpoints exposed by the DSS for administering operation categories.
 - name: Logging
   description: >-
     Pseudo-endpoints not intended to be implemented literally, but rather to
@@ -76,6 +79,8 @@ components:
               monitoring for situational awareness role.
             utm.availability_arbitration: >-
               Client may set the availability state of USSs in the DSS.
+            utm.operation_categories.admin: >-
+              Client may administer the operation categories recognized by the DSS.
       description: >-
         Authorization from, or on behalf of, an authorization authority.  This
         authority will issue access tokens that are JSON Web Tokens as defined
@@ -637,6 +642,7 @@ components:
       - uss_availability
       - version
       - state
+      - category
       - time_start
       - time_end
       - uss_base_url
@@ -669,6 +675,8 @@ components:
             version changes.
         state:
           $ref: '#/components/schemas/OperationalIntentState'
+        category:
+          $ref: '#/components/schemas/OperationCategory'
         ovn:
           description: >-
             Opaque version number of this operational intent.  Populated only
@@ -713,6 +721,7 @@ components:
       required:
       - extents
       - state
+      - category
       - uss_base_url
       type: object
       properties:
@@ -748,6 +757,8 @@ components:
           - $ref: '#/components/schemas/Key'
         state:
           $ref: '#/components/schemas/OperationalIntentState'
+        category:
+          $ref: '#/components/schemas/OperationCategory'
         uss_base_url:
           $ref: '#/components/schemas/OperationalIntentUssBaseURL'
         subscription_id:
@@ -1021,7 +1032,88 @@ components:
           items:
             $ref: '#/components/schemas/ConstraintReference'
           default: [ ]
-
+    OperationCategory:
+      description: Unique name defining a particular operation category.
+      type: string
+      example: Standard
+    AllowedConflictsRow:
+      description: >-
+        For an operational intent being created or modified with a particular
+        operation category, whether or not conflicts are allowed with a
+        pre-existing operational intent having each of the possible operation
+        categories.
+      type: object
+      required:
+      - changed_category
+      - conflicts_allowed
+      properties:
+        when_changing_category:
+          description: >-
+            Operation category of the operational intent to be created or
+            modified.
+          anyOf:
+          - $ref: '#/components/schemas/OperationCategory'
+        conflicts_allowed:
+          type: array
+          items:
+            description: >-
+              True if conflicts are allowed between a pre-existing operational
+              intent with the operation category in the corresponding column and
+              a new or modified operational intent with the operation category
+              specified by `when_changing_category`.  False otherwise.
+            type: bool
+    AllowedConflictsMatrix:
+      description: >-
+        Matrix describing whether conflicts are allowed between all pairs of
+        operation categories.
+      properties:
+        columns:
+          description: >-
+            Ordered list of operation categories of the pre-existing operational
+            intent.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationCategory'
+          default: []
+          example: ['Standard', 'Special', 'VLOS']
+        rows:
+          description: >-
+            Definitions for whether conflicts are allowed between an operational
+            intent being created or modified with a particular operation
+            category, and a pre-existing operational intent with each of the
+            possible operation categories.
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedConflictsRow'
+          default: []
+          example:
+          - when_changing_category: Standard
+            conflicts_allowed: [false, false, true]
+          - when_changing_category: Special
+            conflicts_allowed: [true, false, true]
+          - when_changing_category: VLOS
+            conflicts_allowed: [true, false, true]
+    SetOperationCategoriesParameters:
+      description: Definition of desired recognized operation categories.
+      type: object
+      required:
+        - matrix
+      properties:
+        matrix:
+          $ref: '#/components/schemas/AllowedConflictsMatrix'
+    OperationCategoriesResponse:
+      description: Current state of recognized operation categories.
+      type: object
+      required:
+      - ovn
+      - matrix
+      properties:
+        ovn:
+          description: Opaque version number of the allowed conflicts matrix.
+          anyOf:
+            - $ref: '#/components/schemas/EntityOVN'
+        matrix:
+          $ref: '#/components/schemas/AllowedConflictsMatrix'
     #
     # USS-USS schema components
     #
@@ -1064,20 +1156,6 @@ components:
           items:
             $ref: '#/components/schemas/Volume4D'
           default: [ ]
-        priority:
-          $ref: '#/components/schemas/Priority'
-    Priority:
-      description: >-
-        Ordinal priority of the operational intent, as defined by the
-        regulator.  Operational intents with lesser values are lower priority
-        than all operational intents with greater values.  A lower-priority
-        operational intent may not create a conflict with a higher-priority
-        operational intent.  A higher-priority operational intent may create a
-        conflict with a lower-priority operational intent.  The regulator
-        specifies whether an operational intent may create a conflict with other
-        operational intents of the same priority.
-      type: integer
-      default: 0
     OperationalIntent:
       description: Full description of a UTM operational intent.
       required:
@@ -3452,6 +3530,128 @@ paths:
           description: >-
             The client issued too many requests in a short period of time.
 
+  #
+  # DSS endpoints for operation categories
+  #
+  /dss/v1/operation_categories/{ovn}:
+    summary: Operation categories recognized by the DSS
+    parameters:
+    - name: ovn
+      description: >-
+        Opaque version number of the current recognized operation categories.
+      schema:
+        $ref: '#/components/schemas/EntityOVN'
+      in: path
+      required: true
+    put:
+      security:
+      - Authority:
+        - utm.operation_categories.admin
+      summary: Set operation categories recognized by the DSS.
+      operationId: setOperationCategories
+      description: Set operation categories recognized by the DSS.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetOperationCategoriesParameters'
+        required: true
+      tags:
+      - Operation categories
+      - dss
+      responses:
+        '200':
+          description: >-
+            DSS-recognized operation categories were successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationCategoriesResponse'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: '* One or more parameters were missing or invalid.'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            * The provided ovn did not match the current version of the
+              recognized operation categories.
+            * The requested matrix would remove one or more operation categories
+              currently in use by operational intents.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            The client issued too many requests in a short period of time.
+  /dss/v1/operation_categories:
+    get:
+      security:
+      - Authority:
+        - utm.operation_categories.admin
+      - Authority:
+        - utm.strategic_coordination
+      - Authority:
+        - utm.conformance_monitoring_sa
+      summary: Get operation categories recognized by the DSS.
+      operationId: getOperationCategories
+      description: Get operation categories recognized by the DSS.
+      tags:
+      - Operation categories
+      - dss
+      responses:
+        '200':
+          description: >-
+            DSS-recognized operation categories were successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationCategoriesResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            Bearer access token was not provided in Authorization header, token
+            could not be decoded, or token was invalid.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            * The access token was decoded successfully but did not include a
+            scope appropriate to this endpoint or the request.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: >-
+            The client issued too many requests in a short period of time.
   #
   # USS endpoints for operational intents
   #
