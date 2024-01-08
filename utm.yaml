@@ -1645,7 +1645,7 @@ components:
           - CSTP0020
           - CSTP0025
           - CSTP0030
-          - CSTO0035
+          - CSTP0035
     UserInputRecord:
       type: object
       description: User input record
